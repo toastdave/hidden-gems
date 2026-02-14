@@ -1,0 +1,99 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/trust-safety",
+  "description": "Implement reporting, moderation, and basic abuse prevention.",
+  "userStories": [
+    {
+      "id": "US-901",
+      "title": "Report listing",
+      "description": "As a user, I want to report spam listings.",
+      "acceptanceCriteria": [
+        "Report stored in database",
+        "Admin can view reports"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-901-T01",
+          "title": "Add reports schema",
+          "description": "Create table for listing reports and moderation status.",
+          "acceptanceCriteria": [
+            "Reports table includes listingId, reporterUserId, reason, details",
+            "Status field supports open and reviewed states",
+            "CreatedAt timestamp included"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Reason can be enum plus free text details."
+        },
+        {
+          "id": "US-901-T02",
+          "title": "Implement submit report endpoint",
+          "description": "Add authenticated route to submit listing abuse reports.",
+          "acceptanceCriteria": [
+            "Endpoint requires auth",
+            "Payload validates reason and listing id",
+            "Report record is persisted"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Rate limiting can be simple at first."
+        },
+        {
+          "id": "US-901-T03",
+          "title": "Add report action in listing UI",
+          "description": "Create report button and modal form on listing detail page.",
+          "acceptanceCriteria": [
+            "Report action visible on listing page",
+            "Modal collects reason and optional details",
+            "Success and error confirmation shown"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Hide for listing owner if desired."
+        },
+        {
+          "id": "US-901-T04",
+          "title": "Create admin reports API",
+          "description": "Expose endpoint to list and inspect submitted reports for admins.",
+          "acceptanceCriteria": [
+            "Admin endpoint returns paginated reports",
+            "Non-admin access is denied",
+            "Report data includes listing and reporter context"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Use role flag on user until full RBAC exists."
+        },
+        {
+          "id": "US-901-T05",
+          "title": "Build admin moderation page",
+          "description": "Create internal page to review reports and update status.",
+          "acceptanceCriteria": [
+            "Admin page lists open reports",
+            "Admin can mark report reviewed",
+            "Status updates persisted"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Basic internal UI is acceptable."
+        },
+        {
+          "id": "US-901-T06",
+          "title": "Add trust and safety tests",
+          "description": "Cover report submission and admin visibility authorization.",
+          "acceptanceCriteria": [
+            "Submit report API test passes",
+            "Non-admin cannot access admin reports",
+            "Admin can list and update report status"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Include duplicate report behavior test."
+        }
+      ]
+    }
+  ]
+}

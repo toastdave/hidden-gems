@@ -1,0 +1,219 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/listings",
+  "description": "Enable hosts to create, manage, and publish listings.",
+  "userStories": [
+    {
+      "id": "US-301",
+      "title": "Create draft listing",
+      "description": "As a host, I want to create a draft listing.",
+      "acceptanceCriteria": [
+        "Draft saved in database",
+        "Not visible publicly"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-301-T01",
+          "title": "Add listings schema",
+          "description": "Create listing table with draft and published state fields.",
+          "acceptanceCriteria": [
+            "Listings table includes status enum",
+            "Draft status is default",
+            "Ownership relation to host is enforced"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Track publishedAt separately from createdAt."
+        },
+        {
+          "id": "US-301-T02",
+          "title": "Implement create draft endpoint",
+          "description": "Add authenticated API endpoint to create draft listings.",
+          "acceptanceCriteria": [
+            "Endpoint saves listing with draft status",
+            "Input validation enforces minimum required draft fields",
+            "Response returns listing id and status"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Associate listing with host owner."
+        },
+        {
+          "id": "US-301-T03",
+          "title": "Implement update draft endpoint",
+          "description": "Allow host to incrementally edit draft listing fields.",
+          "acceptanceCriteria": [
+            "PATCH endpoint supports partial updates",
+            "Only owner can update draft",
+            "Updated timestamp changes on save"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use field-level validation."
+        },
+        {
+          "id": "US-301-T04",
+          "title": "Create draft editor UI",
+          "description": "Build listing draft form and autosave/manual save behavior.",
+          "acceptanceCriteria": [
+            "Form initializes from draft data",
+            "Save action persists changes",
+            "User sees clear draft saved feedback"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Autosave can be deferred if needed."
+        },
+        {
+          "id": "US-301-T05",
+          "title": "Ensure drafts are excluded from public queries",
+          "description": "Update public listing feeds and map APIs to filter unpublished entries.",
+          "acceptanceCriteria": [
+            "Public feed query excludes draft status",
+            "Public map query excludes draft status",
+            "Regression tests cover visibility rules"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Centralize status filters in data layer."
+        }
+      ]
+    },
+    {
+      "id": "US-302",
+      "title": "Location picker",
+      "description": "As a host, I want to drop a pin on a map.",
+      "acceptanceCriteria": [
+        "Mapcn map renders",
+        "Click sets lat/lng",
+        "Coordinates saved"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-302-T01",
+          "title": "Integrate map component library",
+          "description": "Install and configure mapcn map component in web app.",
+          "acceptanceCriteria": [
+            "Map component renders with base tiles",
+            "Map key/config loaded via env",
+            "Fallback UI shown when map fails"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Defer advanced map styling."
+        },
+        {
+          "id": "US-302-T02",
+          "title": "Build pin selection interaction",
+          "description": "Capture map clicks and place draggable pin for chosen coordinates.",
+          "acceptanceCriteria": [
+            "Map click sets lat and lng values",
+            "Pin visibly updates on new selection",
+            "Manual coordinate edits sync with map pin"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Round coordinates for display only."
+        },
+        {
+          "id": "US-302-T03",
+          "title": "Persist coordinates in listing draft",
+          "description": "Store selected latitude and longitude in listing record.",
+          "acceptanceCriteria": [
+            "Draft save payload includes lat/lng",
+            "API validates numeric coordinate ranges",
+            "Reloading editor restores saved pin"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Reject null location on publish, not draft."
+        },
+        {
+          "id": "US-302-T04",
+          "title": "Add location picker tests",
+          "description": "Validate coordinate selection and persistence across API and UI.",
+          "acceptanceCriteria": [
+            "UI test covers click to set pin",
+            "API test rejects invalid coordinates",
+            "Reload test confirms persisted location"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Mock map events in tests."
+        }
+      ]
+    },
+    {
+      "id": "US-303",
+      "title": "Publish listing",
+      "description": "As a host, I want to publish my listing.",
+      "acceptanceCriteria": [
+        "Required fields validated",
+        "Listing visible in feed and map"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-303-T01",
+          "title": "Define publish readiness rules",
+          "description": "Specify required fields and constraints before publish is allowed.",
+          "acceptanceCriteria": [
+            "Validation schema includes required publish fields",
+            "Schema shared between API and UI where possible",
+            "Missing fields return actionable error details"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Start with minimal required fields."
+        },
+        {
+          "id": "US-303-T02",
+          "title": "Implement publish endpoint",
+          "description": "Add authenticated endpoint to transition listing from draft to published.",
+          "acceptanceCriteria": [
+            "Only owner can publish listing",
+            "Endpoint validates publish readiness",
+            "Status changes to published and publishedAt is set"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Disallow republish of deleted listings."
+        },
+        {
+          "id": "US-303-T03",
+          "title": "Build publish action in UI",
+          "description": "Add publish button and validation feedback in listing editor.",
+          "acceptanceCriteria": [
+            "Publish button disabled until ready",
+            "Validation issues shown before submit",
+            "Successful publish redirects to listing view"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use confirmation dialog only if needed."
+        },
+        {
+          "id": "US-303-T04",
+          "title": "Verify discovery visibility",
+          "description": "Ensure published listing appears in feed and map queries.",
+          "acceptanceCriteria": [
+            "Published listing appears in feed API",
+            "Published listing appears in map API",
+            "End-to-end test covers publish to discover flow"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use deterministic test fixtures."
+        }
+      ]
+    }
+  ]
+}

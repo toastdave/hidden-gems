@@ -1,0 +1,154 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/host-profiles",
+  "description": "Allow users to create and manage host identities for publishing listings.",
+  "userStories": [
+    {
+      "id": "US-201",
+      "title": "Create host profile",
+      "description": "As a user, I want to create a host identity.",
+      "acceptanceCriteria": [
+        "Host name required",
+        "User becomes owner",
+        "Host stored in database"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-201-T01",
+          "title": "Add hosts table migration",
+          "description": "Create database table for host profiles and ownership relation.",
+          "acceptanceCriteria": [
+            "Hosts table includes id, name, ownerUserId",
+            "Foreign key to users enforced",
+            "Migration applies and rolls forward cleanly"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Add createdAt and updatedAt fields."
+        },
+        {
+          "id": "US-201-T02",
+          "title": "Create host profile validation schema",
+          "description": "Define server-side input rules for host profile creation.",
+          "acceptanceCriteria": [
+            "Host name required and trimmed",
+            "Name length constraints enforced",
+            "Validation errors return field-level details"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Reserve profanity filtering for later."
+        },
+        {
+          "id": "US-201-T03",
+          "title": "Implement create host API endpoint",
+          "description": "Add authenticated endpoint for creating host profiles.",
+          "acceptanceCriteria": [
+            "Endpoint requires authenticated user",
+            "ownerUserId set from session user",
+            "Response returns created host payload"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Prevent owner spoofing in payload."
+        },
+        {
+          "id": "US-201-T04",
+          "title": "Build host creation UI",
+          "description": "Create form flow in web app for creating host profile.",
+          "acceptanceCriteria": [
+            "Host name input required in form",
+            "Submit calls create host endpoint",
+            "Successful create routes user to host dashboard"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Disable submit while request is in flight."
+        },
+        {
+          "id": "US-201-T05",
+          "title": "Add ownership tests",
+          "description": "Validate only authenticated users can create hosts and ownership is set correctly.",
+          "acceptanceCriteria": [
+            "Anonymous request gets 401",
+            "Authenticated request creates host",
+            "Created host owner matches auth user"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Integration tests preferred."
+        }
+      ]
+    },
+    {
+      "id": "US-202",
+      "title": "Host public page",
+      "description": "As a visitor, I want to view host listings.",
+      "acceptanceCriteria": [
+        "Public route /hosts/:id exists",
+        "Displays active listings",
+        "Displays host info"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-202-T01",
+          "title": "Create host read API",
+          "description": "Provide public endpoint returning host profile and published listings.",
+          "acceptanceCriteria": [
+            "Endpoint returns host metadata",
+            "Only published listings returned",
+            "Missing host returns 404"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Paginate listings response."
+        },
+        {
+          "id": "US-202-T02",
+          "title": "Build host public route",
+          "description": "Add /hosts/:id page in web app and fetch host data.",
+          "acceptanceCriteria": [
+            "Dynamic route renders by host id",
+            "Loading and error states handled",
+            "Page is accessible without login"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Use SEO-friendly metadata."
+        },
+        {
+          "id": "US-202-T03",
+          "title": "Render host listings section",
+          "description": "Display list of active listings with key preview details.",
+          "acceptanceCriteria": [
+            "Listing cards show title, location, and image",
+            "Empty state shown when no active listings",
+            "Cards link to listing detail pages"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Reuse feed listing card component where possible."
+        },
+        {
+          "id": "US-202-T04",
+          "title": "Add host page tests",
+          "description": "Cover API and UI behavior for host page rendering.",
+          "acceptanceCriteria": [
+            "Host API test verifies only published listings",
+            "UI test covers empty and populated states",
+            "404 state test exists for unknown host"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Snapshot tests optional."
+        }
+      ]
+    }
+  ]
+}

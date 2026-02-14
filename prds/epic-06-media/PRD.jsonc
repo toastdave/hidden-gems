@@ -1,0 +1,113 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/media-upload",
+  "description": "Enable photo uploads and management for listings.",
+  "userStories": [
+    {
+      "id": "US-501",
+      "title": "Upload listing photos",
+      "description": "As a host, I want to upload multiple photos.",
+      "acceptanceCriteria": [
+        "Drag/drop upload works",
+        "Files stored in object storage",
+        "Metadata saved in database"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-501-T01",
+          "title": "Define listing media schema",
+          "description": "Create table for listing image metadata and ordering.",
+          "acceptanceCriteria": [
+            "Listing media table includes listingId and file URL",
+            "Sort order field supports gallery ordering",
+            "Foreign key with cascade behavior defined"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Store width and height metadata if available."
+        },
+        {
+          "id": "US-501-T02",
+          "title": "Set up object storage integration",
+          "description": "Configure storage client and env vars for upload target bucket.",
+          "acceptanceCriteria": [
+            "Storage credentials loaded from env",
+            "Upload helper can write file to bucket",
+            "Read URL strategy documented"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "S3-compatible API preferred."
+        },
+        {
+          "id": "US-501-T03",
+          "title": "Create signed upload workflow",
+          "description": "Add endpoint to issue upload URL or token for authorized hosts.",
+          "acceptanceCriteria": [
+            "Only listing owner can request upload token",
+            "Token has short expiration",
+            "File type and size constraints enforced"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Avoid proxying large files through API."
+        },
+        {
+          "id": "US-501-T04",
+          "title": "Build drag and drop upload UI",
+          "description": "Implement multi-file upload interaction in listing editor.",
+          "acceptanceCriteria": [
+            "Drag and drop zone accepts image files",
+            "Upload progress shown per file",
+            "Upload errors shown inline"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Support click-to-select fallback."
+        },
+        {
+          "id": "US-501-T05",
+          "title": "Persist uploaded media metadata",
+          "description": "Save uploaded file records and associate them with listing.",
+          "acceptanceCriteria": [
+            "Metadata write endpoint stores file URL and attributes",
+            "Listing media can be fetched for editor and public view",
+            "Duplicate media records prevented"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Generate deterministic storage keys."
+        },
+        {
+          "id": "US-501-T06",
+          "title": "Add media management actions",
+          "description": "Allow reorder, set cover image, and remove actions in UI.",
+          "acceptanceCriteria": [
+            "User can reorder gallery items",
+            "User can set one cover image",
+            "Remove action deletes record and storage object"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Soft delete optional if needed for recovery."
+        },
+        {
+          "id": "US-501-T07",
+          "title": "Add upload and media tests",
+          "description": "Test authorization, upload flow, and metadata persistence.",
+          "acceptanceCriteria": [
+            "Unauthorized upload token request fails",
+            "Successful upload metadata persists",
+            "UI test covers multi-file upload flow"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use mocked object storage in CI."
+        }
+      ]
+    }
+  ]
+}

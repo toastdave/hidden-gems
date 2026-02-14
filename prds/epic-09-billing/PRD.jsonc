@@ -1,0 +1,113 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/billing-polar",
+  "description": "Integrate Polar as merchant of record for freemium subscriptions and enforce feature gates.",
+  "userStories": [
+    {
+      "id": "US-801",
+      "title": "Upgrade via Polar checkout",
+      "description": "As a user, I want to upgrade my plan.",
+      "acceptanceCriteria": [
+        "Checkout redirects to Polar",
+        "Webhook updates user entitlements",
+        "User sees premium status reflected in UI"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use idempotent webhook handling.",
+      "tasks": [
+        {
+          "id": "US-801-T01",
+          "title": "Define billing and entitlement schema",
+          "description": "Add tables for customer mapping, subscriptions, and feature entitlements.",
+          "acceptanceCriteria": [
+            "Schema maps internal user to Polar customer id",
+            "Subscription status fields captured",
+            "Entitlement table supports feature gate checks"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Track effective dates for entitlement periods."
+        },
+        {
+          "id": "US-801-T02",
+          "title": "Create Polar checkout session endpoint",
+          "description": "Add authenticated API endpoint that creates Polar checkout and returns redirect URL.",
+          "acceptanceCriteria": [
+            "Endpoint requires logged-in user",
+            "Checkout session contains correct product/plan id",
+            "Client receives valid redirect URL"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Validate plan inputs server-side only."
+        },
+        {
+          "id": "US-801-T03",
+          "title": "Implement webhook receiver",
+          "description": "Create secured endpoint to process Polar subscription and payment events.",
+          "acceptanceCriteria": [
+            "Webhook signature verification enforced",
+            "Relevant subscription events parsed",
+            "Failed processing returns retryable status when needed"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Log event id for traceability."
+        },
+        {
+          "id": "US-801-T04",
+          "title": "Add idempotent event processing",
+          "description": "Ensure duplicate webhook deliveries do not produce duplicate side effects.",
+          "acceptanceCriteria": [
+            "Processed webhook event ids stored",
+            "Duplicate event exits safely",
+            "Entitlement updates remain deterministic"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use unique constraint on external event id."
+        },
+        {
+          "id": "US-801-T05",
+          "title": "Implement premium feature gates",
+          "description": "Add entitlement checks around premium-only API and UI paths.",
+          "acceptanceCriteria": [
+            "Server-side checks block premium actions without entitlement",
+            "Client UI reflects locked or unlocked state",
+            "Upgrade CTA appears for non-premium users"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Never rely on client-only gate checks."
+        },
+        {
+          "id": "US-801-T06",
+          "title": "Build billing status UI",
+          "description": "Create account billing page showing plan and subscription state.",
+          "acceptanceCriteria": [
+            "Billing page shows current plan",
+            "Premium status updates after webhook processing",
+            "Upgrade button triggers checkout flow"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Polling fallback allowed for status propagation."
+        },
+        {
+          "id": "US-801-T07",
+          "title": "Add billing integration tests",
+          "description": "Cover checkout creation, webhook handling, and feature gate enforcement.",
+          "acceptanceCriteria": [
+            "Checkout endpoint test verifies auth and payload",
+            "Webhook test verifies idempotency",
+            "Feature gate test verifies premium restrictions"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use webhook fixture payloads in tests."
+        }
+      ]
+    }
+  ]
+}

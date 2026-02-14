@@ -1,0 +1,86 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/alerts",
+  "description": "Allow users to create saved search alerts and receive notifications.",
+  "userStories": [
+    {
+      "id": "US-701",
+      "title": "Create search alert",
+      "description": "As a user, I want to save a search.",
+      "acceptanceCriteria": [
+        "Alert saved with radius + filters",
+        "User can enable/disable"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-701-T01",
+          "title": "Add saved alerts schema",
+          "description": "Create table for user alert preferences and filter payload.",
+          "acceptanceCriteria": [
+            "alerts table includes userId, radius, and filter fields",
+            "Enabled boolean defaults to true",
+            "Created and updated timestamps included"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Store filters as structured JSON if needed."
+        },
+        {
+          "id": "US-701-T02",
+          "title": "Implement create alert API",
+          "description": "Add authenticated endpoint for creating saved search alerts.",
+          "acceptanceCriteria": [
+            "Endpoint requires logged-in user",
+            "Radius and filter payload validated",
+            "Response returns created alert id"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Prevent abusive alert volume with limits later."
+        },
+        {
+          "id": "US-701-T03",
+          "title": "Implement alert enable and disable endpoint",
+          "description": "Allow user to toggle alert active state without deleting it.",
+          "acceptanceCriteria": [
+            "PATCH endpoint toggles enabled state",
+            "Only owner can toggle their alert",
+            "Updated state reflected in response"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Support batch toggles later if required."
+        },
+        {
+          "id": "US-701-T04",
+          "title": "Build saved alerts UI",
+          "description": "Add UI controls to save current search and manage alerts.",
+          "acceptanceCriteria": [
+            "User can create alert from discovery filters",
+            "Alerts list shows radius and key filters",
+            "Toggle switch enables or disables alert"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Require auth before creating alert."
+        },
+        {
+          "id": "US-701-T05",
+          "title": "Add alert matching worker skeleton",
+          "description": "Create scheduled job scaffold to evaluate new listings against enabled alerts.",
+          "acceptanceCriteria": [
+            "Worker command can run on schedule",
+            "Only enabled alerts are processed",
+            "Match results logged for future notification pipeline"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Notification delivery can be phased after matching logic."
+        }
+      ]
+    }
+  ]
+}

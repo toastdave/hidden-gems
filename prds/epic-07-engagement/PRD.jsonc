@@ -1,0 +1,99 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/engagement",
+  "description": "Implement favorites and follow features.",
+  "userStories": [
+    {
+      "id": "US-601",
+      "title": "Favorite listing",
+      "description": "As a user, I want to save listings.",
+      "acceptanceCriteria": [
+        "Toggle favorite works",
+        "Favorites list page exists"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-601-T01",
+          "title": "Add favorites schema",
+          "description": "Create join table for user favorites on listings.",
+          "acceptanceCriteria": [
+            "favorites table includes userId and listingId",
+            "Unique constraint prevents duplicate favorite",
+            "Foreign keys enforce referential integrity"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Include createdAt for sorting."
+        },
+        {
+          "id": "US-601-T02",
+          "title": "Implement toggle favorite endpoint",
+          "description": "Create authenticated API route to favorite or unfavorite listing.",
+          "acceptanceCriteria": [
+            "Authenticated user can toggle favorite state",
+            "Endpoint returns current favorited boolean",
+            "Cannot favorite unpublished or missing listing"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use idempotent semantics."
+        },
+        {
+          "id": "US-601-T03",
+          "title": "Expose favorites list API",
+          "description": "Return paginated list of user favorite listings.",
+          "acceptanceCriteria": [
+            "Endpoint requires authentication",
+            "Results include listing preview data",
+            "Favorites sorted by most recently added"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Support future filtering."
+        },
+        {
+          "id": "US-601-T04",
+          "title": "Add favorite button in listing UI",
+          "description": "Render favorite toggle on listing cards and detail page.",
+          "acceptanceCriteria": [
+            "Button reflects current favorited state",
+            "Click toggles state without full page refresh",
+            "Anonymous users are prompted to log in"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Optimistic updates are preferred."
+        },
+        {
+          "id": "US-601-T05",
+          "title": "Build favorites page",
+          "description": "Create dedicated page showing saved listings for current user.",
+          "acceptanceCriteria": [
+            "Route for favorites page exists",
+            "Page fetches and renders favorite listings",
+            "Empty state shown when user has no favorites"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Add auth guard to page route."
+        },
+        {
+          "id": "US-601-T06",
+          "title": "Add favorites tests",
+          "description": "Cover toggle logic, list retrieval, and UI behavior.",
+          "acceptanceCriteria": [
+            "API tests for favorite and unfavorite",
+            "Unauthorized toggle test returns 401",
+            "UI test covers favorites page rendering"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Include regression for duplicate favorite attempts."
+        }
+      ]
+    }
+  ]
+}

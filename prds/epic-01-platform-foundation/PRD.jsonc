@@ -1,0 +1,326 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/platform-foundation",
+  "description": "Establish the containerized monorepo foundation for the Hidden Gems web app. Stack: Bun + Hono API, React (Tailwind + shadcn), Postgres, shared TypeScript packages. Everything must run via Docker Compose locally and support CI container builds.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Scaffold monorepo structure",
+      "description": "As a developer, I want a clean monorepo structure so web, api, and shared packages are organized.",
+      "acceptanceCriteria": [
+        "Repo contains apps/web, apps/api, packages/db, packages/shared",
+        "Shared types importable in web and api",
+        "TypeScript builds without cross-package errors"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use Bun workspaces.",
+      "tasks": [
+        {
+          "id": "US-001-T01",
+          "title": "Initialize root workspace",
+          "description": "Create root package.json and workspace settings for apps and packages.",
+          "acceptanceCriteria": [
+            "Workspace config includes apps/* and packages/*",
+            "Root scripts for dev, build, lint, and typecheck exist"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use Bun workspace conventions."
+        },
+        {
+          "id": "US-001-T02",
+          "title": "Create apps and packages directories",
+          "description": "Add directory skeleton for web, api, db, and shared packages.",
+          "acceptanceCriteria": [
+            "apps/web exists with starter files",
+            "apps/api exists with starter files",
+            "packages/db and packages/shared exist"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep naming consistent with imports."
+        },
+        {
+          "id": "US-001-T03",
+          "title": "Set up shared TypeScript config",
+          "description": "Create base tsconfig and package-level tsconfig references.",
+          "acceptanceCriteria": [
+            "Root tsconfig.base.json created",
+            "Each workspace extends base config",
+            "Path aliases resolve for shared packages"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Avoid circular path mappings."
+        },
+        {
+          "id": "US-001-T04",
+          "title": "Wire shared types package",
+          "description": "Export shared domain and API types from packages/shared and consume in apps.",
+          "acceptanceCriteria": [
+            "packages/shared exports index barrel",
+            "apps/web imports at least one shared type",
+            "apps/api imports at least one shared type"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use explicit type exports."
+        },
+        {
+          "id": "US-001-T05",
+          "title": "Add workspace build pipeline",
+          "description": "Define commands that compile all workspaces in dependency order.",
+          "acceptanceCriteria": [
+            "bun run build succeeds at root",
+            "No cross-package type errors",
+            "Artifacts output to predictable dirs"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Prefer fast incremental builds."
+        }
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Docker Compose local environment",
+      "description": "As a developer, I want the full stack to run via docker compose.",
+      "acceptanceCriteria": [
+        "docker compose up starts web, api, postgres",
+        "Hot reload works for web and api",
+        "Postgres accessible from API container"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Include healthchecks.",
+      "tasks": [
+        {
+          "id": "US-002-T01",
+          "title": "Create base compose file",
+          "description": "Define web, api, and postgres services with shared network.",
+          "acceptanceCriteria": [
+            "docker-compose.yml includes three services",
+            "Service ports are mapped for local access",
+            "Named volume configured for Postgres data"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use predictable service names."
+        },
+        {
+          "id": "US-002-T02",
+          "title": "Create Dockerfiles for web and api",
+          "description": "Add dev-friendly Dockerfiles using Bun for both app services.",
+          "acceptanceCriteria": [
+            "apps/web Dockerfile supports local dev command",
+            "apps/api Dockerfile supports local dev command",
+            "Dependency install is cached between builds"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Optimize with layered copy order."
+        },
+        {
+          "id": "US-002-T03",
+          "title": "Enable hot reload mounts",
+          "description": "Mount source code into containers and keep dependency directories stable.",
+          "acceptanceCriteria": [
+            "Code changes in apps/web reload browser",
+            "Code changes in apps/api reload server",
+            "Volume strategy avoids node_modules overwrite issues"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Document host filesystem caveats."
+        },
+        {
+          "id": "US-002-T04",
+          "title": "Add service healthchecks",
+          "description": "Configure healthchecks and startup order dependencies.",
+          "acceptanceCriteria": [
+            "Postgres healthcheck validates readiness",
+            "API waits for Postgres health status",
+            "Web waits for API availability"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use lightweight check commands."
+        },
+        {
+          "id": "US-002-T05",
+          "title": "Validate container networking",
+          "description": "Confirm API resolves and connects to postgres service hostname.",
+          "acceptanceCriteria": [
+            "Database URL uses postgres service DNS name",
+            "API can open DB connection on startup",
+            "Connection failure logs are actionable"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "No localhost inside containers."
+        }
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Database migrations workflow",
+      "description": "As a developer, I want containerized migrations for Postgres.",
+      "acceptanceCriteria": [
+        "Migration command runs inside container",
+        "Migrations tracked and idempotent",
+        "Seed script loads sample listings"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Prefer Drizzle or SQL migrations.",
+      "tasks": [
+        {
+          "id": "US-003-T01",
+          "title": "Select migration toolchain",
+          "description": "Set up Drizzle or SQL migration framework in packages/db.",
+          "acceptanceCriteria": [
+            "Migration tooling config committed",
+            "Database credentials loaded from env",
+            "CLI command for creating migrations works"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Prefer deterministic SQL outputs."
+        },
+        {
+          "id": "US-003-T02",
+          "title": "Create initial schema migration",
+          "description": "Add first migration with core tables needed for listings foundation.",
+          "acceptanceCriteria": [
+            "Migration file created with timestamp naming",
+            "Up migration applies cleanly",
+            "Down strategy documented if tool supports"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep scope minimal and evolvable."
+        },
+        {
+          "id": "US-003-T03",
+          "title": "Containerize migration execution",
+          "description": "Run migrations via compose service or one-off container command.",
+          "acceptanceCriteria": [
+            "docker compose command applies pending migrations",
+            "Command exits non-zero on failure",
+            "Migration output visible in logs"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Avoid requiring host DB tools."
+        },
+        {
+          "id": "US-003-T04",
+          "title": "Add seed data script",
+          "description": "Implement idempotent seed command for sample listings and hosts.",
+          "acceptanceCriteria": [
+            "Seed inserts baseline sample records",
+            "Re-running seed does not duplicate unique entities",
+            "Seed command can run in container"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use stable sample identifiers."
+        },
+        {
+          "id": "US-003-T05",
+          "title": "Document DB developer workflow",
+          "description": "Provide concise runbook for create, apply, reset, and seed flows.",
+          "acceptanceCriteria": [
+            "README includes migration commands",
+            "README includes seed commands",
+            "Troubleshooting section covers common failures"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Keep commands copy-paste ready."
+        }
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "CI pipeline validation",
+      "description": "As a developer, I want CI to validate code quality and container builds.",
+      "acceptanceCriteria": [
+        "Lint and typecheck run on PR",
+        "Tests pass in CI",
+        "Docker build succeeds"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "No deployment required yet.",
+      "tasks": [
+        {
+          "id": "US-004-T01",
+          "title": "Create CI workflow file",
+          "description": "Add pull request workflow with deterministic checkout and setup steps.",
+          "acceptanceCriteria": [
+            "CI triggers on PR open and update",
+            "Bun runtime installed in workflow",
+            "Dependencies install successfully"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Target GitHub Actions."
+        },
+        {
+          "id": "US-004-T02",
+          "title": "Add lint and typecheck jobs",
+          "description": "Run lint and typecheck commands across all workspaces.",
+          "acceptanceCriteria": [
+            "Lint job fails on violations",
+            "Typecheck job fails on TS errors",
+            "Jobs report clear logs"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep runtime under reasonable limits."
+        },
+        {
+          "id": "US-004-T03",
+          "title": "Add test execution job",
+          "description": "Run unit and integration tests suitable for CI context.",
+          "acceptanceCriteria": [
+            "Test command executes in CI",
+            "Failing tests block merge",
+            "Test summary visible in logs"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Mark TODO if tests not yet implemented."
+        },
+        {
+          "id": "US-004-T04",
+          "title": "Validate Docker image builds",
+          "description": "Build web and api container images in CI to catch Docker regressions.",
+          "acceptanceCriteria": [
+            "Web image build succeeds",
+            "API image build succeeds",
+            "Build cache strategy documented"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "No image push required."
+        },
+        {
+          "id": "US-004-T05",
+          "title": "Add required status check docs",
+          "description": "Document expected CI checks and branch protection recommendations.",
+          "acceptanceCriteria": [
+            "README lists required checks",
+            "Failure triage guidance added",
+            "Contribution docs reference CI expectations"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Keep docs concise."
+        }
+      ]
+    }
+  ]
+}

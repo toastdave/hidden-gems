@@ -1,0 +1,233 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/authentication",
+  "description": "Implement authentication and account management using Better Auth. Public browsing allowed; hosting requires login.",
+  "userStories": [
+    {
+      "id": "US-101",
+      "title": "User sign up and login",
+      "description": "As a user, I want to sign up and log in securely.",
+      "acceptanceCriteria": [
+        "Email auth works",
+        "OAuth provider (Google) works",
+        "Session persists across refresh"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Public browsing remains open.",
+      "tasks": [
+        {
+          "id": "US-101-T01",
+          "title": "Install and configure Better Auth",
+          "description": "Add Better Auth dependencies and initialize server-side auth config.",
+          "acceptanceCriteria": [
+            "Auth package installed in API app",
+            "Base auth config loads from environment",
+            "Startup fails fast when critical auth env vars are missing"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep secrets in env files only."
+        },
+        {
+          "id": "US-101-T02",
+          "title": "Create auth database tables",
+          "description": "Add migrations for user, account, session, and verification records.",
+          "acceptanceCriteria": [
+            "Auth tables included in migration set",
+            "Migrations apply cleanly on fresh DB",
+            "Schema supports email and OAuth providers"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Align with Better Auth adapter requirements."
+        },
+        {
+          "id": "US-101-T03",
+          "title": "Implement email sign up and login routes",
+          "description": "Expose API endpoints for email registration and sign in.",
+          "acceptanceCriteria": [
+            "Email sign up endpoint creates user",
+            "Email login endpoint starts session",
+            "Invalid credentials return safe error messages"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Rate limiting added in later epic if needed."
+        },
+        {
+          "id": "US-101-T04",
+          "title": "Implement Google OAuth flow",
+          "description": "Enable Google auth provider and callback handling.",
+          "acceptanceCriteria": [
+            "Login with Google button initiates provider flow",
+            "Callback creates or links account",
+            "OAuth failures handled with user-friendly error state"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Require explicit redirect URI config."
+        },
+        {
+          "id": "US-101-T05",
+          "title": "Implement session persistence",
+          "description": "Store and validate sessions so auth survives page refresh.",
+          "acceptanceCriteria": [
+            "Session cookie configured with secure defaults",
+            "Current user endpoint returns authenticated user",
+            "Refreshing app keeps logged-in state"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use HTTP-only cookies."
+        },
+        {
+          "id": "US-101-T06",
+          "title": "Create auth UI screens",
+          "description": "Build login and sign up UI flows in web app.",
+          "acceptanceCriteria": [
+            "Login form supports email/password",
+            "Sign up form validates required fields",
+            "Google OAuth action available in auth UI"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep public discovery routes accessible."
+        }
+      ]
+    },
+    {
+      "id": "US-102",
+      "title": "Protected API routes",
+      "description": "As the system, I must protect host-only endpoints.",
+      "acceptanceCriteria": [
+        "Unauthenticated users cannot create listings",
+        "Auth middleware validates session"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use Hono middleware.",
+      "tasks": [
+        {
+          "id": "US-102-T01",
+          "title": "Add session validation middleware",
+          "description": "Implement reusable Hono middleware to attach authenticated user context.",
+          "acceptanceCriteria": [
+            "Middleware validates incoming session",
+            "User context available to protected handlers",
+            "Invalid sessions return 401"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep middleware composable."
+        },
+        {
+          "id": "US-102-T02",
+          "title": "Protect listing mutation routes",
+          "description": "Apply middleware to create, update, and publish listing endpoints.",
+          "acceptanceCriteria": [
+            "Create listing route requires auth",
+            "Update listing route requires auth",
+            "Publish listing route requires auth"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Read-only routes remain public."
+        },
+        {
+          "id": "US-102-T03",
+          "title": "Enforce owner-level authorization",
+          "description": "Ensure authenticated user can only mutate resources they own.",
+          "acceptanceCriteria": [
+            "Owner mismatch returns 403",
+            "Owner checks enforced in service layer",
+            "Authorization failures logged with request context"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Prepare for role-based expansion later."
+        },
+        {
+          "id": "US-102-T04",
+          "title": "Add route protection tests",
+          "description": "Write tests covering anonymous and authenticated access patterns.",
+          "acceptanceCriteria": [
+            "Anonymous listing create test fails with 401",
+            "Authenticated listing create test succeeds",
+            "Unauthorized owner action test fails with 403"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use API integration tests."
+        }
+      ]
+    },
+    {
+      "id": "US-103",
+      "title": "User profile management",
+      "description": "As a user, I want to update my profile.",
+      "acceptanceCriteria": [
+        "Display name editable",
+        "Avatar upload works",
+        "Home location saved"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-103-T01",
+          "title": "Add profile schema fields",
+          "description": "Extend user model to store display name, avatar URL, and home location.",
+          "acceptanceCriteria": [
+            "Migration adds required profile columns",
+            "Columns allow null for backwards compatibility",
+            "Updated types exported in shared package"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Keep location as structured lat/lng fields."
+        },
+        {
+          "id": "US-103-T02",
+          "title": "Create profile read and update endpoints",
+          "description": "Expose authenticated endpoints for fetching and updating current user profile.",
+          "acceptanceCriteria": [
+            "GET profile returns current user profile",
+            "PATCH profile updates editable fields",
+            "Input validation rejects malformed payloads"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Only current user can update self."
+        },
+        {
+          "id": "US-103-T03",
+          "title": "Implement avatar upload flow",
+          "description": "Add upload flow for profile avatar and persist returned file URL.",
+          "acceptanceCriteria": [
+            "UI supports selecting avatar image",
+            "Server validates file type and size",
+            "Saved profile includes uploaded avatar URL"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Temporary local storage is acceptable for MVP."
+        },
+        {
+          "id": "US-103-T04",
+          "title": "Build profile settings UI",
+          "description": "Create account settings page for editing profile fields.",
+          "acceptanceCriteria": [
+            "Display name field editable",
+            "Home location can be set and saved",
+            "Success and error states shown clearly"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Reuse form primitives from design system."
+        }
+      ]
+    }
+  ]
+}

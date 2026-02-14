@@ -1,0 +1,166 @@
+{
+  "project": "Hidden Gems Marketplace",
+  "branchName": "feature/discovery",
+  "description": "Build search, feed, and map discovery experience using Tailwind, shadcn, and mapcn.",
+  "userStories": [
+    {
+      "id": "US-401",
+      "title": "Browse feed",
+      "description": "As a user, I want to see nearby listings.",
+      "acceptanceCriteria": [
+        "Listings ordered by date",
+        "Distance filter works"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-401-T01",
+          "title": "Create feed listings API",
+          "description": "Implement public endpoint returning published listings with pagination.",
+          "acceptanceCriteria": [
+            "API returns published listings only",
+            "Results sorted by newest first by default",
+            "Pagination params validated and applied"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Cursor pagination preferred."
+        },
+        {
+          "id": "US-401-T02",
+          "title": "Add distance filtering logic",
+          "description": "Filter feed results based on user location and selected radius.",
+          "acceptanceCriteria": [
+            "Radius filter accepts defined values",
+            "Distance computed from listing coordinates",
+            "Results outside radius excluded"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Fallback to no-distance filter when location absent."
+        },
+        {
+          "id": "US-401-T03",
+          "title": "Build feed page UI",
+          "description": "Create listing feed page with filter controls and cards.",
+          "acceptanceCriteria": [
+            "Feed page renders listing cards",
+            "Distance filter control updates query",
+            "Empty state shown when no listings match"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Mobile-first responsive layout."
+        },
+        {
+          "id": "US-401-T04",
+          "title": "Add feed performance guardrails",
+          "description": "Add indexes and query constraints for stable feed response times.",
+          "acceptanceCriteria": [
+            "Indexes added for published status and createdAt",
+            "Feed query plan reviewed",
+            "Reasonable response time with seeded dataset"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Set baseline with local seed data."
+        },
+        {
+          "id": "US-401-T05",
+          "title": "Add feed tests",
+          "description": "Cover ordering and distance filtering behavior with test cases.",
+          "acceptanceCriteria": [
+            "API test confirms date ordering",
+            "API test confirms distance filtering",
+            "UI test covers filter interaction"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Use stable fixture coordinates."
+        }
+      ]
+    },
+    {
+      "id": "US-402",
+      "title": "Map view",
+      "description": "As a user, I want to see listings on a map.",
+      "acceptanceCriteria": [
+        "Pins render",
+        "Clicking pin shows preview",
+        "Cluster when zoomed out"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-402-T01",
+          "title": "Create map listings API",
+          "description": "Serve lightweight geospatial listing payload for map rendering.",
+          "acceptanceCriteria": [
+            "API returns id, title, lat, lng, and preview fields",
+            "Only published listings returned",
+            "Bounding box filter supported"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep payload minimal for map speed."
+        },
+        {
+          "id": "US-402-T02",
+          "title": "Render map pins",
+          "description": "Load listing points onto interactive map as markers.",
+          "acceptanceCriteria": [
+            "Pins appear for fetched listings",
+            "Map updates pins when viewport changes",
+            "No duplicate pins after refetch"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Debounce viewport-based requests."
+        },
+        {
+          "id": "US-402-T03",
+          "title": "Add pin preview card interaction",
+          "description": "Show listing preview panel when user clicks map marker.",
+          "acceptanceCriteria": [
+            "Marker click opens preview card",
+            "Preview shows title, image, and link",
+            "Clicking elsewhere closes preview"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Support both desktop and mobile layouts."
+        },
+        {
+          "id": "US-402-T04",
+          "title": "Enable marker clustering",
+          "description": "Group nearby pins at lower zoom levels for readability.",
+          "acceptanceCriteria": [
+            "Cluster markers appear when zoomed out",
+            "Cluster expands into individual pins on zoom in",
+            "Cluster counts are accurate"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Tune cluster radius for city-scale density."
+        },
+        {
+          "id": "US-402-T05",
+          "title": "Add map interaction tests",
+          "description": "Verify pin render, preview behavior, and clustering logic.",
+          "acceptanceCriteria": [
+            "Map API test verifies bounding box behavior",
+            "UI test covers marker preview interaction",
+            "Cluster behavior covered in integration test"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Mock map library where needed."
+        }
+      ]
+    }
+  ]
+}
