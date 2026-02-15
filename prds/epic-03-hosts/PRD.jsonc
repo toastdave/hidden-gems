@@ -21,13 +21,14 @@
           "title": "Add hosts table migration",
           "description": "Create database table for host profiles and ownership relation.",
           "acceptanceCriteria": [
-            "Hosts table includes id, name, ownerUserId",
+            "Hosts table includes id, ownerUserId, type, and name",
+            "Hosts table includes optional contact email and phone fields",
             "Foreign key to users enforced",
             "Migration applies and rolls forward cleanly"
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Add createdAt and updatedAt fields."
+          "notes": "Add createdAt and updatedAt fields; default location can be added as optional."
         },
         {
           "id": "US-201-T02",

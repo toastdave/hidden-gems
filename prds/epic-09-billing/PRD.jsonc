@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/billing-polar",
-  "description": "Integrate Polar as merchant of record for freemium subscriptions and enforce feature gates.",
+  "description": "Integrate Polar as merchant of record for freemium subscriptions and enforce feature gates on Railway-hosted services.",
   "userStories": [
     {
       "id": "US-801",
@@ -19,11 +19,11 @@
         {
           "id": "US-801-T01",
           "title": "Define billing and entitlement schema",
-          "description": "Add tables for customer mapping, subscriptions, and feature entitlements.",
+          "description": "Add plans, user entitlements, and billing event tables for freemium and subscription tracking.",
           "acceptanceCriteria": [
-            "Schema maps internal user to Polar customer id",
-            "Subscription status fields captured",
-            "Entitlement table supports feature gate checks"
+            "plans table defines free and paid tiers with feature payload",
+            "user_entitlements maps internal user to active plan and provider subscription identifiers",
+            "billing_events stores provider event ids with unique idempotency constraint"
           ],
           "priority": 1,
           "passes": false,
@@ -49,7 +49,8 @@
           "acceptanceCriteria": [
             "Webhook signature verification enforced",
             "Relevant subscription events parsed",
-            "Failed processing returns retryable status when needed"
+            "Failed processing returns retryable status when needed",
+            "Webhook endpoint is configured with Railway public domain and environment secret"
           ],
           "priority": 1,
           "passes": false,
@@ -101,7 +102,8 @@
           "acceptanceCriteria": [
             "Checkout endpoint test verifies auth and payload",
             "Webhook test verifies idempotency",
-            "Feature gate test verifies premium restrictions"
+            "Feature gate test verifies premium restrictions",
+            "Test fixtures cover Railway URL-based webhook callback paths"
           ],
           "priority": 1,
           "passes": false,

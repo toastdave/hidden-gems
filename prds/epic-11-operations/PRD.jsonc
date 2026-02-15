@@ -81,6 +81,73 @@
           "notes": "Keep runbook concise and practical."
         }
       ]
+    },
+    {
+      "id": "US-1002",
+      "title": "Railway deployment operations",
+      "description": "As a developer, I want predictable Railway deployments with safe environment and rollback controls.",
+      "acceptanceCriteria": [
+        "Railway GitHub integration deploys web and api on configured branch updates",
+        "Environment variable contract is documented per service",
+        "Rollback and failed deploy triage flow is documented and tested"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "tasks": [
+        {
+          "id": "US-1002-T01",
+          "title": "Define Railway service mapping",
+          "description": "Document and validate which repository paths map to Railway web and api services.",
+          "acceptanceCriteria": [
+            "Web service path and start command documented",
+            "API service path and start command documented",
+            "Branch-to-environment mapping is explicit"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Prefer one project with separate services."
+        },
+        {
+          "id": "US-1002-T02",
+          "title": "Document environment variable contract",
+          "description": "List required env vars for web, api, database, auth, and billing integrations.",
+          "acceptanceCriteria": [
+            "DATABASE_URL contract defined for API runtime",
+            "Auth and Polar webhook secrets are documented",
+            "Variable ownership and rotation guidance included"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Do not commit secret values."
+        },
+        {
+          "id": "US-1002-T03",
+          "title": "Define deployment verification checklist",
+          "description": "Create post-deploy checks for API health, web reachability, and critical integration endpoints.",
+          "acceptanceCriteria": [
+            "Checklist includes API health check and basic DB connectivity",
+            "Checklist includes web app smoke route check",
+            "Checklist includes billing webhook endpoint reachability"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Keep checklist short enough for every release."
+        },
+        {
+          "id": "US-1002-T04",
+          "title": "Define rollback and incident response",
+          "description": "Document how to rollback a bad deploy and recover service quickly.",
+          "acceptanceCriteria": [
+            "Rollback trigger criteria documented",
+            "Rollback procedure documented for web and api services",
+            "Post-incident follow-up checklist documented"
+          ],
+          "priority": 2,
+          "passes": false,
+          "notes": "Tie incidents to correlation IDs where possible."
+        }
+      ]
     }
   ]
 }

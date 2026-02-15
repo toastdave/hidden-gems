@@ -32,9 +32,10 @@
         {
           "id": "US-101-T02",
           "title": "Create auth database tables",
-          "description": "Add migrations for user, account, session, and verification records.",
+          "description": "Add migrations for users, auth accounts, auth sessions, and verification records.",
           "acceptanceCriteria": [
-            "Auth tables included in migration set",
+            "users table includes email, verification timestamp, and profile fields",
+            "auth_accounts and auth_sessions tables are included in migration set",
             "Migrations apply cleanly on fresh DB",
             "Schema supports email and OAuth providers"
           ],
@@ -66,7 +67,7 @@
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Require explicit redirect URI config."
+          "notes": "Require explicit redirect URI config for Railway deployment domains."
         },
         {
           "id": "US-101-T05",

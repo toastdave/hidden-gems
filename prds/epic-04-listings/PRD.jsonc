@@ -21,6 +21,8 @@
           "description": "Create listing table with draft and published state fields.",
           "acceptanceCriteria": [
             "Listings table includes status enum",
+            "Listings table includes hostId, createdByUserId, title, type, startAt, and timezone",
+            "Listings table includes location coordinates and location text field",
             "Draft status is default",
             "Ownership relation to host is enforced"
           ],

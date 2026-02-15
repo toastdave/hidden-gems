@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/platform-foundation",
-  "description": "Establish the containerized monorepo foundation for the Hidden Gems web app. Stack: Bun + Hono API, React (Tailwind + shadcn), Postgres, shared TypeScript packages. Everything must run via Docker Compose locally and support CI container builds.",
+  "description": "Establish the containerized monorepo foundation for the Hidden Gems web app. Stack: Bun + Hono API, React (Tailwind + shadcn), Postgres, shared TypeScript packages. Everything must run via Docker Compose locally and deploy through Railway GitHub integration.",
   "userStories": [
     {
       "id": "US-001",
@@ -177,8 +177,8 @@
       "tasks": [
         {
           "id": "US-003-T01",
-          "title": "Select migration toolchain",
-          "description": "Set up Drizzle or SQL migration framework in packages/db.",
+          "title": "Setup migration toolchain",
+          "description": "Set up Drizzle migration framework in packages/db.",
           "acceptanceCriteria": [
             "Migration tooling config committed",
             "Database credentials loaded from env",
@@ -194,6 +194,7 @@
           "description": "Add first migration with core tables needed for listings foundation.",
           "acceptanceCriteria": [
             "Migration file created with timestamp naming",
+            "Initial migration includes MVP tables: users, hosts, listings, media, listing_photos, favorites, plans, user_entitlements, billing_events",
             "Up migration applies cleanly",
             "Down strategy documented if tool supports"
           ],
@@ -244,60 +245,60 @@
     },
     {
       "id": "US-004",
-      "title": "CI pipeline validation",
-      "description": "As a developer, I want CI to validate code quality and container builds.",
+      "title": "PR validation and Railway deployment flow",
+      "description": "As a developer, I want reliable quality checks before merge and automatic deploys through Railway.",
       "acceptanceCriteria": [
-        "Lint and typecheck run on PR",
-        "Tests pass in CI",
-        "Docker build succeeds"
+        "Lint, typecheck, test, and build checks are documented and run before merge",
+        "Railway auto-deploys web and api services from connected GitHub branches",
+        "Deployment status is visible in Railway with clear rollback path"
       ],
       "priority": 1,
       "passes": false,
-      "notes": "No deployment required yet.",
+      "notes": "Deployment uses Railway GitHub integration; quality checks remain required before merge.",
       "tasks": [
         {
           "id": "US-004-T01",
-          "title": "Create CI workflow file",
-          "description": "Add pull request workflow with deterministic checkout and setup steps.",
+          "title": "Configure Railway GitHub integration",
+          "description": "Connect repository and services in Railway for branch-based automatic deployments.",
           "acceptanceCriteria": [
-            "CI triggers on PR open and update",
-            "Bun runtime installed in workflow",
-            "Dependencies install successfully"
+            "Railway project is connected to the GitHub repository",
+            "Web and API services are mapped to correct build and start settings",
+            "Pushes to deployment branch trigger Railway auto-deploy"
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Target GitHub Actions."
+          "notes": "Use Railway-native deploy pipeline instead of GitHub Actions deployment."
         },
         {
           "id": "US-004-T02",
-          "title": "Add lint and typecheck jobs",
-          "description": "Run lint and typecheck commands across all workspaces.",
+          "title": "Define pre-merge quality checks",
+          "description": "Standardize lint, typecheck, test, and build commands for pull request validation.",
           "acceptanceCriteria": [
-            "Lint job fails on violations",
-            "Typecheck job fails on TS errors",
-            "Jobs report clear logs"
+            "Root commands for lint, typecheck, test, and build are documented",
+            "Checks fail fast and produce actionable output",
+            "Merge policy requires successful quality checks before release branch promotion"
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Keep runtime under reasonable limits."
+          "notes": "Checks can run in preferred tooling, but deployment ownership stays in Railway."
         },
         {
           "id": "US-004-T03",
-          "title": "Add test execution job",
-          "description": "Run unit and integration tests suitable for CI context.",
+          "title": "Add Railway deployment verification checklist",
+          "description": "Define smoke tests and release checks after each Railway deployment.",
           "acceptanceCriteria": [
-            "Test command executes in CI",
-            "Failing tests block merge",
-            "Test summary visible in logs"
+            "Checklist includes web reachability and API health verification",
+            "Checklist includes database connectivity verification for API service",
+            "Rollback steps are documented for failed deployment checks"
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Mark TODO if tests not yet implemented."
+          "notes": "Keep checks quick and repeatable."
         },
         {
           "id": "US-004-T04",
           "title": "Validate Docker image builds",
-          "description": "Build web and api container images in CI to catch Docker regressions.",
+          "description": "Build web and api container images as part of release readiness and parity checks.",
           "acceptanceCriteria": [
             "Web image build succeeds",
             "API image build succeeds",
@@ -309,12 +310,12 @@
         },
         {
           "id": "US-004-T05",
-          "title": "Add required status check docs",
-          "description": "Document expected CI checks and branch protection recommendations.",
+          "title": "Add release and status check docs",
+          "description": "Document required quality checks, Railway deploy flow, and promotion expectations.",
           "acceptanceCriteria": [
-            "README lists required checks",
-            "Failure triage guidance added",
-            "Contribution docs reference CI expectations"
+            "README lists required pre-merge quality checks",
+            "Docs define Railway branch-to-environment mapping",
+            "Failure triage and rollback guidance added"
           ],
           "priority": 2,
           "passes": false,

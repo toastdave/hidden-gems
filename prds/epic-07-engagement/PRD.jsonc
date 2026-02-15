@@ -20,7 +20,7 @@
           "title": "Add favorites schema",
           "description": "Create join table for user favorites on listings.",
           "acceptanceCriteria": [
-            "favorites table includes userId and listingId",
+            "favorites table includes id, userId, listingId, and createdAt",
             "Unique constraint prevents duplicate favorite",
             "Foreign keys enforce referential integrity"
           ],

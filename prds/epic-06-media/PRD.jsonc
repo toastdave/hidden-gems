@@ -19,11 +19,11 @@
         {
           "id": "US-501-T01",
           "title": "Define listing media schema",
-          "description": "Create table for listing image metadata and ordering.",
+          "description": "Create media and listing_photos tables for reusable image metadata and listing gallery ordering.",
           "acceptanceCriteria": [
-            "Listing media table includes listingId and file URL",
-            "Sort order field supports gallery ordering",
-            "Foreign key with cascade behavior defined"
+            "media table includes ownerUserId, storage key, content type, and byte size",
+            "listing_photos table maps listingId to mediaId with sort order",
+            "Foreign keys and cascade behavior are defined for listing gallery cleanup"
           ],
           "priority": 1,
           "passes": false,
