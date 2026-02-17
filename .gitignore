@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+
+# environment variables
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Bun
+bun.lock
+
+# Drizzle
+packages/db/drizzle/meta/

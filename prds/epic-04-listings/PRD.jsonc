@@ -7,10 +7,7 @@
       "id": "US-301",
       "title": "Create draft listing",
       "description": "As a host, I want to create a draft listing.",
-      "acceptanceCriteria": [
-        "Draft saved in database",
-        "Not visible publicly"
-      ],
+      "acceptanceCriteria": ["Draft saved in database", "Not visible publicly"],
       "priority": 1,
       "passes": false,
       "notes": "",
@@ -88,11 +85,7 @@
       "id": "US-302",
       "title": "Location picker",
       "description": "As a host, I want to drop a pin on a map.",
-      "acceptanceCriteria": [
-        "Mapcn map renders",
-        "Click sets lat/lng",
-        "Coordinates saved"
-      ],
+      "acceptanceCriteria": ["Mapcn map renders", "Click sets lat/lng", "Coordinates saved"],
       "priority": 1,
       "passes": false,
       "notes": "",
@@ -155,10 +148,7 @@
       "id": "US-303",
       "title": "Publish listing",
       "description": "As a host, I want to publish my listing.",
-      "acceptanceCriteria": [
-        "Required fields validated",
-        "Listing visible in feed and map"
-      ],
+      "acceptanceCriteria": ["Required fields validated", "Listing visible in feed and map"],
       "priority": 1,
       "passes": false,
       "notes": "",

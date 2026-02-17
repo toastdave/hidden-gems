@@ -7,10 +7,7 @@
       "id": "US-1001",
       "title": "Structured logging",
       "description": "As a developer, I want structured API logs.",
-      "acceptanceCriteria": [
-        "Every request has correlation ID",
-        "Errors logged with stack trace"
-      ],
+      "acceptanceCriteria": ["Every request has correlation ID", "Errors logged with stack trace"],
       "priority": 2,
       "passes": false,
       "notes": "",

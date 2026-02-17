@@ -7,10 +7,7 @@
       "id": "US-901",
       "title": "Report listing",
       "description": "As a user, I want to report spam listings.",
-      "acceptanceCriteria": [
-        "Report stored in database",
-        "Admin can view reports"
-      ],
+      "acceptanceCriteria": ["Report stored in database", "Admin can view reports"],
       "priority": 2,
       "passes": false,
       "notes": "",

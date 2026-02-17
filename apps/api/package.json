@@ -1,0 +1,17 @@
+{
+  "name": "@hidden-gems/api",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No tests yet'"
+  },
+  "dependencies": {
+    "@hidden-gems/db": "workspace:*",
+    "@hidden-gems/shared": "workspace:*",
+    "hono": "^4.11.9"
+  },
+  "devDependencies": {}
+}

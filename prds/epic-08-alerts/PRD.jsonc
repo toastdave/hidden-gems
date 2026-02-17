@@ -7,10 +7,7 @@
       "id": "US-701",
       "title": "Create search alert",
       "description": "As a user, I want to save a search.",
-      "acceptanceCriteria": [
-        "Alert saved with radius + filters",
-        "User can enable/disable"
-      ],
+      "acceptanceCriteria": ["Alert saved with radius + filters", "User can enable/disable"],
       "priority": 2,
       "passes": false,
       "notes": "",

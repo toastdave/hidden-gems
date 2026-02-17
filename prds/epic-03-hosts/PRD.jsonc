@@ -7,11 +7,7 @@
       "id": "US-201",
       "title": "Create host profile",
       "description": "As a user, I want to create a host identity.",
-      "acceptanceCriteria": [
-        "Host name required",
-        "User becomes owner",
-        "Host stored in database"
-      ],
+      "acceptanceCriteria": ["Host name required", "User becomes owner", "Host stored in database"],
       "priority": 1,
       "passes": false,
       "notes": "",

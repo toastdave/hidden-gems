@@ -7,10 +7,7 @@
       "id": "US-601",
       "title": "Favorite listing",
       "description": "As a user, I want to save listings.",
-      "acceptanceCriteria": [
-        "Toggle favorite works",
-        "Favorites list page exists"
-      ],
+      "acceptanceCriteria": ["Toggle favorite works", "Favorites list page exists"],
       "priority": 1,
       "passes": false,
       "notes": "",

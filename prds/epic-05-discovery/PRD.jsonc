@@ -7,10 +7,7 @@
       "id": "US-401",
       "title": "Browse feed",
       "description": "As a user, I want to see nearby listings.",
-      "acceptanceCriteria": [
-        "Listings ordered by date",
-        "Distance filter works"
-      ],
+      "acceptanceCriteria": ["Listings ordered by date", "Distance filter works"],
       "priority": 1,
       "passes": false,
       "notes": "",

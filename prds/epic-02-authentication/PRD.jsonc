@@ -167,11 +167,7 @@
       "id": "US-103",
       "title": "User profile management",
       "description": "As a user, I want to update my profile.",
-      "acceptanceCriteria": [
-        "Display name editable",
-        "Avatar upload works",
-        "Home location saved"
-      ],
+      "acceptanceCriteria": ["Display name editable", "Avatar upload works", "Home location saved"],
       "priority": 2,
       "passes": false,
       "notes": "",
