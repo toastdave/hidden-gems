@@ -16,110 +16,96 @@ const meResult = await fetchApiJson<{ user: { email?: string } | null }>(
   },
 );
 const me = meResult.data ?? { user: null };
-const billingResult = await fetchApiJson<Record<string, unknown>>(`${apiBase}/billing/status`, {
-  headers: {
-    cookie: Astro.request.headers.get("cookie") ?? "",
-  },
-});
-const billingStatus = billingResult.data ?? {};
-const isPremium = Boolean(billingStatus.premium);
 ---
 
 <Layout title="Hidden Gems | Discover">
-  <section class="mb-5 overflow-hidden rounded-2xl border border-white/50 bg-card/85 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/80 sm:p-8">
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-      <div class="max-w-3xl space-y-3">
-        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Public discovery</p>
-        <h1 class="text-3xl leading-tight sm:text-5xl">Find hidden gems near you, then save the ones you love.</h1>
-        <p class="max-w-2xl text-sm text-muted-foreground sm:text-base">
-          Browse instantly with no signup required. Save favorites, alerts, and premium discovery tools when you are ready.
-        </p>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 text-xs">
-        <span class="rounded-full border px-3 py-1">Live listings</span>
-        <span class="rounded-full border px-3 py-1">Map-first discovery</span>
-        <span class="rounded-full border px-3 py-1">Freemium upgrades</span>
-        <span class="rounded-full border px-3 py-1">Plan: {isPremium ? "Premium" : "Free"}</span>
-      </div>
-    </div>
-
-    <div class="mt-6 grid gap-3 lg:grid-cols-[1fr,auto]">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr,180px,180px]">
-        <label class="space-y-1">
-          <span class="text-xs text-muted-foreground">Search city, neighborhood, or keyword</span>
-          <input
-            id="listing-search"
-            class="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
-            type="search"
-            placeholder="Try: coffee walk, live music, waterfront"
-          />
-        </label>
-        <label class="space-y-1">
-          <span class="text-xs text-muted-foreground">Type</span>
-          <select id="listing-type" class="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">All types</option>
-            <option value="event">Event</option>
-            <option value="activity">Activity</option>
-            <option value="place">Place</option>
-          </select>
-        </label>
-        <label class="space-y-1">
-          <span class="text-xs text-muted-foreground">Sort</span>
-          <select id="listing-sort" class="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
-            <option value="newest">Newest</option>
-            <option value="a-z">Title A-Z</option>
-          </select>
-        </label>
+  <section class="mb-4 rounded-2xl border bg-card p-3 shadow-sm sm:p-4">
+    <div class="grid gap-2 lg:grid-cols-[1fr,auto] lg:items-center">
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr,120px,120px,120px]">
+        <input
+          id="listing-search"
+          class="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+          type="search"
+          placeholder="Search neighborhood or keyword"
+        />
+        <select id="listing-radius" class="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+          <option value="">Any distance</option>
+          <option value="25">25 mi</option>
+          <option value="50">50 mi</option>
+          <option value="100">100 mi</option>
+          <option value="250">250 mi</option>
+        </select>
+        <select id="listing-type" class="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+          <option value="">All types</option>
+          <option value="event">Event</option>
+          <option value="activity">Activity</option>
+          <option value="place">Place</option>
+        </select>
+        <select id="listing-sort" class="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+          <option value="nearby">Nearby</option>
+          <option value="newest">Newest</option>
+          <option value="a-z">Title A-Z</option>
+        </select>
       </div>
       <div class="inline-flex rounded-lg border p-1">
-        <button class="view-toggle rounded-md px-3 py-1.5 text-sm font-medium" data-view="split">Split</button>
-        <button class="view-toggle rounded-md px-3 py-1.5 text-sm font-medium" data-view="list">List</button>
-        <button class="view-toggle rounded-md px-3 py-1.5 text-sm font-medium" data-view="map">Map</button>
+        <button class="view-toggle rounded-md px-3 py-1 text-xs font-medium" data-view="split">Split</button>
+        <button class="view-toggle rounded-md px-3 py-1 text-xs font-medium" data-view="list">List</button>
+        <button class="view-toggle rounded-md px-3 py-1 text-xs font-medium" data-view="map">Map</button>
       </div>
     </div>
 
     {!feedResult.ok ? <p class="mt-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">API unavailable: {feedResult.error}</p> : null}
 
-    <p class="mt-4 text-sm text-muted-foreground">
-      Browsing as <span class="font-medium text-foreground">{me.user?.email ?? "guest"}</span>
-      {me.user ? " - saved actions are unlocked." : " - sign in when you want to save favorites and alerts."}
-    </p>
   </section>
 
-  <section id="discover-shell" class="grid gap-4 lg:grid-cols-[minmax(0,1fr),440px]">
-    <div id="listing-column" class="space-y-3">
+  <section id="discover-shell" class="grid gap-4 lg:grid-cols-2">
+    <div id="listing-column" class="space-y-3 lg:max-h-[calc(100vh-9.5rem)] lg:overflow-y-auto lg:pr-2">
       <p id="listing-count" class="text-sm text-muted-foreground"></p>
-      <div id="listing-results" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div id="listing-results" class="space-y-2.5">
         {
           feedData.listings.map((listing: any) => (
             <article
-              class="listing-card overflow-hidden rounded-xl border border-white/70 bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10"
+              class="listing-card group grid cursor-pointer overflow-hidden rounded-xl border border-white/70 bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 sm:grid-cols-[32%,minmax(0,1fr)]"
               data-id={listing.id}
               data-title={listing.title ?? ""}
               data-location={listing.locationText ?? ""}
               data-type={listing.type ?? ""}
               data-created={listing.createdAt ?? ""}
+              data-lat={listing.lat ?? ""}
+              data-lng={listing.lng ?? ""}
+              data-url={`/listings/${listing.id}`}
             >
-              <div class="h-28 bg-[linear-gradient(120deg,hsl(199_87%_86%),hsl(30_94%_87%))]" />
-              <div class="space-y-2 p-4">
+              <img
+                src={listing.coverImageUrl ?? `https://picsum.photos/seed/${listing.id}/640/420`}
+                alt={listing.title ?? "Listing photo"}
+                loading="lazy"
+                class="h-20 w-full object-cover sm:h-full"
+              />
+              <div class="space-y-1.5 p-2.5 sm:p-3">
                 <div class="flex items-start justify-between gap-2">
-                  <h3 class="line-clamp-2 text-base font-semibold">{listing.title}</h3>
+                  <h3 class="line-clamp-1 text-sm font-semibold">{listing.title}</h3>
                   <span class="rounded-full bg-secondary px-2 py-1 text-xs font-medium">{listing.type}</span>
                 </div>
-                <p class="line-clamp-1 text-sm text-muted-foreground">{listing.locationText ?? "Location pending"}</p>
+                <p class="line-clamp-1 text-xs text-muted-foreground">{listing.locationText ?? "Location pending"}</p>
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="rounded-full border px-2 py-1 text-xs">{listing.status}</span>
+                  <span class="rounded-full border px-2 py-0.5 text-[11px]">{listing.status}</span>
                 </div>
-                <div class="flex items-center gap-2 pt-1">
+                <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
                   <a
                     href={`/listings/${listing.id}`}
-                    class="inline-flex h-9 flex-1 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary"
+                    class="inline-flex h-7 items-center justify-center rounded-md border px-2.5 text-[11px] font-medium transition hover:bg-secondary"
                   >
                     View details
                   </a>
                   <button
                     type="button"
-                    class="favorite-toggle inline-flex h-9 items-center justify-center rounded-md bg-secondary px-3 text-sm font-medium"
+                    class="map-focus inline-flex h-7 items-center justify-center rounded-md border px-2.5 text-[11px] font-medium transition hover:bg-secondary"
+                  >
+                    Show on map
+                  </button>
+                  <button
+                    type="button"
+                    class="favorite-toggle inline-flex h-7 items-center justify-center rounded-md bg-secondary px-2.5 text-[11px] font-medium"
                     data-listing-id={listing.id}
                   >
                     Save
@@ -138,37 +124,10 @@ const isPremium = Boolean(billingStatus.premium);
     </div>
 
     <aside id="map-column" class="lg:sticky lg:top-24">
-      <div class="overflow-hidden rounded-2xl border border-white/70 bg-card shadow-sm dark:border-white/10">
+      <div class="h-[46vh] overflow-hidden rounded-2xl border border-white/70 bg-card shadow-sm dark:border-white/10 lg:h-[calc(100vh-9.5rem)]">
         <DiscoveryMap client:load apiBase={apiClientBase} />
       </div>
     </aside>
-  </section>
-
-  <section class="mt-8 rounded-2xl border border-white/50 bg-card/90 p-4 dark:border-white/10">
-    <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Freemium plans</p>
-        <h2 class="text-2xl">Start free and upgrade only when you need power tools.</h2>
-      </div>
-      <a href="/billing" class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary">View plans</a>
-    </div>
-    <div class="grid gap-4 md:grid-cols-3">
-      <article class="space-y-2 rounded-lg border bg-background/80 p-4">
-        <p class="text-xs uppercase tracking-[0.1em] text-muted-foreground">Viewer Free</p>
-        <h3 class="text-xl">Browse instantly</h3>
-        <p class="text-sm text-muted-foreground">No account needed for discovery feed, listing details, and live map exploration.</p>
-      </article>
-      <article class="space-y-2 rounded-lg border bg-background/80 p-4">
-        <p class="text-xs uppercase tracking-[0.1em] text-muted-foreground">Viewer Plus</p>
-        <h3 class="text-xl">Save and track</h3>
-        <p class="text-sm text-muted-foreground">Unlimited saved listings, advanced alert controls, and richer discovery filters.</p>
-      </article>
-      <article class="space-y-2 rounded-lg border bg-background/80 p-4">
-        <p class="text-xs uppercase tracking-[0.1em] text-muted-foreground">Creator Pro</p>
-        <h3 class="text-xl">Grow listings</h3>
-        <p class="text-sm text-muted-foreground">More active listings, improved media reach, and stronger host-side visibility tools.</p>
-      </article>
-    </div>
   </section>
 
   <script is:inline define:vars={{ apiClientBase, isAuthenticated: Boolean(me.user) }}>
@@ -176,8 +135,24 @@ const isPremium = Boolean(billingStatus.premium);
     const listingResults = document.getElementById("listing-results");
     const listingCount = document.getElementById("listing-count");
     const searchInput = document.getElementById("listing-search");
+    const radiusSelect = document.getElementById("listing-radius");
     const typeSelect = document.getElementById("listing-type");
     const sortSelect = document.getElementById("listing-sort");
+
+    let userLocation = null;
+
+    const distanceKm = (lat1, lng1, lat2, lng2) => {
+      const earth = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLng = ((lng2 - lng1) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      return earth * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    };
 
     const setCount = () => {
       const visible = cards.filter((card) => card.style.display !== "none").length;
@@ -187,17 +162,49 @@ const isPremium = Boolean(billingStatus.premium);
     const applyFilters = () => {
       const query = searchInput.value.trim().toLowerCase();
       const selectedType = typeSelect.value;
+      const selectedRadiusMiles = Number(radiusSelect.value || "0");
+      const selectedRadiusKm = selectedRadiusMiles > 0 ? selectedRadiusMiles * 1.60934 : 0;
 
       for (const card of cards) {
         const title = (card.dataset.title || "").toLowerCase();
         const location = (card.dataset.location || "").toLowerCase();
         const type = card.dataset.type || "";
+        const lat = Number(card.dataset.lat || "");
+        const lng = Number(card.dataset.lng || "");
         const matchesQuery = !query || title.includes(query) || location.includes(query);
         const matchesType = !selectedType || type === selectedType;
-        card.style.display = matchesQuery && matchesType ? "" : "none";
+
+        let matchesRadius = true;
+        if (selectedRadiusKm > 0 && userLocation) {
+          const canMeasure = Number.isFinite(lat) && Number.isFinite(lng);
+          if (!canMeasure) {
+            matchesRadius = false;
+          } else {
+            const distance = distanceKm(userLocation.lat, userLocation.lng, lat, lng);
+            matchesRadius = distance <= selectedRadiusKm;
+          }
+        }
+
+        card.style.display = matchesQuery && matchesType && matchesRadius ? "" : "none";
       }
 
       const sorted = [...cards].sort((a, b) => {
+        if (sortSelect.value === "nearby") {
+          if (!userLocation) {
+            return 0;
+          }
+          const aLat = Number(a.dataset.lat);
+          const aLng = Number(a.dataset.lng);
+          const bLat = Number(b.dataset.lat);
+          const bLng = Number(b.dataset.lng);
+          const aDistance = Number.isFinite(aLat) && Number.isFinite(aLng)
+            ? distanceKm(userLocation.lat, userLocation.lng, aLat, aLng)
+            : Number.POSITIVE_INFINITY;
+          const bDistance = Number.isFinite(bLat) && Number.isFinite(bLng)
+            ? distanceKm(userLocation.lat, userLocation.lng, bLat, bLng)
+            : Number.POSITIVE_INFINITY;
+          return aDistance - bDistance;
+        }
         if (sortSelect.value === "a-z") {
           return (a.dataset.title || "").localeCompare(b.dataset.title || "");
         }
@@ -212,14 +219,54 @@ const isPremium = Boolean(billingStatus.premium);
     };
 
     searchInput.addEventListener("input", applyFilters);
+    radiusSelect.addEventListener("change", applyFilters);
     typeSelect.addEventListener("change", applyFilters);
     sortSelect.addEventListener("change", applyFilters);
     applyFilters();
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          radiusSelect.value = "50";
+          sortSelect.value = "nearby";
+          applyFilters();
+          window.dispatchEvent(
+            new CustomEvent("focus-user-location", {
+              detail: {
+                lat: userLocation.lat,
+                lng: userLocation.lng,
+              },
+            }),
+          );
+        },
+        () => {
+          // leave default sorting if location permission is denied
+        },
+        { timeout: 7000 },
+      );
+    }
 
     const mapColumn = document.getElementById("map-column");
     const listingColumn = document.getElementById("listing-column");
     const shell = document.getElementById("discover-shell");
     const toggles = document.querySelectorAll(".view-toggle");
+
+    const setSelectedCard = (selectedId) => {
+      for (const card of cards) {
+        const active = card.getAttribute("data-id") === selectedId;
+        card.classList.toggle("ring-2", active);
+        card.classList.toggle("ring-primary/60", active);
+      }
+      if (!selectedId) return;
+      const selectedCard = cards.find((card) => card.getAttribute("data-id") === selectedId);
+      if (selectedCard) {
+        selectedCard.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    };
 
     const setActiveToggle = (activeView) => {
       for (const button of toggles) {
@@ -239,7 +286,7 @@ const isPremium = Boolean(billingStatus.premium);
         listingColumn.style.display = "block";
         mapColumn.style.display = "none";
       } else {
-        shell.className = "grid gap-4 lg:grid-cols-[minmax(0,1fr),440px]";
+        shell.className = "grid gap-4 lg:grid-cols-2";
         listingColumn.style.display = "block";
         mapColumn.style.display = "block";
       }
@@ -283,5 +330,53 @@ const isPremium = Boolean(billingStatus.premium);
         button.textContent = data.favorited ? "Saved" : "Save";
       });
     }
+
+    for (const card of cards) {
+      card.addEventListener("click", (event) => {
+        const target = event.target;
+        if (target instanceof Element && target.closest("a, button")) {
+          return;
+        }
+        setSelectedCard(card.getAttribute("data-id"));
+        const targetUrl = card.getAttribute("data-url");
+        if (targetUrl) {
+          window.location.href = targetUrl;
+        }
+      });
+    }
+
+    const focusButtons = document.querySelectorAll(".map-focus");
+    for (const button of focusButtons) {
+      button.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const card = target.closest(".listing-card");
+        if (!card) return;
+        const lat = Number(card.getAttribute("data-lat"));
+        const lng = Number(card.getAttribute("data-lng"));
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        setSelectedCard(card.getAttribute("data-id"));
+        setView("split");
+        window.dispatchEvent(
+          new CustomEvent("focus-listing-on-map", {
+            detail: {
+              id: card.getAttribute("data-id"),
+              title: card.getAttribute("data-title") || "Listing",
+              locationText: card.getAttribute("data-location") || null,
+              lat,
+              lng,
+            },
+          }),
+        );
+      });
+    }
+
+    window.addEventListener("listing-selected-on-map", (event) => {
+      const customEvent = event;
+      const selectedId = customEvent?.detail?.id;
+      if (selectedId) {
+        setSelectedCard(String(selectedId));
+      }
+    });
   </script>
 </Layout>

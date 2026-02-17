@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/discovery",
-  "description": "Build a modern, map-first discovery experience with guest browsing, integrated list/map views, and freemium conversion touchpoints.",
+  "description": "Build a modern, map-first discovery experience with guest browsing, integrated list/map views, compact controls, and location-aware defaults.",
   "userStories": [
     {
       "id": "US-401",
@@ -165,7 +165,8 @@
       "description": "As a guest, I want an immediate modern browse flow with list/map switching and low-friction upgrade paths.",
       "acceptanceCriteria": [
         "Home supports split, list-only, and map-only views",
-        "Search, type filter, and sort update visible listing cards",
+        "Search, type filter, radius filter, and sort update visible listing cards",
+        "When location is granted, map and list default to nearby area",
         "Guest users can browse freely and are prompted to sign in only on gated actions"
       ],
       "priority": 1,
@@ -223,6 +224,33 @@
           "priority": 1,
           "passes": true,
           "notes": "Dedicated route complements split discovery home."
+        },
+        {
+          "id": "US-403-T05",
+          "title": "Polish compact list-first desktop UX",
+          "description": "Refine discover UI to prioritize dense listing scan patterns and persistent map visibility.",
+          "acceptanceCriteria": [
+            "Desktop list view renders single stacked listing rows for rapid scanning",
+            "Split view uses 50/50 list-map layout with independent listing scroll",
+            "Top search/filter controls remain compact and unobtrusive",
+            "Map/list selection stays synchronized when focusing a listing"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Aligned to Airbnb-style browsing ergonomics without requiring auth."
+        },
+        {
+          "id": "US-403-T06",
+          "title": "Enable location-aware defaults",
+          "description": "Request browser geolocation to localize both map viewport and list sorting/filtering by nearby radius.",
+          "acceptanceCriteria": [
+            "On permission grant, map centers on user area",
+            "Nearby sort and default radius are applied automatically",
+            "Fallback behavior preserves functional browse experience when permission denied"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Uses client geolocation with graceful fallback."
         }
       ]
     }

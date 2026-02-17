@@ -1,5 +1,5 @@
 import { db, schema } from "@hidden-gems/db";
-import { and, desc, eq, gte, isNotNull, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, lte } from "drizzle-orm";
 import { ensureListingType, getPublishReadinessErrors, parseLatLng } from "../utils/listings";
 
 export async function createDraftListing(userId: string, payload: Record<string, unknown>) {
@@ -161,8 +161,36 @@ export async function getFeed(params: {
   }
   const hasNextPage = filtered.length > limit;
   const page = filtered.slice(0, limit);
+
+  const listingIds = page.map((listing) => listing.id);
+  let coverImageByListingId = new Map<string, string>();
+
+  if (listingIds.length > 0) {
+    const photoRows = await db
+      .select({
+        listingId: schema.listingPhotos.listingId,
+        url: schema.media.url,
+      })
+      .from(schema.listingPhotos)
+      .innerJoin(schema.media, eq(schema.media.id, schema.listingPhotos.mediaId))
+      .where(inArray(schema.listingPhotos.listingId, listingIds))
+      .orderBy(asc(schema.listingPhotos.sortOrder), asc(schema.listingPhotos.createdAt));
+
+    coverImageByListingId = photoRows.reduce((acc, row) => {
+      if (!acc.has(row.listingId)) {
+        acc.set(row.listingId, row.url);
+      }
+      return acc;
+    }, new Map<string, string>());
+  }
+
+  const listingsWithCovers = page.map((listing) => ({
+    ...listing,
+    coverImageUrl: coverImageByListingId.get(listing.id) ?? null,
+  }));
+
   const nextCursor = hasNextPage ? page.at(-1)?.createdAt?.toISOString() : null;
-  return { listings: page, nextCursor };
+  return { listings: listingsWithCovers, nextCursor };
 }
 
 export async function getMapListings(bboxRaw?: string) {

@@ -47,6 +47,47 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
+  const pendingUserFocusRef = useRef<{ longitude: number; latitude: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let rafId = 0;
+
+    const syncMapRef = () => {
+      if (cancelled) return;
+      if (mapRef.current) {
+        setMapInstance(mapRef.current);
+        return;
+      }
+      rafId = window.requestAnimationFrame(syncMapRef);
+    };
+
+    syncMapRef();
+
+    return () => {
+      cancelled = true;
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const focusMapOnUser = useCallback(
+    (coords: { longitude: number; latitude: number }) => {
+      const map = mapInstance;
+      if (!map) {
+        pendingUserFocusRef.current = coords;
+        return;
+      }
+
+      pendingUserFocusRef.current = null;
+      map.flyTo({
+        center: [coords.longitude, coords.latitude],
+        zoom: Math.max(map.getZoom(), 11),
+        duration: 700,
+      });
+    },
+    [mapInstance],
+  );
 
   const fetchListings = useCallback(
     async (bounds?: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => {
@@ -73,8 +114,35 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
     fetchListings();
   }, [fetchListings]);
 
+  useEffect(() => {
+    if (!("geolocation" in navigator)) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          longitude: position.coords.longitude,
+          latitude: position.coords.latitude,
+        };
+        setUserCoords(coords);
+        focusMapOnUser(coords);
+      },
+      () => {
+        // keep national default view when permission is denied
+      },
+      { timeout: 7000 },
+    );
+  }, [focusMapOnUser]);
+
+  useEffect(() => {
+    const pending = pendingUserFocusRef.current;
+    if (!pending || !mapInstance) return;
+    focusMapOnUser(pending);
+  }, [mapInstance, focusMapOnUser]);
+
   const handleViewportChange = useCallback(() => {
-    const map = mapRef.current;
+    const map = mapInstance;
     if (!map) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -87,16 +155,80 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
         maxLat: bounds.getNorth(),
       });
     }, 400);
-  }, [fetchListings]);
+  }, [fetchListings, mapInstance]);
 
   useEffect(() => {
-    const map = mapRef.current;
+    const map = mapInstance;
     if (!map) return;
     map.on("moveend", handleViewportChange);
     return () => {
       map.off("moveend", handleViewportChange);
     };
-  }, [handleViewportChange]);
+  }, [mapInstance, handleViewportChange]);
+
+  useEffect(() => {
+    const focusHandler = (event: Event) => {
+      const map = mapInstance;
+      if (!map) return;
+
+      const customEvent = event as CustomEvent<{
+        id: string;
+        title: string;
+        locationText: string | null;
+        lat: number;
+        lng: number;
+      }>;
+      const detail = customEvent.detail;
+      if (!detail) return;
+
+      map.flyTo({
+        center: [detail.lng, detail.lat],
+        zoom: Math.max(map.getZoom(), 14),
+        duration: 700,
+      });
+
+      window.dispatchEvent(
+        new CustomEvent("listing-selected-on-map", {
+          detail: { id: detail.id },
+        }),
+      );
+
+      setSelected({
+        id: detail.id,
+        title: detail.title,
+        locationText: detail.locationText,
+        lat: detail.lat,
+        lng: detail.lng,
+        status: "published",
+        coordinates: [detail.lng, detail.lat],
+      });
+    };
+
+    window.addEventListener("focus-listing-on-map", focusHandler as EventListener);
+    return () => {
+      window.removeEventListener("focus-listing-on-map", focusHandler as EventListener);
+    };
+  }, [mapInstance]);
+
+  useEffect(() => {
+    const userFocusHandler = (event: Event) => {
+      const customEvent = event as CustomEvent<{ lat: number; lng: number }>;
+      const detail = customEvent.detail;
+      if (!detail) return;
+
+      const coords = {
+        latitude: detail.lat,
+        longitude: detail.lng,
+      };
+      setUserCoords(coords);
+      focusMapOnUser(coords);
+    };
+
+    window.addEventListener("focus-user-location", userFocusHandler as EventListener);
+    return () => {
+      window.removeEventListener("focus-user-location", userFocusHandler as EventListener);
+    };
+  }, [focusMapOnUser]);
 
   const handlePointClick = useCallback(
     (feature: GeoJSON.Feature<GeoJSON.Point>, coordinates: [number, number]) => {
@@ -114,12 +246,17 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
         status: "published",
         coordinates,
       });
+      window.dispatchEvent(
+        new CustomEvent("listing-selected-on-map", {
+          detail: { id: props.id },
+        }),
+      );
     },
     [],
   );
 
   return (
-    <div className="relative h-[600px] w-full overflow-hidden rounded-lg border">
+    <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-lg border">
       <MapGL
         ref={mapRef}
         center={userCoords ? [userCoords.longitude, userCoords.latitude] : [-98.5795, 39.8283]}
