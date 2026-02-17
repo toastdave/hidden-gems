@@ -9,7 +9,7 @@
       "description": "As a user, I want to save a search.",
       "acceptanceCriteria": ["Alert saved with radius + filters", "User can enable/disable"],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -22,7 +22,7 @@
             "Created and updated timestamps included"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Store filters as structured JSON if needed."
         },
         {
@@ -35,7 +35,7 @@
             "Response returns created alert id"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Prevent abusive alert volume with limits later."
         },
         {
@@ -48,7 +48,7 @@
             "Updated state reflected in response"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Support batch toggles later if required."
         },
         {
@@ -61,7 +61,7 @@
             "Toggle switch enables or disables alert"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Require auth before creating alert."
         },
         {
@@ -74,7 +74,7 @@
             "Match results logged for future notification pipeline"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Notification delivery can be phased after matching logic."
         }
       ]

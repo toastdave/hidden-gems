@@ -80,6 +80,13 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/hidden_gems \
   bun run --filter @hidden-gems/db db:studio
 ```
 
+### Migration troubleshooting
+
+- `DATABASE_URL environment variable is required`: export `DATABASE_URL` before `db:migrate` and `db:seed`.
+- `connect ECONNREFUSED`: run `docker compose up postgres` and wait for healthcheck success.
+- Partial migration failure: fix the latest migration SQL and re-run `db:migrate` (forward-only strategy).
+- Duplicate seed records: keep stable seed IDs and unique keys unchanged.
+
 ## Quality Checks
 
 Run these before merging any PR:
@@ -99,3 +106,39 @@ Verify production images build correctly:
 docker build -f apps/web/Dockerfile -t hidden-gems-web .
 docker build -f apps/api/Dockerfile -t hidden-gems-api .
 ```
+
+## Runtime Environment Variables
+
+### API
+
+- `DATABASE_URL` (required): Postgres connection string.
+- `BETTER_AUTH_SECRET` (required outside local dev): Better Auth signing secret.
+- `BETTER_AUTH_URL` (recommended): API origin used by Better Auth.
+- `CLIENT_ORIGIN` (recommended): web origin used for OAuth and checkout redirects.
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (optional): Google OAuth provider credentials.
+- `POLAR_WEBHOOK_SECRET` (recommended): signature validation for billing webhooks.
+- `ADMIN_EMAILS` (optional): comma-separated list of moderation admins.
+
+### Web
+
+- `PUBLIC_API_BASE_URL` (optional): defaults to `http://localhost:3000`.
+- `API_INTERNAL_BASE_URL` (optional): SSR-only API base URL (use `http://api:3000` in Docker).
+
+## API Structure
+
+- `apps/api/src/index.ts`: app bootstrap only (middleware, Better Auth mount, route mount, error handler).
+- `apps/api/src/middleware/*`: request logging/correlation id, auth session context, auth guards, error handler.
+- `apps/api/src/routes/*`: route modules by domain.
+- `apps/api/src/controllers/*`: request/response orchestration per domain.
+- `apps/api/src/services/*`: domain business logic and DB operations.
+- `apps/api/src/utils/*`: shared helpers (auth, listings, billing signature, logging).
+
+## Implemented Feature Surface
+
+- Auth: native Better Auth endpoints under `/api/auth/*` (email/password, session, optional Google OAuth).
+- Hosts: host profile create/upsert and public host page.
+- Listings: draft create/update, publish, visibility filtering, feed and map APIs.
+- Engagement: favorites toggle/list.
+- Alerts: saved alerts create/list/toggle and worker skeleton route.
+- Billing: plans, checkout URL creation, webhook processing, entitlement status, premium gate endpoint.
+- Trust & Safety: listing reporting and admin moderation endpoints/pages.

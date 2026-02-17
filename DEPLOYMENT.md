@@ -1,84 +1,73 @@
-# Deployment Guide
+# Deployment and Operations Guide
 
-Hidden Gems uses [Railway](https://railway.app) for deployment via its native GitHub integration.
+## Railway Service Mapping
 
-## Railway Setup
+- Railway project: `hidden-gems` (single project, multi-service).
+- Service `web`:
+  - Root directory: `apps/web`
+  - Build command: `bun run build`
+  - Start command: `bun run preview --host 0.0.0.0 --port $PORT`
+- Service `api`:
+  - Root directory: `apps/api`
+  - Build command: `bun run build`
+  - Start command: `bun run dist/index.js`
+- Branch mapping:
+  - `main` -> production
+  - feature branches -> preview environments (enabled via Railway GitHub integration)
 
-### GitHub Integration
+## Environment Contract
 
-1. Connect the GitHub repository to a Railway project
-2. Configure branch-to-environment mapping:
-   - `main` branch deploys to **production**
-   - Feature branches can use Railway preview environments
+### API required
 
-### Service Configuration
+- `DATABASE_URL`
+- `AUTH_SECRET`
 
-#### Web Service
+### API integrations
 
-| Setting       | Value                          |
-|---------------|--------------------------------|
-| Root directory| `apps/web`                     |
-| Build command | `bun install && bun run build` |
-| Start command | `node ./dist/server/entry.mjs` |
-| Port          | `4321`                         |
+- `CLIENT_ORIGIN`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REDIRECT_URI`
+- `POLAR_WEBHOOK_SECRET`
+- `ADMIN_EMAILS`
 
-Environment variables:
-- `NODE_ENV=production`
-- `HOST=0.0.0.0`
-- `PORT=4321`
+### Web required
 
-#### API Service
+- `PUBLIC_API_BASE_URL`
 
-| Setting       | Value                          |
-|---------------|--------------------------------|
-| Root directory| `apps/api`                     |
-| Build command | `bun install`                  |
-| Start command | `bun run src/index.ts`         |
-| Port          | `3000`                         |
+## Release Verification Checklist
 
-Environment variables:
-- `NODE_ENV=production`
-- `DATABASE_URL` (provided by Railway Postgres plugin)
+Run after every deployment:
 
-#### Postgres
+1. Web reachability:
+   - Load `/` and `/auth` from deployed web URL.
+2. API health and DB:
+   - GET `/health` returns `{ status: "ok", database: true }`.
+3. Auth smoke:
+   - Create test account via `/api/auth/sign-up/email` and verify `/api/auth/get-session` returns user.
+4. Listings smoke:
+   - Create draft and publish listing with authenticated test account.
+   - Verify listing appears in `/listings/feed`.
+5. Billing webhook reachability:
+   - POST test payload to `/billing/webhook`.
+6. Moderation permissions:
+   - Non-admin denied for `/admin/reports`.
+   - Admin account can load report list.
 
-Provision via Railway's built-in PostgreSQL plugin. The `DATABASE_URL` is automatically injected into linked services.
+## Rollback Procedure
 
-## Pre-Merge Checklist
+1. Identify failed release:
+   - Compare deployment timestamp and `x-request-id` traces from API logs.
+2. Roll back service:
+   - Use Railway deployment history and redeploy previous successful build for impacted service.
+3. Validate rollback:
+   - Re-run release verification checklist.
+4. Post-incident follow-up:
+   - Capture root cause, blast radius, and remediation tasks.
+   - Add missing detection (healthcheck, alert, or log field) before next release.
 
-Before promoting code to a deployment branch:
+## Incident Triage Notes
 
-- [ ] `bun run lint` passes
-- [ ] `bun run typecheck` passes
-- [ ] `bun run test` passes
-- [ ] `bun run build` succeeds
-- [ ] Docker images build locally (see README)
-
-## Post-Deploy Verification
-
-After each Railway deployment:
-
-1. **Web reachability**: Visit the deployed web URL and confirm the page loads
-2. **API health**: `curl https://<api-domain>/health` returns `{"status":"ok"}`
-3. **Database connectivity**: The `/health` endpoint succeeding implies DB connection (once wired)
-4. **Smoke test**: Verify core user flows (browse listings, view detail page)
-
-## Rollback
-
-If a deployment fails verification:
-
-1. Open the Railway dashboard for the affected service
-2. Click the previous successful deployment
-3. Select **Redeploy** to roll back
-4. Investigate the failing deployment logs before re-attempting
-
-Railway keeps deployment history, so rollbacks are instant re-deploys of a prior build.
-
-## Troubleshooting
-
-| Symptom                        | Likely Cause                        | Fix                                      |
-|--------------------------------|-------------------------------------|------------------------------------------|
-| Web returns 502                | Build failed or port mismatch       | Check Railway build logs, verify PORT env |
-| API /health returns error      | Missing DATABASE_URL                | Link Postgres plugin to API service       |
-| Migrations not applied         | Migrations not run post-deploy      | Add migrate step to build command or run manually |
-| Workspace deps not found       | Root directory too narrow            | Ensure Railway root dir is correct        |
+- Use request correlation IDs (`x-request-id`) from client or logs.
+- API logs include request start/completion and error entries as JSON.
+- For auth/billing incidents, inspect cookie signing secret and webhook signature configuration first.

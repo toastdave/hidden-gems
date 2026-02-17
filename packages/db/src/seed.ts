@@ -60,7 +60,9 @@ async function seed() {
     .insert(hosts)
     .values({
       id: "host-sample-01",
-      userId: "user-sample-01",
+      ownerUserId: "user-sample-01",
+      type: "individual",
+      name: "Demo Host",
       bio: "Local guide and hidden gem enthusiast",
     })
     .onConflictDoNothing({ target: hosts.id })

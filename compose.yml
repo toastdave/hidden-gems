@@ -7,6 +7,8 @@ services:
       - 4321:4321
     environment:
       - NODE_ENV=development
+      - API_INTERNAL_BASE_URL=http://api:3000
+      - PUBLIC_API_BASE_URL=http://localhost:3000
     volumes:
       - .:/app
     depends_on:
@@ -22,6 +24,9 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hidden_gems
+      - BETTER_AUTH_URL=http://localhost:3000
+      - BETTER_AUTH_SECRET=dev-only-secret-change-me
+      - CLIENT_ORIGIN=http://localhost:4321
     volumes:
       - .:/app
     healthcheck:

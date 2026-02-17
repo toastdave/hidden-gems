@@ -13,7 +13,7 @@
         "Session persists across refresh"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Public browsing remains open.",
       "tasks": [
         {
@@ -26,7 +26,7 @@
             "Startup fails fast when critical auth env vars are missing"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Keep secrets in env files only."
         },
         {
@@ -40,7 +40,7 @@
             "Schema supports email and OAuth providers"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Align with Better Auth adapter requirements."
         },
         {
@@ -53,7 +53,7 @@
             "Invalid credentials return safe error messages"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Rate limiting added in later epic if needed."
         },
         {
@@ -66,7 +66,7 @@
             "OAuth failures handled with user-friendly error state"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Require explicit redirect URI config for Railway deployment domains."
         },
         {
@@ -79,7 +79,7 @@
             "Refreshing app keeps logged-in state"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Use HTTP-only cookies."
         },
         {
@@ -92,7 +92,7 @@
             "Google OAuth action available in auth UI"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Keep public discovery routes accessible."
         }
       ]
@@ -106,7 +106,7 @@
         "Auth middleware validates session"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Use Hono middleware.",
       "tasks": [
         {
@@ -119,7 +119,7 @@
             "Invalid sessions return 401"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Keep middleware composable."
         },
         {
@@ -132,7 +132,7 @@
             "Publish listing route requires auth"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Read-only routes remain public."
         },
         {
@@ -145,7 +145,7 @@
             "Authorization failures logged with request context"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Prepare for role-based expansion later."
         },
         {

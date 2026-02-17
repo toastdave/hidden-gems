@@ -11,6 +11,8 @@
   "dependencies": {
     "@hidden-gems/db": "workspace:*",
     "@hidden-gems/shared": "workspace:*",
+    "better-auth": "^1.4.18",
+    "drizzle-orm": "^0.38.4",
     "hono": "^4.11.9"
   },
   "devDependencies": {}

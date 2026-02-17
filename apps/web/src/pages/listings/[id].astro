@@ -1,0 +1,104 @@
+---
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
+import Layout from "../../layouts/Layout.astro";
+import { apiClientBase, apiServerBase, fetchApiJson } from "../../lib/api";
+
+const apiBase = apiServerBase;
+const listingId = Astro.params.id;
+const result = await fetchApiJson<{ listing: Record<string, unknown> }>(
+  `${apiBase}/listings/${listingId}`,
+  {
+    headers: { cookie: Astro.request.headers.get("cookie") ?? "" },
+  },
+);
+const data = result.data;
+---
+
+<Layout title="Listing Detail | Hidden Gems">
+  {
+    !result.ok || !data ? (
+      <Alert variant="destructive">
+        <AlertTitle>Listing not found</AlertTitle>
+        <AlertDescription>{result.error}</AlertDescription>
+      </Alert>
+    ) : (
+      <>
+        <Card>
+          <CardHeader>
+            <CardTitle>{data.listing.title}</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <div class="flex items-center gap-2">
+              <Badge variant="secondary">{data.listing.type}</Badge>
+              <Badge variant={data.listing.status === "published" ? "default" : "outline"}>
+                {data.listing.status}
+              </Badge>
+            </div>
+            <p class="text-sm text-muted-foreground">
+              Location: {data.listing.locationText ?? "No location set"}
+            </p>
+            <Button id="favorite-toggle" data-listing-id={data.listing.id}>Toggle Favorite</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle class="text-lg">Report Listing</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <form id="report-form" class="space-y-3">
+              <input type="hidden" name="listingId" value={data.listing.id} />
+              <Input name="reason" type="text" placeholder="Reason" required />
+              <Textarea name="details" rows={3} placeholder="Optional details" />
+              <Button type="submit" variant="secondary">Submit Report</Button>
+            </form>
+            <pre id="listing-detail-output" class="rounded-md border bg-muted p-3 text-xs"></pre>
+          </CardContent>
+        </Card>
+      </>
+    )
+  }
+
+  <script is:inline define:vars={{ apiClientBase }}>
+    const output = document.getElementById("listing-detail-output");
+    const setOutput = (value) => {
+      if (output) {
+        output.textContent = JSON.stringify(value, null, 2);
+      }
+    };
+
+    const favoriteButton = document.getElementById("favorite-toggle");
+    if (favoriteButton) {
+      favoriteButton.addEventListener("click", async () => {
+        const listingId = favoriteButton.getAttribute("data-listing-id");
+        const response = await fetch(`${apiClientBase}/favorites/toggle`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ listingId }),
+        });
+        setOutput(await response.json());
+      });
+    }
+
+    const reportForm = document.getElementById("report-form");
+    if (reportForm) {
+      reportForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = Object.fromEntries(new FormData(reportForm).entries());
+        const response = await fetch(`${apiClientBase}/reports`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+        setOutput(await response.json());
+      });
+    }
+  </script>
+</Layout>

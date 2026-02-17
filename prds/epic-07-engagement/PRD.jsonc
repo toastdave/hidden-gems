@@ -9,7 +9,7 @@
       "description": "As a user, I want to save listings.",
       "acceptanceCriteria": ["Toggle favorite works", "Favorites list page exists"],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -22,7 +22,7 @@
             "Foreign keys enforce referential integrity"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Include createdAt for sorting."
         },
         {
@@ -35,7 +35,7 @@
             "Cannot favorite unpublished or missing listing"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Use idempotent semantics."
         },
         {
@@ -48,7 +48,7 @@
             "Favorites sorted by most recently added"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Support future filtering."
         },
         {
@@ -61,7 +61,7 @@
             "Anonymous users are prompted to log in"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Optimistic updates are preferred."
         },
         {
@@ -74,7 +74,7 @@
             "Empty state shown when user has no favorites"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Add auth guard to page route."
         },
         {

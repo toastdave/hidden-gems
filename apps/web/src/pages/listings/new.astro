@@ -1,0 +1,157 @@
+---
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
+import { Button } from "../../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import Layout from "../../layouts/Layout.astro";
+import { apiClientBase, apiServerBase, fetchApiJson } from "../../lib/api";
+
+const apiBase = apiServerBase;
+const meResult = await fetchApiJson<{ user: { email?: string } | null }>(
+  `${apiBase}/api/auth/get-session`,
+  {
+    headers: { cookie: Astro.request.headers.get("cookie") ?? "" },
+  },
+);
+const me = meResult.data ?? { user: null };
+---
+
+<Layout title="Create Listing | Hidden Gems">
+  <Card>
+    <CardHeader>
+      <CardTitle>Create and Publish Listing</CardTitle>
+      <CardDescription>
+        Draft save, location coordinates, and publish validation are all wired in this form.
+      </CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-3">
+      {!meResult.ok ? (
+        <Alert variant="destructive">
+          <AlertTitle>API unavailable</AlertTitle>
+          <AlertDescription>{meResult.error}</AlertDescription>
+        </Alert>
+      ) : null}
+      <p class="text-sm text-muted-foreground">
+        User: <span class="font-medium text-foreground">{me.user?.email ?? "anonymous"}</span>
+      </p>
+    </CardContent>
+  </Card>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <Card>
+      <CardHeader><CardTitle class="text-lg">1) Create Draft</CardTitle></CardHeader>
+      <CardContent>
+        <form id="create-draft-form" class="space-y-3">
+          <div class="space-y-1">
+            <Label for="create-host-id">Host ID</Label>
+            <Input id="create-host-id" name="hostId" type="text" placeholder="Host ID" required />
+          </div>
+          <div class="space-y-1">
+            <Label for="create-title">Title</Label>
+            <Input id="create-title" name="title" type="text" placeholder="Listing title" required />
+          </div>
+          <div class="space-y-1">
+            <Label for="create-type">Type</Label>
+            <select
+              id="create-type"
+              name="type"
+              required
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="event">Event</option>
+              <option value="place">Place</option>
+              <option value="activity">Activity</option>
+            </select>
+          </div>
+          <Input name="locationText" type="text" placeholder="Location text" />
+          <div class="grid grid-cols-2 gap-2">
+            <Input name="lat" type="number" step="any" placeholder="Latitude" />
+            <Input name="lng" type="number" step="any" placeholder="Longitude" />
+          </div>
+          <Button type="submit" class="w-full">Create Draft</Button>
+        </form>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader><CardTitle class="text-lg">2) Update Draft</CardTitle></CardHeader>
+      <CardContent>
+        <form id="update-draft-form" class="space-y-3">
+          <Input name="listingId" type="text" placeholder="Listing ID" required />
+          <Input name="title" type="text" placeholder="Updated title" />
+          <Input name="description" type="text" placeholder="Description" />
+          <Input name="locationText" type="text" placeholder="Location text" />
+          <div class="grid grid-cols-2 gap-2">
+            <Input name="lat" type="number" step="any" placeholder="Latitude" />
+            <Input name="lng" type="number" step="any" placeholder="Longitude" />
+          </div>
+          <Button type="submit" class="w-full" variant="secondary">Save Draft Changes</Button>
+        </form>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader><CardTitle class="text-lg">3) Publish</CardTitle></CardHeader>
+      <CardContent class="space-y-3">
+        <form id="publish-form" class="space-y-3">
+          <Input name="listingId" type="text" placeholder="Listing ID" required />
+          <Button type="submit" class="w-full">Publish Listing</Button>
+        </form>
+        <pre id="listing-output" class="rounded-md border bg-muted p-3 text-xs"></pre>
+      </CardContent>
+    </Card>
+  </div>
+
+  <script is:inline define:vars={{ apiClientBase }}>
+    const output = document.getElementById("listing-output");
+    const setOutput = (value) => (output.textContent = JSON.stringify(value, null, 2));
+
+    async function wireForm(formId, handler) {
+      const form = document.getElementById(formId);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = Object.fromEntries(new FormData(form).entries());
+        const data = await handler(payload);
+        setOutput(data);
+      });
+    }
+
+    wireForm("create-draft-form", async (payload) => {
+      const response = await fetch(`${apiClientBase}/listings/drafts`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      return response.json();
+    });
+
+    wireForm("update-draft-form", async (payload) => {
+      const listingId = payload.listingId;
+      delete payload.listingId;
+      const response = await fetch(`${apiClientBase}/listings/${listingId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      return response.json();
+    });
+
+    wireForm("publish-form", async (payload) => {
+      const response = await fetch(`${apiClientBase}/listings/${payload.listingId}/publish`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+      });
+      return response.json();
+    });
+  </script>
+</Layout>

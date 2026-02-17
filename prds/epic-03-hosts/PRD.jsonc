@@ -9,7 +9,7 @@
       "description": "As a user, I want to create a host identity.",
       "acceptanceCriteria": ["Host name required", "User becomes owner", "Host stored in database"],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -23,7 +23,7 @@
             "Migration applies and rolls forward cleanly"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Add createdAt and updatedAt fields; default location can be added as optional."
         },
         {
@@ -36,7 +36,7 @@
             "Validation errors return field-level details"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Reserve profanity filtering for later."
         },
         {
@@ -49,7 +49,7 @@
             "Response returns created host payload"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Prevent owner spoofing in payload."
         },
         {
@@ -62,7 +62,7 @@
             "Successful create routes user to host dashboard"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Disable submit while request is in flight."
         },
         {
@@ -90,7 +90,7 @@
         "Displays host info"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -103,7 +103,7 @@
             "Missing host returns 404"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Paginate listings response."
         },
         {
@@ -116,7 +116,7 @@
             "Page is accessible without login"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Use SEO-friendly metadata."
         },
         {
@@ -129,7 +129,7 @@
             "Cards link to listing detail pages"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Reuse feed listing card component where possible."
         },
         {

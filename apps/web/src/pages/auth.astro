@@ -1,0 +1,143 @@
+---
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import Layout from "../layouts/Layout.astro";
+import { apiClientBase } from "../lib/api";
+
+const apiBase = apiClientBase;
+---
+
+<Layout title="Auth | Hidden Gems">
+  <Card>
+    <CardHeader>
+      <CardTitle>Authentication</CardTitle>
+      <CardDescription>
+        Email/password auth is active. Google OAuth works when OAuth env vars are configured.
+      </CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-3">
+      <div class="flex flex-wrap gap-2">
+        <Button id="google-signin" type="button">Continue with Google</Button>
+        <Button id="refresh-session" type="button" variant="outline">Refresh Session</Button>
+      </div>
+      <pre id="auth-output" class="rounded-md border bg-muted p-3 text-xs"></pre>
+    </CardContent>
+  </Card>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Sign Up</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form id="signup-form" class="space-y-3">
+          <div class="space-y-1">
+            <Label for="signup-email">Email</Label>
+            <Input id="signup-email" name="email" type="email" placeholder="Email" required />
+          </div>
+          <div class="space-y-1">
+            <Label for="signup-password">Password</Label>
+            <Input
+              id="signup-password"
+              name="password"
+              type="password"
+              placeholder="Password (min 8 chars)"
+              minlength="8"
+              required
+            />
+          </div>
+          <div class="space-y-1">
+            <Label for="signup-display-name">Display name</Label>
+            <Input id="signup-display-name" name="displayName" type="text" placeholder="Display name (optional)" />
+          </div>
+          <Button type="submit" class="w-full">Create Account</Button>
+        </form>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-lg">Login</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form id="login-form" class="space-y-3">
+          <div class="space-y-1">
+            <Label for="login-email">Email</Label>
+            <Input id="login-email" name="email" type="email" placeholder="Email" required />
+          </div>
+          <div class="space-y-1">
+            <Label for="login-password">Password</Label>
+            <Input id="login-password" name="password" type="password" placeholder="Password" required />
+          </div>
+          <div class="flex gap-2">
+            <Button type="submit" class="flex-1">Login</Button>
+            <Button id="logout-button" type="button" variant="outline" class="flex-1">Logout</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  </div>
+
+  <script is:inline define:vars={{ apiBase }}>
+    const output = document.getElementById("auth-output");
+    const setOutput = (data) => (output.textContent = JSON.stringify(data, null, 2));
+    const requestJson = async (url, options = {}) => {
+      try {
+        const response = await fetch(url, options);
+        const data = await response.json().catch(() => null);
+        return { ok: response.ok, status: response.status, data };
+      } catch (error) {
+        return {
+          ok: false,
+          status: 0,
+          data: { error: error instanceof Error ? error.message : "Unable to connect to API service." },
+        };
+      }
+    };
+
+    async function submitForm(formId, endpoint) {
+      const form = document.getElementById(formId);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        if (endpoint === "/api/auth/sign-up/email") {
+          payload.name = payload.displayName || payload.email?.split?.("@")?.[0] || "User";
+          delete payload.displayName;
+        }
+        const response = await requestJson(`${apiBase}${endpoint}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+        setOutput(response.data);
+      });
+    }
+
+    submitForm("signup-form", "/api/auth/sign-up/email");
+    submitForm("login-form", "/api/auth/sign-in/email");
+
+    document.getElementById("logout-button").addEventListener("click", async () => {
+      const response = await requestJson(`${apiBase}/api/auth/sign-out`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setOutput(response.data);
+    });
+
+    document.getElementById("refresh-session").addEventListener("click", async () => {
+      const response = await requestJson(`${apiBase}/api/auth/get-session`, {
+        credentials: "include",
+      });
+      setOutput(response.data);
+    });
+
+    document.getElementById("google-signin").addEventListener("click", () => {
+      const callbackURL = `${window.location.origin}/`;
+      window.location.href = `${apiBase}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackURL)}`;
+    });
+  </script>
+</Layout>

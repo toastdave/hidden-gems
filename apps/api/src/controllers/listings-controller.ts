@@ -1,0 +1,59 @@
+import type { Context } from "hono";
+import { readBearerUserId, requireAuth, requireUserId } from "../middleware/auth-guards";
+import {
+  createDraftListing,
+  getFeed,
+  getListingById,
+  getMapListings,
+  publishListing,
+  updateDraftListing,
+} from "../services/listings-service";
+import type { ApiEnv } from "../types/api";
+
+export async function createDraftHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+  const payload = (await c.req.json()) as Record<string, unknown>;
+  const result = await createDraftListing(requireUserId(c), payload);
+  if ("error" in result) return c.json(result, result.status);
+  return c.json({ listing: result.listing }, result.status);
+}
+
+export async function updateDraftHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+  const payload = (await c.req.json()) as Record<string, unknown>;
+  const result = await updateDraftListing(requireUserId(c), c.req.param("id"), payload);
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json({ listing: result.listing });
+}
+
+export async function publishHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+  const result = await publishListing(requireUserId(c), c.req.param("id"));
+  if ("error" in result) return c.json(result, result.status);
+  return c.json({ listing: result.listing });
+}
+
+export async function feedHandler(c: Context<ApiEnv>) {
+  const result = await getFeed({
+    limit: c.req.query("limit"),
+    cursor: c.req.query("cursor"),
+    radiusKm: c.req.query("radiusKm"),
+    lat: c.req.query("lat"),
+    lng: c.req.query("lng"),
+  });
+  return c.json(result);
+}
+
+export async function mapHandler(c: Context<ApiEnv>) {
+  const result = await getMapListings(c.req.query("bbox"));
+  return c.json(result);
+}
+
+export async function getListingHandler(c: Context<ApiEnv>) {
+  const result = await getListingById(c.req.param("id"), readBearerUserId(c));
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json({ listing: result.listing });
+}

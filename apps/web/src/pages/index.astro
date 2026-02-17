@@ -1,8 +1,101 @@
 ---
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import type { Listing } from "@hidden-gems/shared";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import Layout from "../layouts/Layout.astro";
+import { apiClientBase, apiServerBase, fetchApiJson } from "../lib/api";
+
+const apiBase = apiServerBase;
+const feedResult = await fetchApiJson<{ listings: Listing[] }>(`${apiBase}/listings/feed?limit=20`);
+const feedData = feedResult.data ?? { listings: [] };
+const meResult = await fetchApiJson<{ user: { email?: string } | null }>(
+  `${apiBase}/api/auth/get-session`,
+  {
+    headers: {
+      cookie: Astro.request.headers.get("cookie") ?? "",
+    },
+  },
+);
+const me = meResult.data ?? { user: null };
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Hidden Gems | Discovery Feed">
+  <Card>
+    <CardHeader>
+      <CardTitle>Discovery Feed</CardTitle>
+      <CardDescription>
+        Published listings only. Drafts are filtered from public queries.
+      </CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-3">
+      {!feedResult.ok ? (
+        <Alert variant="destructive">
+          <AlertTitle>API unavailable</AlertTitle>
+          <AlertDescription>{feedResult.error}</AlertDescription>
+        </Alert>
+      ) : null}
+      <p class="text-sm text-muted-foreground">
+        Signed in as: <span class="font-medium text-foreground">{me.user?.email ?? "anonymous"}</span>
+      </p>
+    </CardContent>
+  </Card>
+
+  <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+    {feedData.listings.length === 0 ? (
+      <Card class="md:col-span-2 lg:col-span-3">
+        <CardContent class="pt-6 text-sm text-muted-foreground">No listings published yet.</CardContent>
+      </Card>
+    ) : (
+      feedData.listings.map((listing: any) => (
+        <Card>
+          <CardHeader class="space-y-2">
+            <CardTitle class="text-lg">{listing.title}</CardTitle>
+            <CardDescription>{listing.locationText ?? "No location text yet"}</CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <div class="flex items-center gap-2">
+              <Badge variant="secondary">{listing.type}</Badge>
+              <Badge variant={listing.status === "published" ? "default" : "outline"}>
+                {listing.status}
+              </Badge>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" asChild><a href={`/listings/${listing.id}`}>View details</a></Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                class="favorite-toggle"
+                data-listing-id={listing.id}
+              >
+                Toggle Favorite
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))
+    )}
+  </div>
+
+  <script is:inline define:vars={{ apiClientBase }}>
+    const buttons = document.querySelectorAll(".favorite-toggle");
+    for (const button of buttons) {
+      button.addEventListener("click", async () => {
+        const listingId = button.getAttribute("data-listing-id");
+        const response = await fetch(`${apiClientBase}/favorites/toggle`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ listingId }),
+        });
+        if (!response.ok) {
+          alert("Login required or listing unavailable.");
+          return;
+        }
+        const data = await response.json();
+        button.textContent = data.favorited ? "Unfavorite" : "Favorite";
+      });
+    }
+  </script>
 </Layout>

@@ -1,0 +1,65 @@
+---
+import { Button } from "../../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import Layout from "../../layouts/Layout.astro";
+import { apiClientBase } from "../../lib/api";
+
+const apiBase = apiClientBase;
+---
+
+<Layout title="Create Host | Hidden Gems">
+  <Card>
+    <CardHeader>
+      <CardTitle>Create Host Profile</CardTitle>
+      <CardDescription>
+        Creates or updates your host identity. Ownership is derived from the authenticated user session.
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <form id="host-form" class="space-y-3">
+        <div class="space-y-1">
+          <Label for="host-name">Host name</Label>
+          <Input id="host-name" name="name" type="text" placeholder="Host name" minlength="2" maxlength="80" required />
+        </div>
+        <div class="space-y-1">
+          <Label for="host-contact-email">Contact email</Label>
+          <Input id="host-contact-email" name="contactEmail" type="email" placeholder="Contact email (optional)" />
+        </div>
+        <div class="space-y-1">
+          <Label for="host-contact-phone">Contact phone</Label>
+          <Input id="host-contact-phone" name="contactPhone" type="text" placeholder="Contact phone (optional)" />
+        </div>
+        <Button type="submit">Save Host</Button>
+      </form>
+      <pre id="host-output" class="mt-4 rounded-md border bg-muted p-3 text-xs"></pre>
+    </CardContent>
+  </Card>
+
+  <script is:inline define:vars={{ apiBase }}>
+    const form = document.getElementById("host-form");
+    const output = document.getElementById("host-output");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const response = await fetch(`${apiBase}/hosts`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      output.textContent = JSON.stringify(data, null, 2);
+      if (response.ok && data.host?.id) {
+        window.location.href = `/hosts/${data.host.id}`;
+      }
+    });
+  </script>
+</Layout>

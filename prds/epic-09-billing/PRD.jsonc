@@ -13,7 +13,7 @@
         "User sees premium status reflected in UI"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Use idempotent webhook handling.",
       "tasks": [
         {
@@ -26,7 +26,7 @@
             "billing_events stores provider event ids with unique idempotency constraint"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Track effective dates for entitlement periods."
         },
         {
@@ -39,7 +39,7 @@
             "Client receives valid redirect URL"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Validate plan inputs server-side only."
         },
         {
@@ -53,7 +53,7 @@
             "Webhook endpoint is configured with Railway public domain and environment secret"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Log event id for traceability."
         },
         {
@@ -66,7 +66,7 @@
             "Entitlement updates remain deterministic"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Use unique constraint on external event id."
         },
         {
@@ -79,7 +79,7 @@
             "Upgrade CTA appears for non-premium users"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Never rely on client-only gate checks."
         },
         {
@@ -92,7 +92,7 @@
             "Upgrade button triggers checkout flow"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Polling fallback allowed for status propagation."
         },
         {

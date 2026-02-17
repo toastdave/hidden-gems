@@ -9,7 +9,7 @@
       "description": "As a developer, I want structured API logs.",
       "acceptanceCriteria": ["Every request has correlation ID", "Errors logged with stack trace"],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -22,7 +22,7 @@
             "Sensitive fields are redacted"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Use one shared logger instance per process."
         },
         {
@@ -35,7 +35,7 @@
             "Request id returned in response headers"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Use UUID or ULID format."
         },
         {
@@ -48,7 +48,7 @@
             "Logs include correlation id field"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Avoid noisy logs for static routes."
         },
         {
@@ -61,7 +61,7 @@
             "Production logs include safe error metadata"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Do not leak secrets in error messages."
         },
         {
@@ -74,7 +74,7 @@
             "Docs include common production triage steps"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Keep runbook concise and practical."
         }
       ]
@@ -115,7 +115,7 @@
             "Variable ownership and rotation guidance included"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Do not commit secret values."
         },
         {
@@ -128,7 +128,7 @@
             "Checklist includes billing webhook endpoint reachability"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Keep checklist short enough for every release."
         },
         {
@@ -141,7 +141,7 @@
             "Post-incident follow-up checklist documented"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Tie incidents to correlation IDs where possible."
         }
       ]

@@ -9,7 +9,7 @@
       "description": "As a host, I want to create a draft listing.",
       "acceptanceCriteria": ["Draft saved in database", "Not visible publicly"],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -24,7 +24,7 @@
             "Ownership relation to host is enforced"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Track publishedAt separately from createdAt."
         },
         {
@@ -37,7 +37,7 @@
             "Response returns listing id and status"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Associate listing with host owner."
         },
         {
@@ -50,7 +50,7 @@
             "Updated timestamp changes on save"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Use field-level validation."
         },
         {
@@ -63,7 +63,7 @@
             "User sees clear draft saved feedback"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Autosave can be deferred if needed."
         },
         {
@@ -76,7 +76,7 @@
             "Regression tests cover visibility rules"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Centralize status filters in data layer."
         }
       ]
@@ -150,7 +150,7 @@
       "description": "As a host, I want to publish my listing.",
       "acceptanceCriteria": ["Required fields validated", "Listing visible in feed and map"],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -163,7 +163,7 @@
             "Missing fields return actionable error details"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Start with minimal required fields."
         },
         {
@@ -176,7 +176,7 @@
             "Status changes to published and publishedAt is set"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Disallow republish of deleted listings."
         },
         {
@@ -189,7 +189,7 @@
             "Successful publish redirects to listing view"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Use confirmation dialog only if needed."
         },
         {
@@ -202,7 +202,7 @@
             "End-to-end test covers publish to discover flow"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Use deterministic test fixtures."
         }
       ]

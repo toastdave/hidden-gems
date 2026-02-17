@@ -9,7 +9,7 @@
       "description": "As a user, I want to see nearby listings.",
       "acceptanceCriteria": ["Listings ordered by date", "Distance filter works"],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -22,7 +22,7 @@
             "Pagination params validated and applied"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Cursor pagination preferred."
         },
         {
@@ -35,7 +35,7 @@
             "Results outside radius excluded"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Fallback to no-distance filter when location absent."
         },
         {
@@ -48,7 +48,7 @@
             "Empty state shown when no listings match"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Mobile-first responsive layout."
         },
         {
@@ -61,7 +61,7 @@
             "Reasonable response time with seeded dataset"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Set baseline with local seed data."
         },
         {
@@ -102,7 +102,7 @@
             "Bounding box filter supported"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Keep payload minimal for map speed."
         },
         {
