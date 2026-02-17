@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/alerts",
-  "description": "Allow users to create saved search alerts and receive notifications.",
+  "description": "Allow users to create saved search alerts and manage them in a unified Saved workspace with favorites.",
   "userStories": [
     {
       "id": "US-701",
@@ -53,16 +53,17 @@
         },
         {
           "id": "US-701-T04",
-          "title": "Build saved alerts UI",
-          "description": "Add UI controls to save current search and manage alerts.",
+          "title": "Build unified saved alerts UI",
+          "description": "Add UI controls to save current search and manage alerts from a consolidated Saved page.",
           "acceptanceCriteria": [
             "User can create alert from discovery filters",
             "Alerts list shows radius and key filters",
-            "Toggle switch enables or disables alert"
+            "Toggle switch enables or disables alert",
+            "Alerts management coexists with favorites in a single saved workspace"
           ],
           "priority": 2,
           "passes": true,
-          "notes": "Require auth before creating alert."
+          "notes": "Require auth before creating alert; use contextual auth prompt for guests."
         },
         {
           "id": "US-701-T05",

@@ -1,12 +1,21 @@
 ---
 import "../styles/globals.css";
+import { ModeToggle } from "../components/mode-toggle";
 import { Button } from "../components/ui/button";
+import { apiServerBase, fetchApiJson } from "../lib/api";
 
 interface Props {
   title?: string;
 }
 
 const { title = "Hidden Gems" } = Astro.props;
+const sessionResult = await fetchApiJson<{ user: { email?: string } | null }>(
+  `${apiServerBase}/api/auth/get-session`,
+  {
+    headers: { cookie: Astro.request.headers.get("cookie") ?? "" },
+  },
+);
+const currentUser = sessionResult.data?.user ?? null;
 ---
 
 <!doctype html>
@@ -16,24 +25,134 @@ const { title = "Hidden Gems" } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline>
+      const getThemePreference = () => {
+        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+          return localStorage.getItem("theme");
+        }
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      };
+      const isDark = getThemePreference() === "dark";
+      document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+
+      if (typeof localStorage !== "undefined") {
+        const observer = new MutationObserver(() => {
+          const isDark = document.documentElement.classList.contains("dark");
+          localStorage.setItem("theme", isDark ? "dark" : "light");
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+      }
+    </script>
   </head>
-  <body class="min-h-screen bg-background text-foreground antialiased">
-    <header class="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-      <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <a href="/" class="text-base font-semibold tracking-tight">Hidden Gems</a>
-        <nav class="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="sm" asChild><a href="/auth">Auth</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/hosts/new">Host</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/listings/new">New Listing</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/favorites">Favorites</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/alerts">Alerts</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/billing">Billing</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/admin/reports">Moderation</a></Button>
+  <body class="app-shell min-h-screen bg-background text-foreground antialiased">
+    <header class="sticky top-0 z-30 border-b border-white/40 bg-background/88 backdrop-blur-xl dark:border-white/10 dark:bg-background/70">
+      <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <a href="/" class="flex items-center gap-2">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+            HG
+          </span>
+          <span class="text-sm font-semibold tracking-[0.04em]">Hidden Gems</span>
+        </a>
+
+        <nav class="hidden items-center gap-1 md:flex">
+          <Button variant="ghost" size="sm" asChild><a href="/">Discover</a></Button>
+          <Button variant="ghost" size="sm" asChild><a href="/listings/map">Map</a></Button>
+          {currentUser ? (
+            <>
+              <Button variant="ghost" size="sm" asChild><a href="/saved">Saved</a></Button>
+              <Button variant="ghost" size="sm" asChild><a href="/hosts/new">Host</a></Button>
+            </>
+          ) : null}
         </nav>
+
+        <div class="flex items-center gap-2">
+          {currentUser ? (
+            <details class="group relative">
+              <summary class="list-none">
+                <Button variant="outline" size="sm" type="button">
+                  {currentUser.email?.split("@")[0] ?? "Account"}
+                </Button>
+              </summary>
+              <div class="absolute right-0 mt-2 w-44 space-y-1 rounded-xl border bg-card p-2 shadow-lg">
+                <a class="block rounded-md px-3 py-2 text-sm hover:bg-muted" href="/billing">Plan and billing</a>
+                <a class="block rounded-md px-3 py-2 text-sm hover:bg-muted" href="/saved">Saved and alerts</a>
+                <a class="block rounded-md px-3 py-2 text-sm hover:bg-muted" href="/auth">Sign out / session</a>
+              </div>
+            </details>
+          ) : (
+            <Button size="sm" asChild><a href="/auth">Sign in</a></Button>
+          )}
+          <ModeToggle client:load />
+        </div>
       </div>
     </header>
-    <main class="mx-auto w-full max-w-6xl space-y-4 px-4 py-6">
+    <main class="mx-auto w-full max-w-screen-2xl px-4 py-6 sm:px-6 lg:px-8">
       <slot />
     </main>
+
+    <dialog id="auth-modal" class="w-[min(92vw,480px)] rounded-2xl border border-white/60 bg-card p-0 text-foreground shadow-2xl backdrop:bg-black/50 dark:border-white/10">
+      <div class="space-y-4 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Sign in required</p>
+            <h2 class="mt-1 text-2xl">Save and personalize your discovery.</h2>
+            <p id="auth-modal-message" class="mt-2 text-sm text-muted-foreground">
+              Create an account to save listings, manage alerts, and unlock premium controls.
+            </p>
+          </div>
+          <button id="auth-modal-close" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md border text-sm hover:bg-secondary">X</button>
+        </div>
+
+        <div class="grid gap-2 sm:grid-cols-2">
+          <a href="/auth" class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+            Continue with email
+          </a>
+          <a href="/auth" class="inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium hover:bg-secondary">
+            Continue with Google
+          </a>
+        </div>
+
+        <p class="text-xs text-muted-foreground">You can still browse listings and the map without signing in.</p>
+      </div>
+    </dialog>
+
+    <script is:inline>
+      const authModal = document.getElementById("auth-modal");
+      const authModalMessage = document.getElementById("auth-modal-message");
+      const authModalClose = document.getElementById("auth-modal-close");
+
+      const openAuthModal = (message) => {
+        if (!authModal) return;
+        if (authModalMessage && message) {
+          authModalMessage.textContent = message;
+        }
+        if (typeof authModal.showModal === "function") {
+          authModal.showModal();
+        } else {
+          window.location.href = "/auth";
+        }
+      };
+
+      window.addEventListener("open-auth-modal", (event) => {
+        const message = event?.detail?.message;
+        openAuthModal(message);
+      });
+
+      authModalClose?.addEventListener("click", () => {
+        authModal?.close();
+      });
+
+      authModal?.addEventListener("click", (event) => {
+        const rect = authModal.getBoundingClientRect();
+        const inside =
+          event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom;
+        if (!inside) {
+          authModal.close();
+        }
+      });
+    </script>
   </body>
 </html>

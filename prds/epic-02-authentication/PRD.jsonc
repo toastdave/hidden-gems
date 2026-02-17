@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/authentication",
-  "description": "Implement authentication and account management using Better Auth. Public browsing allowed; hosting requires login.",
+  "description": "Implement authentication and account management using Better Auth with contextual, low-friction prompts while preserving public browse access.",
   "userStories": [
     {
       "id": "US-101",
@@ -10,7 +10,8 @@
       "acceptanceCriteria": [
         "Email auth works",
         "OAuth provider (Google) works",
-        "Session persists across refresh"
+        "Session persists across refresh",
+        "Guest users are prompted to authenticate contextually at gated actions"
       ],
       "priority": 1,
       "passes": true,
@@ -85,15 +86,29 @@
         {
           "id": "US-101-T06",
           "title": "Create auth UI screens",
-          "description": "Build login and sign up UI flows in web app.",
+          "description": "Build conversion-focused login and sign up UI flows in web app.",
           "acceptanceCriteria": [
             "Login form supports email/password",
             "Sign up form validates required fields",
-            "Google OAuth action available in auth UI"
+            "Google OAuth action available in auth UI",
+            "Auth page messaging reinforces browse-first product flow"
           ],
           "priority": 1,
           "passes": true,
           "notes": "Keep public discovery routes accessible."
+        },
+        {
+          "id": "US-101-T07",
+          "title": "Add contextual auth modal entry points",
+          "description": "Provide lightweight auth modal prompts from gated actions instead of hard redirecting by default.",
+          "acceptanceCriteria": [
+            "Global auth modal can be opened from any page",
+            "Save/favorite and alert actions trigger modal for guests",
+            "Modal preserves browse flow and links to full auth route"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Supports modern listing-app conversion patterns."
         }
       ]
     },

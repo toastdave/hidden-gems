@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/discovery",
-  "description": "Build search, feed, and map discovery experience using Tailwind, shadcn, and mapcn.",
+  "description": "Build a modern, map-first discovery experience with guest browsing, integrated list/map views, and freemium conversion touchpoints.",
   "userStories": [
     {
       "id": "US-401",
@@ -115,7 +115,7 @@
             "No duplicate pins after refetch"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Debounce viewport-based requests."
         },
         {
@@ -128,7 +128,7 @@
             "Clicking elsewhere closes preview"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Support both desktop and mobile layouts."
         },
         {
@@ -141,7 +141,7 @@
             "Cluster counts are accurate"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Tune cluster radius for city-scale density."
         },
         {
@@ -156,6 +156,73 @@
           "priority": 1,
           "passes": false,
           "notes": "Mock map library where needed."
+        }
+      ]
+    },
+    {
+      "id": "US-403",
+      "title": "Unified discover shell",
+      "description": "As a guest, I want an immediate modern browse flow with list/map switching and low-friction upgrade paths.",
+      "acceptanceCriteria": [
+        "Home supports split, list-only, and map-only views",
+        "Search, type filter, and sort update visible listing cards",
+        "Guest users can browse freely and are prompted to sign in only on gated actions"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Flow modeled after modern listing products with map-first orientation.",
+      "tasks": [
+        {
+          "id": "US-403-T01",
+          "title": "Implement integrated list/map discovery UI",
+          "description": "Replace basic feed layout with an integrated discovery shell and persisted view toggle.",
+          "acceptanceCriteria": [
+            "Split/list/map toggle available in discover surface",
+            "List and map can be shown together on desktop",
+            "View preference persists across page reloads"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Uses client-side localStorage for view preference."
+        },
+        {
+          "id": "US-403-T02",
+          "title": "Add lightweight discover filtering",
+          "description": "Provide quick in-page filtering and sorting controls for faster browsing.",
+          "acceptanceCriteria": [
+            "Keyword search filters title/location",
+            "Type selector filters visible cards",
+            "Sort selector reorders visible cards"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Client-side filtering for current feed payload."
+        },
+        {
+          "id": "US-403-T03",
+          "title": "Upgrade top-level navigation for browse-first IA",
+          "description": "Restructure navigation to prioritize Discover, Map, and Saved over utility tabs.",
+          "acceptanceCriteria": [
+            "Discover and Map are primary nav actions",
+            "Saved is visible for authenticated users",
+            "Account menu consolidates secondary actions"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Removed clunky tab-like utility links from primary nav."
+        },
+        {
+          "id": "US-403-T04",
+          "title": "Create dedicated map-first route shell",
+          "description": "Upgrade map route to mirror modern discovery narrative and CTA flow.",
+          "acceptanceCriteria": [
+            "Map route has modern hero copy and actions",
+            "Map remains the dominant visual element",
+            "Guest and authenticated CTAs differ appropriately"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Dedicated route complements split discovery home."
         }
       ]
     }

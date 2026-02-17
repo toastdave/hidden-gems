@@ -1,7 +1,7 @@
 {
   "project": "Hidden Gems Marketplace",
   "branchName": "feature/billing-polar",
-  "description": "Integrate Polar as merchant of record for freemium subscriptions and enforce feature gates on Railway-hosted services.",
+  "description": "Integrate Polar as merchant of record for freemium subscriptions, including distinct viewer and creator premium tracks and plan-aware UX.",
   "userStories": [
     {
       "id": "US-801",
@@ -10,7 +10,8 @@
       "acceptanceCriteria": [
         "Checkout redirects to Polar",
         "Webhook updates user entitlements",
-        "User sees premium status reflected in UI"
+        "User sees premium status reflected in UI",
+        "UI can communicate free vs premium differences for both viewers and creators"
       ],
       "priority": 1,
       "passes": true,
@@ -108,6 +109,19 @@
           "priority": 1,
           "passes": false,
           "notes": "Use webhook fixture payloads in tests."
+        },
+        {
+          "id": "US-801-T08",
+          "title": "Model dual premium tracks in UX",
+          "description": "Reflect viewer-plus and creator-pro upgrade paths in discovery, saved, and account billing surfaces.",
+          "acceptanceCriteria": [
+            "Discovery page communicates free, viewer plus, and creator pro paths",
+            "Saved page shows plan-aware hints and upgrade CTAs",
+            "Billing page supports selecting between viewer and creator-oriented upgrades"
+          ],
+          "priority": 1,
+          "passes": false,
+          "notes": "Current UI messaging is present; explicit checkout selection by track still pending."
         }
       ]
     }

@@ -1,0 +1,235 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { apiClientBase, apiServerBase, fetchApiJson } from "../lib/api";
+
+const cookieHeader = { cookie: Astro.request.headers.get("cookie") ?? "" };
+const favoritesResult = await fetchApiJson<{ favorites: Array<Record<string, any>> }>(
+  `${apiServerBase}/favorites`,
+  { headers: cookieHeader },
+);
+const alertsResult = await fetchApiJson<{ alerts: Array<Record<string, any>> }>(`${apiServerBase}/alerts`, {
+  headers: cookieHeader,
+});
+const sessionResult = await fetchApiJson<{ user: { email?: string } | null }>(
+  `${apiServerBase}/api/auth/get-session`,
+  { headers: cookieHeader },
+);
+const billingResult = await fetchApiJson<Record<string, unknown>>(`${apiServerBase}/billing/status`, {
+  headers: cookieHeader,
+});
+
+const user = sessionResult.data?.user ?? null;
+const favorites = favoritesResult.data?.favorites ?? [];
+const alerts = alertsResult.data?.alerts ?? [];
+const isPremium = Boolean(billingResult.data?.premium);
+---
+
+<Layout title="Saved | Hidden Gems">
+  <section class="mb-5 rounded-2xl border border-white/50 bg-card/85 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/80 sm:p-7">
+    <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Your saved workspace</p>
+      <h1 class="text-3xl sm:text-4xl">Favorites and alerts in one place.</h1>
+      <p class="max-w-2xl text-sm text-muted-foreground sm:text-base">
+        Keep track of listings you care about, then set alerts so new matches come to you.
+      </p>
+    </div>
+    <p class="mt-4 text-sm text-muted-foreground">
+      {user ? (
+        <>
+          Signed in as <span class="font-medium text-foreground">{user.email ?? "member"}</span>
+          <span class="ml-2 rounded-full border px-2 py-0.5 text-xs">{isPremium ? "Premium" : "Free plan"}</span>
+        </>
+      ) : (
+        <>
+          You are browsing as a guest. <a class="font-medium text-primary hover:underline" href="/auth">Sign in</a> to save listings and create alerts.
+        </>
+      )}
+    </p>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[1.2fr,1fr]">
+    <article class="rounded-2xl border border-white/60 bg-card p-4 shadow-sm dark:border-white/10">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-2xl">Favorites</h2>
+        <span class="rounded-full border px-3 py-1 text-xs">{favorites.length} saved</span>
+      </div>
+
+      {!user ? (
+        <div class="rounded-lg border bg-background/70 p-4 text-sm text-muted-foreground">
+          Sign in to keep a shortlist as you browse.
+        </div>
+      ) : favorites.length === 0 ? (
+        <div class="rounded-lg border bg-background/70 p-4 text-sm text-muted-foreground">
+          No favorites yet. Browse discovery and save listings you want to revisit.
+        </div>
+      ) : (
+        <div class="space-y-3">
+          {favorites.map((favorite) => (
+            <div class="rounded-xl border bg-background/80 p-4">
+              <p class="font-semibold">{favorite.listing.title}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{favorite.listing.locationText ?? "Location pending"}</p>
+              <div class="mt-3 flex items-center gap-2">
+                <a
+                  href={`/listings/${favorite.listing.id}`}
+                  class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary"
+                >
+                  View listing
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </article>
+
+    <article class="rounded-2xl border border-white/60 bg-card p-4 shadow-sm dark:border-white/10">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-2xl">Saved Alerts</h2>
+        <span class="rounded-full border px-3 py-1 text-xs">{alerts.length} active</span>
+      </div>
+
+      <form id="new-alert-form" class="mb-4 grid gap-2 sm:grid-cols-2">
+        <input
+          name="radiusKm"
+          type="number"
+          min="1"
+          max="500"
+          placeholder="Radius (km)"
+          required
+          class="h-10 rounded-md border border-input bg-background px-3 text-sm"
+        />
+        <select name="type" class="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <option value="">Any type</option>
+          <option value="event">Event</option>
+          <option value="place">Place</option>
+          <option value="activity">Activity</option>
+        </select>
+        <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground sm:col-span-2">
+          Create alert
+        </button>
+      </form>
+      {!isPremium ? (
+        <p class="mb-4 rounded-md border bg-accent/30 px-3 py-2 text-xs text-muted-foreground">
+          Free users can manage core alerts. Upgrade for richer filters and faster notification controls.
+        </p>
+      ) : null}
+
+      {!user ? (
+        <div class="rounded-lg border bg-background/70 p-4 text-sm text-muted-foreground">
+          Sign in to create and manage saved alerts.
+        </div>
+      ) : alerts.length === 0 ? (
+        <div class="rounded-lg border bg-background/70 p-4 text-sm text-muted-foreground">
+          No alerts yet. Create one above from your preferred distance and type.
+        </div>
+      ) : (
+        <div class="space-y-3">
+          {alerts.map((alert: any) => (
+            <div class="rounded-xl border bg-background/80 p-4">
+              <p class="text-sm text-muted-foreground">Alert #{alert.id}</p>
+              <div class="mt-2 flex items-center gap-2 text-sm">
+                <span class="rounded-full border px-2 py-1">Radius: {alert.radiusKm}km</span>
+                <span class="rounded-full border px-2 py-1">{alert.enabled ? "Enabled" : "Disabled"}</span>
+              </div>
+              <button
+                class="toggle-alert mt-3 inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary"
+                data-alert-id={alert.id}
+                data-current-enabled={String(alert.enabled)}
+              >
+                Toggle
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <pre id="saved-output" class="mt-4 max-h-40 overflow-auto rounded-md border bg-muted p-3 text-xs"></pre>
+    </article>
+  </section>
+
+  <section class="mt-5 rounded-2xl border border-white/50 bg-card/90 p-4 dark:border-white/10">
+    <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Upgrade options</p>
+        <h2 class="text-2xl">Need deeper control? Move from saved to powered.</h2>
+      </div>
+      <a href="/billing" class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary">Open billing</a>
+    </div>
+    <div class="grid gap-3 md:grid-cols-2">
+      <article class="rounded-xl border bg-background/80 p-4">
+        <h3 class="text-xl">Viewer Plus</h3>
+        <p class="mt-2 text-sm text-muted-foreground">Unlimited saved lists, richer filtering, and faster notification controls for active explorers.</p>
+      </article>
+      <article class="rounded-xl border bg-background/80 p-4">
+        <h3 class="text-xl">Creator Pro</h3>
+        <p class="mt-2 text-sm text-muted-foreground">Publish more listings, improve listing distribution, and unlock premium creator-facing capabilities.</p>
+      </article>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ apiClientBase, isAuthenticated: Boolean(user) }}>
+    const output = document.getElementById("saved-output");
+    const setOutput = (value) => (output.textContent = JSON.stringify(value, null, 2));
+
+    const goSignIn = () => {
+      window.dispatchEvent(
+        new CustomEvent("open-auth-modal", {
+          detail: { message: "Sign in to manage saved alerts and your personalized shortlist." },
+        }),
+      );
+    };
+
+    const form = document.getElementById("new-alert-form");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!isAuthenticated) {
+        goSignIn();
+        return;
+      }
+      const data = Object.fromEntries(new FormData(form).entries());
+      const payload = {
+        radiusKm: Number(data.radiusKm),
+        filters: data.type ? { type: data.type } : {},
+      };
+      const response = await fetch(`${apiClientBase}/alerts`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      if (response.status === 401) {
+        goSignIn();
+        return;
+      }
+      setOutput(await response.json());
+      if (response.ok) {
+        window.location.reload();
+      }
+    });
+
+    for (const button of document.querySelectorAll(".toggle-alert")) {
+      button.addEventListener("click", async () => {
+        if (!isAuthenticated) {
+          goSignIn();
+          return;
+        }
+        const alertId = button.getAttribute("data-alert-id");
+        const current = button.getAttribute("data-current-enabled") === "true";
+        const response = await fetch(`${apiClientBase}/alerts/${alertId}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ enabled: !current }),
+        });
+        if (response.status === 401) {
+          goSignIn();
+          return;
+        }
+        setOutput(await response.json());
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+    }
+  </script>
+</Layout>

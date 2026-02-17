@@ -1,9 +1,6 @@
 ---
 import type { Listing } from "@hidden-gems/shared";
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { DiscoveryMap } from "../components/discovery-map";
 import Layout from "../layouts/Layout.astro";
 import { apiClientBase, apiServerBase, fetchApiJson } from "../lib/api";
 
@@ -19,69 +16,259 @@ const meResult = await fetchApiJson<{ user: { email?: string } | null }>(
   },
 );
 const me = meResult.data ?? { user: null };
+const billingResult = await fetchApiJson<Record<string, unknown>>(`${apiBase}/billing/status`, {
+  headers: {
+    cookie: Astro.request.headers.get("cookie") ?? "",
+  },
+});
+const billingStatus = billingResult.data ?? {};
+const isPremium = Boolean(billingStatus.premium);
 ---
 
-<Layout title="Hidden Gems | Discovery Feed">
-  <Card>
-    <CardHeader>
-      <CardTitle>Discovery Feed</CardTitle>
-      <CardDescription>
-        Published listings only. Drafts are filtered from public queries.
-      </CardDescription>
-    </CardHeader>
-    <CardContent class="space-y-3">
-      {!feedResult.ok ? (
-        <Alert variant="destructive">
-          <AlertTitle>API unavailable</AlertTitle>
-          <AlertDescription>{feedResult.error}</AlertDescription>
-        </Alert>
-      ) : null}
-      <p class="text-sm text-muted-foreground">
-        Signed in as: <span class="font-medium text-foreground">{me.user?.email ?? "anonymous"}</span>
-      </p>
-    </CardContent>
-  </Card>
+<Layout title="Hidden Gems | Discover">
+  <section class="mb-5 overflow-hidden rounded-2xl border border-white/50 bg-card/85 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/80 sm:p-8">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-3xl space-y-3">
+        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Public discovery</p>
+        <h1 class="text-3xl leading-tight sm:text-5xl">Find hidden gems near you, then save the ones you love.</h1>
+        <p class="max-w-2xl text-sm text-muted-foreground sm:text-base">
+          Browse instantly with no signup required. Save favorites, alerts, and premium discovery tools when you are ready.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="rounded-full border px-3 py-1">Live listings</span>
+        <span class="rounded-full border px-3 py-1">Map-first discovery</span>
+        <span class="rounded-full border px-3 py-1">Freemium upgrades</span>
+        <span class="rounded-full border px-3 py-1">Plan: {isPremium ? "Premium" : "Free"}</span>
+      </div>
+    </div>
 
-  <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-    {feedData.listings.length === 0 ? (
-      <Card class="md:col-span-2 lg:col-span-3">
-        <CardContent class="pt-6 text-sm text-muted-foreground">No listings published yet.</CardContent>
-      </Card>
-    ) : (
-      feedData.listings.map((listing: any) => (
-        <Card>
-          <CardHeader class="space-y-2">
-            <CardTitle class="text-lg">{listing.title}</CardTitle>
-            <CardDescription>{listing.locationText ?? "No location text yet"}</CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-3">
-            <div class="flex items-center gap-2">
-              <Badge variant="secondary">{listing.type}</Badge>
-              <Badge variant={listing.status === "published" ? "default" : "outline"}>
-                {listing.status}
-              </Badge>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" asChild><a href={`/listings/${listing.id}`}>View details</a></Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                class="favorite-toggle"
-                data-listing-id={listing.id}
-              >
-                Toggle Favorite
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))
-    )}
-  </div>
+    <div class="mt-6 grid gap-3 lg:grid-cols-[1fr,auto]">
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr,180px,180px]">
+        <label class="space-y-1">
+          <span class="text-xs text-muted-foreground">Search city, neighborhood, or keyword</span>
+          <input
+            id="listing-search"
+            class="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+            type="search"
+            placeholder="Try: coffee walk, live music, waterfront"
+          />
+        </label>
+        <label class="space-y-1">
+          <span class="text-xs text-muted-foreground">Type</span>
+          <select id="listing-type" class="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <option value="">All types</option>
+            <option value="event">Event</option>
+            <option value="activity">Activity</option>
+            <option value="place">Place</option>
+          </select>
+        </label>
+        <label class="space-y-1">
+          <span class="text-xs text-muted-foreground">Sort</span>
+          <select id="listing-sort" class="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <option value="newest">Newest</option>
+            <option value="a-z">Title A-Z</option>
+          </select>
+        </label>
+      </div>
+      <div class="inline-flex rounded-lg border p-1">
+        <button class="view-toggle rounded-md px-3 py-1.5 text-sm font-medium" data-view="split">Split</button>
+        <button class="view-toggle rounded-md px-3 py-1.5 text-sm font-medium" data-view="list">List</button>
+        <button class="view-toggle rounded-md px-3 py-1.5 text-sm font-medium" data-view="map">Map</button>
+      </div>
+    </div>
 
-  <script is:inline define:vars={{ apiClientBase }}>
+    {!feedResult.ok ? <p class="mt-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">API unavailable: {feedResult.error}</p> : null}
+
+    <p class="mt-4 text-sm text-muted-foreground">
+      Browsing as <span class="font-medium text-foreground">{me.user?.email ?? "guest"}</span>
+      {me.user ? " - saved actions are unlocked." : " - sign in when you want to save favorites and alerts."}
+    </p>
+  </section>
+
+  <section id="discover-shell" class="grid gap-4 lg:grid-cols-[minmax(0,1fr),440px]">
+    <div id="listing-column" class="space-y-3">
+      <p id="listing-count" class="text-sm text-muted-foreground"></p>
+      <div id="listing-results" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {
+          feedData.listings.map((listing: any) => (
+            <article
+              class="listing-card overflow-hidden rounded-xl border border-white/70 bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10"
+              data-id={listing.id}
+              data-title={listing.title ?? ""}
+              data-location={listing.locationText ?? ""}
+              data-type={listing.type ?? ""}
+              data-created={listing.createdAt ?? ""}
+            >
+              <div class="h-28 bg-[linear-gradient(120deg,hsl(199_87%_86%),hsl(30_94%_87%))]" />
+              <div class="space-y-2 p-4">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="line-clamp-2 text-base font-semibold">{listing.title}</h3>
+                  <span class="rounded-full bg-secondary px-2 py-1 text-xs font-medium">{listing.type}</span>
+                </div>
+                <p class="line-clamp-1 text-sm text-muted-foreground">{listing.locationText ?? "Location pending"}</p>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="rounded-full border px-2 py-1 text-xs">{listing.status}</span>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                  <a
+                    href={`/listings/${listing.id}`}
+                    class="inline-flex h-9 flex-1 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary"
+                  >
+                    View details
+                  </a>
+                  <button
+                    type="button"
+                    class="favorite-toggle inline-flex h-9 items-center justify-center rounded-md bg-secondary px-3 text-sm font-medium"
+                    data-listing-id={listing.id}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+      {
+        feedData.listings.length === 0 ? (
+          <div class="rounded-xl border bg-card px-4 py-6 text-sm text-muted-foreground">No listings published yet.</div>
+        ) : null
+      }
+    </div>
+
+    <aside id="map-column" class="lg:sticky lg:top-24">
+      <div class="overflow-hidden rounded-2xl border border-white/70 bg-card shadow-sm dark:border-white/10">
+        <DiscoveryMap client:load apiBase={apiClientBase} />
+      </div>
+    </aside>
+  </section>
+
+  <section class="mt-8 rounded-2xl border border-white/50 bg-card/90 p-4 dark:border-white/10">
+    <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Freemium plans</p>
+        <h2 class="text-2xl">Start free and upgrade only when you need power tools.</h2>
+      </div>
+      <a href="/billing" class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition hover:bg-secondary">View plans</a>
+    </div>
+    <div class="grid gap-4 md:grid-cols-3">
+      <article class="space-y-2 rounded-lg border bg-background/80 p-4">
+        <p class="text-xs uppercase tracking-[0.1em] text-muted-foreground">Viewer Free</p>
+        <h3 class="text-xl">Browse instantly</h3>
+        <p class="text-sm text-muted-foreground">No account needed for discovery feed, listing details, and live map exploration.</p>
+      </article>
+      <article class="space-y-2 rounded-lg border bg-background/80 p-4">
+        <p class="text-xs uppercase tracking-[0.1em] text-muted-foreground">Viewer Plus</p>
+        <h3 class="text-xl">Save and track</h3>
+        <p class="text-sm text-muted-foreground">Unlimited saved listings, advanced alert controls, and richer discovery filters.</p>
+      </article>
+      <article class="space-y-2 rounded-lg border bg-background/80 p-4">
+        <p class="text-xs uppercase tracking-[0.1em] text-muted-foreground">Creator Pro</p>
+        <h3 class="text-xl">Grow listings</h3>
+        <p class="text-sm text-muted-foreground">More active listings, improved media reach, and stronger host-side visibility tools.</p>
+      </article>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ apiClientBase, isAuthenticated: Boolean(me.user) }}>
+    const cards = Array.from(document.querySelectorAll(".listing-card"));
+    const listingResults = document.getElementById("listing-results");
+    const listingCount = document.getElementById("listing-count");
+    const searchInput = document.getElementById("listing-search");
+    const typeSelect = document.getElementById("listing-type");
+    const sortSelect = document.getElementById("listing-sort");
+
+    const setCount = () => {
+      const visible = cards.filter((card) => card.style.display !== "none").length;
+      listingCount.textContent = `${visible} listing${visible === 1 ? "" : "s"} shown`;
+    };
+
+    const applyFilters = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedType = typeSelect.value;
+
+      for (const card of cards) {
+        const title = (card.dataset.title || "").toLowerCase();
+        const location = (card.dataset.location || "").toLowerCase();
+        const type = card.dataset.type || "";
+        const matchesQuery = !query || title.includes(query) || location.includes(query);
+        const matchesType = !selectedType || type === selectedType;
+        card.style.display = matchesQuery && matchesType ? "" : "none";
+      }
+
+      const sorted = [...cards].sort((a, b) => {
+        if (sortSelect.value === "a-z") {
+          return (a.dataset.title || "").localeCompare(b.dataset.title || "");
+        }
+        return (b.dataset.created || "").localeCompare(a.dataset.created || "");
+      });
+
+      for (const card of sorted) {
+        listingResults.appendChild(card);
+      }
+
+      setCount();
+    };
+
+    searchInput.addEventListener("input", applyFilters);
+    typeSelect.addEventListener("change", applyFilters);
+    sortSelect.addEventListener("change", applyFilters);
+    applyFilters();
+
+    const mapColumn = document.getElementById("map-column");
+    const listingColumn = document.getElementById("listing-column");
+    const shell = document.getElementById("discover-shell");
+    const toggles = document.querySelectorAll(".view-toggle");
+
+    const setActiveToggle = (activeView) => {
+      for (const button of toggles) {
+        const isActive = button.getAttribute("data-view") === activeView;
+        button.classList.toggle("bg-primary", isActive);
+        button.classList.toggle("text-primary-foreground", isActive);
+      }
+    };
+
+    const setView = (view) => {
+      if (view === "map") {
+        shell.className = "grid gap-4";
+        listingColumn.style.display = "none";
+        mapColumn.style.display = "block";
+      } else if (view === "list") {
+        shell.className = "grid gap-4";
+        listingColumn.style.display = "block";
+        mapColumn.style.display = "none";
+      } else {
+        shell.className = "grid gap-4 lg:grid-cols-[minmax(0,1fr),440px]";
+        listingColumn.style.display = "block";
+        mapColumn.style.display = "block";
+      }
+      setActiveToggle(view);
+      localStorage.setItem("discover-view", view);
+    };
+
+    for (const button of toggles) {
+      button.addEventListener("click", () => setView(button.getAttribute("data-view") || "split"));
+    }
+
+    const savedView = localStorage.getItem("discover-view") || "split";
+    setView(savedView);
+
+    const promptSignin = () => {
+      window.dispatchEvent(
+        new CustomEvent("open-auth-modal", {
+          detail: { message: "Sign in to save listings, create alerts, and track discoveries." },
+        }),
+      );
+    };
+
     const buttons = document.querySelectorAll(".favorite-toggle");
     for (const button of buttons) {
       button.addEventListener("click", async () => {
+        if (!isAuthenticated) {
+          promptSignin();
+          return;
+        }
         const listingId = button.getAttribute("data-listing-id");
         const response = await fetch(`${apiClientBase}/favorites/toggle`, {
           method: "POST",
@@ -90,11 +277,10 @@ const me = meResult.data ?? { user: null };
           body: JSON.stringify({ listingId }),
         });
         if (!response.ok) {
-          alert("Login required or listing unavailable.");
           return;
         }
         const data = await response.json();
-        button.textContent = data.favorited ? "Unfavorite" : "Favorite";
+        button.textContent = data.favorited ? "Saved" : "Save";
       });
     }
   </script>
