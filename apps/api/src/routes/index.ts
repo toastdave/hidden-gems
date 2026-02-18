@@ -7,6 +7,7 @@ import { healthRoutes } from "./health-routes";
 import { hostsRoutes } from "./hosts-routes";
 import { listingsRoutes } from "./listings-routes";
 import { reportsRoutes } from "./reports-routes";
+import { userRoutes } from "./user-routes";
 
 export const appRoutes = new Hono<ApiEnv>();
 
@@ -17,3 +18,4 @@ appRoutes.route("/", favoritesRoutes);
 appRoutes.route("/", alertsRoutes);
 appRoutes.route("/", billingRoutes);
 appRoutes.route("/", reportsRoutes);
+appRoutes.route("/", userRoutes);

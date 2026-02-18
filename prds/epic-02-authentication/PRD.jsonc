@@ -214,6 +214,19 @@
           "notes": "Only current user can update self."
         },
         {
+          "id": "US-103-T05",
+          "title": "Add authenticated home-location endpoints",
+          "description": "Expose focused endpoints for reading and updating current user's saved home location coordinates.",
+          "acceptanceCriteria": [
+            "GET /users/me/location returns homeLat and homeLng",
+            "PUT /users/me/location validates numeric lat/lng bounds",
+            "Endpoints require authenticated session"
+          ],
+          "priority": 2,
+          "passes": true,
+          "notes": "Implemented against app users table while broader profile endpoint work remains pending."
+        },
+        {
           "id": "US-103-T03",
           "title": "Implement avatar upload flow",
           "description": "Add upload flow for profile avatar and persist returned file URL.",

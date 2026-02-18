@@ -8,6 +8,69 @@ type AppPlan = Plan & { features: Record<string, unknown> };
 
 const DEFAULT_FREE_PLAN = "plan-free";
 
+/**
+ * Called from Polar webhook handlers to update local entitlement tables.
+ * Bridges the Polar event system with our internal plans/entitlements.
+ */
+export async function updateEntitlementFromPolar(
+  userId: string,
+  planSlug: string,
+  active: boolean,
+  externalEventId?: string,
+) {
+  if (externalEventId) {
+    const [existing] = await db
+      .select()
+      .from(schema.billingEvents)
+      .where(eq(schema.billingEvents.externalId, externalEventId))
+      .limit(1);
+    if (existing) return;
+  }
+
+  const [plan] = await db
+    .select()
+    .from(schema.plans)
+    .where(eq(schema.plans.slug, planSlug))
+    .limit(1);
+  const selectedPlan =
+    plan ??
+    (
+      await db.select().from(schema.plans).where(eq(schema.plans.slug, DEFAULT_FREE_PLAN)).limit(1)
+    )[0];
+
+  if (!selectedPlan) return;
+
+  await db.transaction(async (tx) => {
+    if (externalEventId) {
+      await tx.insert(schema.billingEvents).values({
+        userId,
+        eventType: active ? "subscription_created" : "subscription_cancelled",
+        amountCents: selectedPlan.priceMonthly,
+        currency: "usd",
+        externalId: externalEventId,
+        metadata: { source: "polar", planSlug, active },
+      });
+    }
+
+    if (active) {
+      await tx
+        .insert(schema.userEntitlements)
+        .values({
+          userId,
+          planId: selectedPlan.id,
+          startsAt: new Date(),
+          active: true,
+        })
+        .onConflictDoNothing();
+    } else {
+      await tx
+        .update(schema.userEntitlements)
+        .set({ active: false, updatedAt: new Date() })
+        .where(eq(schema.userEntitlements.userId, userId));
+    }
+  });
+}
+
 export async function listPlans() {
   const plans = await db
     .select()

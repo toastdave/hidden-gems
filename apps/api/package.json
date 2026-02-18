@@ -11,6 +11,8 @@
   "dependencies": {
     "@hidden-gems/db": "workspace:*",
     "@hidden-gems/shared": "workspace:*",
+    "@polar-sh/better-auth": "^1.8.1",
+    "@polar-sh/sdk": "^0.43.1",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.11.9"
