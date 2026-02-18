@@ -122,6 +122,19 @@
           "priority": 1,
           "passes": false,
           "notes": "Current UI messaging is present; explicit checkout selection by track still pending."
+        },
+        {
+          "id": "US-801-T09",
+          "title": "Add Polar readiness and mock-safe startup mode",
+          "description": "Expose clear startup status for Polar integration and keep auth boot stable when Polar env values are incomplete during mocked development.",
+          "acceptanceCriteria": [
+            "API startup logs Polar integration mode",
+            "Polar plugin is disabled safely when required env vars are missing",
+            "Portal/webhook framework can run without checkout product id"
+          ],
+          "priority": 1,
+          "passes": true,
+          "notes": "Supports incremental billing rollout before Polar dashboard setup is finalized."
         }
       ]
     }
