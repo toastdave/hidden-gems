@@ -13,7 +13,7 @@
         "Metadata saved in database"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -26,7 +26,7 @@
             "Foreign keys and cascade behavior are defined for listing gallery cleanup"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Store width and height metadata if available."
         },
         {
@@ -39,7 +39,7 @@
             "Read URL strategy documented"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "S3-compatible API preferred."
         },
         {
@@ -52,7 +52,7 @@
             "File type and size constraints enforced"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Avoid proxying large files through API."
         },
         {
@@ -65,7 +65,7 @@
             "Upload errors shown inline"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Support click-to-select fallback."
         },
         {
@@ -78,7 +78,7 @@
             "Duplicate media records prevented"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Generate deterministic storage keys."
         },
         {
@@ -91,7 +91,7 @@
             "Remove action deletes record and storage object"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Soft delete optional if needed for recovery."
         },
         {

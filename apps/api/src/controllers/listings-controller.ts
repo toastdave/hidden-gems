@@ -8,6 +8,14 @@ import {
   publishListing,
   updateDraftListing,
 } from "../services/listings-service";
+import {
+  completeListingMediaUpload,
+  createListingMediaUpload,
+  getListingMedia,
+  removeListingMedia,
+  reorderListingMedia,
+  setListingMediaCover,
+} from "../services/media-service";
 import type { ApiEnv } from "../types/api";
 
 export async function createDraftHandler(c: Context<ApiEnv>) {
@@ -56,4 +64,69 @@ export async function getListingHandler(c: Context<ApiEnv>) {
   const result = await getListingById(c.req.param("id"), readBearerUserId(c));
   if ("error" in result) return c.json({ error: result.error }, result.status);
   return c.json({ listing: result.listing });
+}
+
+export async function createListingMediaUploadHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+
+  const payload = (await c.req.json()) as Record<string, unknown>;
+  const result = await createListingMediaUpload(requireUserId(c), c.req.param("id"), payload);
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json(result, 201);
+}
+
+export async function completeListingMediaUploadHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+
+  const payload = (await c.req.json()) as Record<string, unknown>;
+  const result = await completeListingMediaUpload(requireUserId(c), c.req.param("id"), payload);
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json(result, 201);
+}
+
+export async function getListingMediaHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+
+  const result = await getListingMedia(requireUserId(c), c.req.param("id"));
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json(result);
+}
+
+export async function reorderListingMediaHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+
+  const payload = (await c.req.json()) as Record<string, unknown>;
+  const result = await reorderListingMedia(requireUserId(c), c.req.param("id"), payload);
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json(result);
+}
+
+export async function setListingMediaCoverHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+
+  const result = await setListingMediaCover(
+    requireUserId(c),
+    c.req.param("id"),
+    c.req.param("mediaId"),
+  );
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json(result);
+}
+
+export async function removeListingMediaHandler(c: Context<ApiEnv>) {
+  const authError = await requireAuth(c);
+  if (authError) return authError;
+
+  const result = await removeListingMedia(
+    requireUserId(c),
+    c.req.param("id"),
+    c.req.param("mediaId"),
+  );
+  if ("error" in result) return c.json({ error: result.error }, result.status);
+  return c.json(result);
 }

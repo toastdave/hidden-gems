@@ -1,6 +1,7 @@
 import { db, schema } from "@hidden-gems/db";
 import { and, asc, desc, eq, gte, inArray, isNotNull, lte } from "drizzle-orm";
 import { ensureListingType, getPublishReadinessErrors, parseLatLng } from "../utils/listings";
+import { getPublicListingMedia } from "./media-service";
 
 export async function createDraftListing(userId: string, payload: Record<string, unknown>) {
   const hostId = typeof payload.hostId === "string" ? payload.hostId : "";
@@ -194,15 +195,17 @@ export async function getFeed(params: {
 }
 
 export async function getMapListings(bboxRaw?: string) {
+  const bounds = bboxRaw?.split(",").map(Number) ?? [];
   const conditions = [
     eq(schema.listings.status, "published"),
     isNotNull(schema.listings.lat),
     isNotNull(schema.listings.lng),
   ];
-  if (bboxRaw) {
-    const split = bboxRaw.split(",").map(Number);
-    if (split.length === 4 && split.every((n) => Number.isFinite(n))) {
-      const [minLng, minLat, maxLng, maxLat] = split;
+  if (bounds.length === 4 && bounds.every((value) => Number.isFinite(value))) {
+    const [minLng, minLat, maxLng, maxLat] = bounds;
+    const hasValidRanges = minLng <= maxLng && minLat <= maxLat;
+    const inWorldBounds = minLng >= -180 && maxLng <= 180 && minLat >= -90 && maxLat <= 90;
+    if (hasValidRanges && inWorldBounds) {
       conditions.push(gte(schema.listings.lat, minLat));
       conditions.push(lte(schema.listings.lat, maxLat));
       conditions.push(gte(schema.listings.lng, minLng));
@@ -237,5 +240,19 @@ export async function getListingById(listingId: string, userId: string | null) {
   if (listing.status !== "published" && listing.createdByUserId !== userId) {
     return { error: "Listing not found.", status: 404 as const };
   }
-  return { listing };
+
+  const photoRows = await getPublicListingMedia(listing.id);
+  const photos = photoRows.map((row, index) => ({
+    isCover: index === 0,
+    sortOrder: row.sortOrder,
+    ...row.media,
+  }));
+
+  return {
+    listing: {
+      ...listing,
+      photos,
+      coverImageUrl: photos[0]?.url ?? null,
+    },
+  };
 }

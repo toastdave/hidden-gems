@@ -32,7 +32,7 @@ const me = meResult.data ?? { user: null };
         Draft save, location coordinates, and publish validation are all wired in this form.
       </CardDescription>
     </CardHeader>
-    <CardContent class="space-y-3">
+    <CardContent className="space-y-3">
       {!meResult.ok ? (
         <Alert variant="destructive">
           <AlertTitle>API unavailable</AlertTitle>
@@ -45,21 +45,21 @@ const me = meResult.data ?? { user: null };
     </CardContent>
   </Card>
 
-  <div class="grid gap-4 lg:grid-cols-3">
+  <div class="grid gap-4 lg:grid-cols-2">
     <Card>
-      <CardHeader><CardTitle class="text-lg">1) Create Draft</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-lg">1) Create Draft</CardTitle></CardHeader>
       <CardContent>
         <form id="create-draft-form" class="space-y-3">
           <div class="space-y-1">
-            <Label for="create-host-id">Host ID</Label>
+            <Label htmlFor="create-host-id">Host ID</Label>
             <Input id="create-host-id" name="hostId" type="text" placeholder="Host ID" required />
           </div>
           <div class="space-y-1">
-            <Label for="create-title">Title</Label>
+            <Label htmlFor="create-title">Title</Label>
             <Input id="create-title" name="title" type="text" placeholder="Listing title" required />
           </div>
           <div class="space-y-1">
-            <Label for="create-type">Type</Label>
+            <Label htmlFor="create-type">Type</Label>
             <select
               id="create-type"
               name="type"
@@ -75,36 +75,61 @@ const me = meResult.data ?? { user: null };
             <Label>Location</Label>
             <LocationPicker client:load />
           </div>
-          <Button type="submit" class="w-full">Create Draft</Button>
+          <Button type="submit" className="w-full">Create Draft</Button>
         </form>
       </CardContent>
     </Card>
 
     <Card>
-      <CardHeader><CardTitle class="text-lg">2) Update Draft</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-lg">2) Update Draft</CardTitle></CardHeader>
       <CardContent>
         <form id="update-draft-form" class="space-y-3">
-          <Input name="listingId" type="text" placeholder="Listing ID" required />
+          <div class="flex gap-2">
+            <Input name="listingId" type="text" placeholder="Listing ID" required />
+            <Button type="button" id="load-draft-button" variant="secondary">Load Draft</Button>
+          </div>
           <Input name="title" type="text" placeholder="Updated title" />
           <Input name="description" type="text" placeholder="Description" />
-          <Input name="locationText" type="text" placeholder="Location text" />
-          <div class="grid grid-cols-2 gap-2">
-            <Input name="lat" type="number" step="any" placeholder="Latitude" />
-            <Input name="lng" type="number" step="any" placeholder="Longitude" />
+          <div class="space-y-1">
+            <Label>Location</Label>
+            <LocationPicker client:load />
           </div>
-          <Button type="submit" class="w-full" variant="secondary">Save Draft Changes</Button>
+          <Button type="submit" className="w-full" variant="secondary">Save Draft Changes</Button>
         </form>
       </CardContent>
     </Card>
 
     <Card>
-      <CardHeader><CardTitle class="text-lg">3) Publish</CardTitle></CardHeader>
-      <CardContent class="space-y-3">
+      <CardHeader><CardTitle className="text-lg">3) Publish</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
         <form id="publish-form" class="space-y-3">
           <Input name="listingId" type="text" placeholder="Listing ID" required />
-          <Button type="submit" class="w-full">Publish Listing</Button>
+          <Button type="submit" className="w-full">Publish Listing</Button>
         </form>
         <pre id="listing-output" class="rounded-md border bg-muted p-3 text-xs"></pre>
+      </CardContent>
+    </Card>
+
+    <Card className="lg:col-span-2">
+      <CardHeader>
+        <CardTitle className="text-lg">4) Media Uploads</CardTitle>
+        <CardDescription>Direct browser upload to local MinIO via signed URL.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <form id="media-upload-form" class="space-y-3">
+          <Input name="listingId" type="text" placeholder="Listing ID" required />
+          <Input id="media-files-input" name="files" type="file" accept="image/png,image/jpeg,image/webp,image/avif" multiple required />
+          <div
+            id="media-drop-zone"
+            class="rounded-md border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground"
+          >
+            Drag and drop photos here, or use file picker above.
+          </div>
+          <Button type="submit">Upload selected files</Button>
+        </form>
+        <div id="media-status" class="rounded-md border bg-muted p-3 text-xs text-muted-foreground"></div>
+        <ul id="media-progress-list" class="space-y-1 text-xs text-muted-foreground"></ul>
+        <div id="media-gallery" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
       </CardContent>
     </Card>
   </div>
@@ -113,6 +138,44 @@ const me = meResult.data ?? { user: null };
     const output = document.getElementById("listing-output");
     const setOutput = (value) => (output.textContent = JSON.stringify(value, null, 2));
 
+    const updateListingIdInput = document.querySelector('#update-draft-form [name="listingId"]');
+    const publishListingIdInput = document.querySelector('#publish-form [name="listingId"]');
+    const mediaListingIdInput = document.querySelector('#media-upload-form [name="listingId"]');
+    const mediaStatus = document.getElementById("media-status");
+    const mediaGallery = document.getElementById("media-gallery");
+    const mediaProgressList = document.getElementById("media-progress-list");
+    const mediaDropZone = document.getElementById("media-drop-zone");
+    const mediaFilesInput = document.getElementById("media-files-input");
+
+    const uploadProgressNodes = new Map();
+
+    function setActiveListingId(id) {
+      if (!id) return;
+      if (updateListingIdInput) updateListingIdInput.value = id;
+      if (publishListingIdInput) publishListingIdInput.value = id;
+      if (mediaListingIdInput) mediaListingIdInput.value = id;
+    }
+
+    function setMediaStatus(message) {
+      if (mediaStatus) {
+        mediaStatus.textContent = message;
+      }
+    }
+
+    function setUploadProgress(name, progressText, isError = false) {
+      if (!mediaProgressList) return;
+
+      let item = uploadProgressNodes.get(name);
+      if (!item) {
+        item = document.createElement("li");
+        uploadProgressNodes.set(name, item);
+        mediaProgressList.appendChild(item);
+      }
+
+      item.textContent = `${name}: ${progressText}`;
+      item.className = isError ? "text-destructive" : "text-muted-foreground";
+    }
+
     async function wireForm(formId, handler) {
       const form = document.getElementById(formId);
       form.addEventListener("submit", async (event) => {
@@ -120,6 +183,11 @@ const me = meResult.data ?? { user: null };
         const payload = Object.fromEntries(new FormData(form).entries());
         const data = await handler(payload);
         setOutput(data);
+        const nextListingId = data?.listing?.id;
+        if (nextListingId) {
+          setActiveListingId(nextListingId);
+          await loadMedia(nextListingId);
+        }
       });
     }
 
@@ -153,5 +221,284 @@ const me = meResult.data ?? { user: null };
       });
       return response.json();
     });
+
+    async function loadDraft(listingId) {
+      const response = await fetch(`${apiClientBase}/listings/${listingId}`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.listing) {
+        setOutput(data);
+        return;
+      }
+
+      const form = document.getElementById("update-draft-form");
+      form.querySelector('[name="title"]').value = data.listing.title ?? "";
+      form.querySelector('[name="description"]').value = data.listing.description ?? "";
+      const coordInputs = Array.from(form.querySelectorAll('input[type="number"]'));
+      if (coordInputs[0] instanceof HTMLInputElement) {
+        coordInputs[0].value = data.listing.lat == null ? "" : String(data.listing.lat);
+        coordInputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      if (coordInputs[1] instanceof HTMLInputElement) {
+        coordInputs[1].value = data.listing.lng == null ? "" : String(data.listing.lng);
+        coordInputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+      }
+
+      const hiddenLocationInput = form.querySelector('input[type="hidden"][name="locationText"]');
+      if (hiddenLocationInput instanceof HTMLInputElement) {
+        hiddenLocationInput.value = data.listing.locationText ?? "";
+      }
+      setOutput({ loaded: listingId, listing: data.listing });
+      await loadMedia(listingId);
+    }
+
+    const loadDraftButton = document.getElementById("load-draft-button");
+    if (loadDraftButton) {
+      loadDraftButton.addEventListener("click", async () => {
+        const listingId = updateListingIdInput?.value?.trim();
+        if (!listingId) return;
+        await loadDraft(listingId);
+      });
+    }
+
+    async function loadMedia(listingId) {
+      if (!listingId || !mediaGallery) return;
+      const response = await fetch(`${apiClientBase}/listings/${listingId}/media`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setMediaStatus(data?.error ?? "Unable to load media.");
+        return;
+      }
+
+      const media = data?.media ?? [];
+      if (media.length === 0) {
+        mediaGallery.innerHTML = "";
+        setMediaStatus("No uploaded photos yet.");
+        return;
+      }
+
+      mediaGallery.innerHTML = media
+        .map(
+          (item, index) => `
+            <article class="space-y-2 rounded-md border bg-card p-2 text-xs" data-media-id="${item.id}">
+              <img src="${item.url}" alt="Listing media ${index + 1}" class="h-28 w-full rounded object-cover" />
+              <div class="flex flex-wrap gap-1">
+                <button type="button" class="media-cover inline-flex h-7 items-center rounded border px-2 ${item.isCover ? "bg-secondary" : ""}">Cover</button>
+                <button type="button" class="media-up inline-flex h-7 items-center rounded border px-2">Up</button>
+                <button type="button" class="media-down inline-flex h-7 items-center rounded border px-2">Down</button>
+                <button type="button" class="media-remove inline-flex h-7 items-center rounded border px-2">Remove</button>
+              </div>
+            </article>
+          `,
+        )
+        .join("");
+      setMediaStatus(`${media.length} photo${media.length === 1 ? "" : "s"} attached.`);
+    }
+
+    async function reorderFromDom(listingId) {
+      if (!mediaGallery) return;
+      const mediaIds = Array.from(mediaGallery.querySelectorAll("article[data-media-id]")).map((node) =>
+        node.getAttribute("data-media-id"),
+      );
+      const response = await fetch(`${apiClientBase}/listings/${listingId}/media/order`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ mediaIds }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        setMediaStatus(data?.error ?? "Unable to reorder media.");
+      }
+      await loadMedia(listingId);
+    }
+
+    if (mediaGallery) {
+      mediaGallery.addEventListener("click", async (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        const listingId = mediaListingIdInput?.value?.trim();
+        if (!listingId) return;
+
+        const card = target.closest("article[data-media-id]");
+        if (!card) return;
+        const mediaId = card.getAttribute("data-media-id");
+        if (!mediaId) return;
+
+        if (target.classList.contains("media-cover")) {
+          await fetch(`${apiClientBase}/listings/${listingId}/media/${mediaId}/cover`, {
+            method: "POST",
+            credentials: "include",
+          });
+          await loadMedia(listingId);
+          return;
+        }
+
+        if (target.classList.contains("media-remove")) {
+          await fetch(`${apiClientBase}/listings/${listingId}/media/${mediaId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          await loadMedia(listingId);
+          return;
+        }
+
+        if (target.classList.contains("media-up") && card.previousElementSibling) {
+          mediaGallery.insertBefore(card, card.previousElementSibling);
+          await reorderFromDom(listingId);
+          return;
+        }
+
+        if (target.classList.contains("media-down") && card.nextElementSibling) {
+          mediaGallery.insertBefore(card.nextElementSibling, card);
+          await reorderFromDom(listingId);
+        }
+      });
+    }
+
+    const mediaUploadForm = document.getElementById("media-upload-form");
+
+    if (mediaDropZone && mediaFilesInput instanceof HTMLInputElement) {
+      const activeClasses = ["border-primary", "bg-primary/5"];
+
+      const setDropZoneActive = (active) => {
+        for (const className of activeClasses) {
+          mediaDropZone.classList.toggle(className, active);
+        }
+      };
+
+      mediaDropZone.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+        setDropZoneActive(true);
+      });
+
+      mediaDropZone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        setDropZoneActive(true);
+      });
+
+      mediaDropZone.addEventListener("dragleave", () => {
+        setDropZoneActive(false);
+      });
+
+      mediaDropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        setDropZoneActive(false);
+        if (!event.dataTransfer?.files?.length) {
+          return;
+        }
+        mediaFilesInput.files = event.dataTransfer.files;
+      });
+    }
+
+    function uploadToSignedUrl(url, file, onProgress) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url);
+        xhr.setRequestHeader("content-type", file.type);
+
+        xhr.upload.onprogress = (event) => {
+          if (!event.lengthComputable) {
+            return;
+          }
+          const percent = Math.max(0, Math.min(100, Math.round((event.loaded / event.total) * 100)));
+          onProgress(percent);
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(undefined);
+            return;
+          }
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error("Upload request failed."));
+        xhr.onabort = () => reject(new Error("Upload cancelled."));
+
+        xhr.send(file);
+      });
+    }
+
+    if (mediaUploadForm) {
+      mediaUploadForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(mediaUploadForm);
+        const listingId = String(formData.get("listingId") ?? "").trim();
+        const files = Array.from(formData.getAll("files")).filter((entry) => entry instanceof File);
+        if (!listingId || files.length === 0) {
+          setMediaStatus("Provide listing ID and at least one image.");
+          return;
+        }
+
+        uploadProgressNodes.clear();
+        if (mediaProgressList) {
+          mediaProgressList.innerHTML = "";
+        }
+
+        for (const file of files) {
+          setMediaStatus(`Uploading ${file.name}...`);
+          setUploadProgress(file.name, "requesting upload URL");
+          const uploadResponse = await fetch(`${apiClientBase}/listings/${listingId}/media/upload-url`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              fileName: file.name,
+              contentType: file.type,
+              sizeBytes: file.size,
+            }),
+          });
+          const uploadData = await uploadResponse.json();
+          if (!uploadResponse.ok) {
+            setMediaStatus(uploadData?.error ?? `Failed creating upload URL for ${file.name}.`);
+            setUploadProgress(file.name, "failed to get upload URL", true);
+            return;
+          }
+
+          try {
+            await uploadToSignedUrl(uploadData.upload.uploadUrl, file, (progress) => {
+              setUploadProgress(file.name, `${progress}%`);
+            });
+          } catch {
+            setMediaStatus(`Upload failed for ${file.name}.`);
+            setUploadProgress(file.name, "upload failed", true);
+            return;
+          }
+
+          setUploadProgress(file.name, "finalizing metadata");
+          const completeResponse = await fetch(`${apiClientBase}/listings/${listingId}/media/complete`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              mediaId: uploadData.upload.mediaId,
+              objectKey: uploadData.upload.objectKey,
+              contentType: file.type,
+              sizeBytes: file.size,
+            }),
+          });
+          const completeData = await completeResponse.json();
+          if (!completeResponse.ok) {
+            setMediaStatus(completeData?.error ?? `Failed finalizing ${file.name}.`);
+            setUploadProgress(file.name, "finalize failed", true);
+            return;
+          }
+
+          setUploadProgress(file.name, "done");
+        }
+
+        setMediaStatus(`Uploaded ${files.length} file${files.length === 1 ? "" : "s"}.`);
+        await loadMedia(listingId);
+      });
+    }
+
+    if (updateListingIdInput?.value) {
+      loadMedia(updateListingIdInput.value.trim());
+    }
   </script>
 </Layout>

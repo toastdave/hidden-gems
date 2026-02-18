@@ -46,6 +46,7 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
     null,
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inFlightRef = useRef<AbortController | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
   const pendingUserFocusRef = useRef<{ longitude: number; latitude: number } | null>(null);
@@ -91,6 +92,12 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
 
   const fetchListings = useCallback(
     async (bounds?: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => {
+      if (inFlightRef.current) {
+        inFlightRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      inFlightRef.current = abortController;
       const url = new URL(`${apiBase}/listings/map`);
       if (bounds) {
         url.searchParams.set(
@@ -99,12 +106,24 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
         );
       }
       try {
-        const res = await fetch(url.toString(), { credentials: "include" });
+        const res = await fetch(url.toString(), {
+          credentials: "include",
+          signal: abortController.signal,
+        });
         if (!res.ok) return;
         const data = (await res.json()) as { listings: MapListing[] };
-        setGeojson(listingsToGeoJSON(data.listings));
-      } catch {
+        if (!abortController.signal.aborted) {
+          setGeojson(listingsToGeoJSON(data.listings));
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
         // silently fail
+      } finally {
+        if (inFlightRef.current === abortController) {
+          inFlightRef.current = null;
+        }
       }
     },
     [apiBase],
@@ -113,6 +132,12 @@ export function DiscoveryMap({ apiBase }: DiscoveryMapProps) {
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
+
+  useEffect(() => {
+    return () => {
+      inFlightRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) {

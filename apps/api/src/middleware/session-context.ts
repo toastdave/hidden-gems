@@ -28,8 +28,6 @@ export const sessionContextMiddleware: MiddlewareHandler<ApiEnv> = async (c, nex
       target: schema.users.id,
       set: {
         email: sessionData.user.email,
-        displayName: sessionData.user.name ?? null,
-        avatarUrl: sessionData.user.image ?? null,
         emailVerifiedAt: sessionData.user.emailVerified ? new Date() : null,
         updatedAt: new Date(),
       },

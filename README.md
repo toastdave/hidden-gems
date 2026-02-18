@@ -43,6 +43,9 @@ This starts:
 - **Web** at http://localhost:4321
 - **API** at http://localhost:3000
 - **Postgres** at localhost:5432
+- **MinIO (S3)** at http://localhost:9000 (console: http://localhost:9001)
+
+Compose also bootstraps the `hidden-gems-media` bucket and local CORS policy automatically.
 
 Source code is mounted for hot reload. Edit files and see changes immediately.
 
@@ -118,6 +121,12 @@ docker build -f apps/api/Dockerfile -t hidden-gems-api .
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (optional): Google OAuth provider credentials.
 - `POLAR_WEBHOOK_SECRET` (recommended): signature validation for billing webhooks.
 - `ADMIN_EMAILS` (optional): comma-separated list of moderation admins.
+- `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (required for media uploads): S3 credentials.
+- `S3_BUCKET` (required for media uploads): bucket for listing media.
+- `S3_REGION` (optional): defaults to `us-east-1`.
+- `S3_ENDPOINT` (optional): S3-compatible endpoint (local MinIO uses `http://localhost:9000`).
+- `S3_PRESIGN_ENDPOINT` (optional): endpoint used when generating browser upload URLs.
+- `S3_PUBLIC_BASE_URL` (optional): base URL used to generate public media URLs.
 
 ### Web
 
@@ -138,6 +147,7 @@ docker build -f apps/api/Dockerfile -t hidden-gems-api .
 - Auth: native Better Auth endpoints under `/api/auth/*` (email/password, session, optional Google OAuth).
 - Hosts: host profile create/upsert and public host page.
 - Listings: draft create/update, publish, visibility filtering, feed and map APIs.
+- Media: signed listing photo uploads, gallery ordering, cover selection, and removal.
 - Engagement: favorites toggle/list.
 - Alerts: saved alerts create/list/toggle and worker skeleton route.
 - Billing: plans, checkout URL creation, webhook processing, entitlement status, premium gate endpoint.

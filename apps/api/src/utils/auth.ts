@@ -6,6 +6,7 @@ export function sanitizeUser(user: typeof schema.users.$inferSelect): ApiUser {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
   };
 }
 

@@ -113,7 +113,7 @@
             "Manual coordinate edits sync with map pin"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Round coordinates for display only."
         },
         {
@@ -126,7 +126,7 @@
             "Reloading editor restores saved pin"
           ],
           "priority": 1,
-          "passes": false,
+          "passes": true,
           "notes": "Reject null location on publish, not draft."
         },
         {

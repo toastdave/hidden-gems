@@ -26,6 +26,20 @@ const listing = result.data?.listing ?? null;
               <span class="rounded-full border px-3 py-1">{listing.status}</span>
             </div>
             <p class="text-sm text-muted-foreground">Location: {listing.locationText ?? "No location set"}</p>
+            {
+              Array.isArray(listing.photos) && listing.photos.length > 0 ? (
+                <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  {listing.photos.map((photo: any, index: number) => (
+                    <img
+                      src={photo.url}
+                      alt={`${listing.title ?? "Listing"} photo ${index + 1}`}
+                      class="h-32 w-full rounded-md border object-cover"
+                      loading="lazy"
+                    />
+                  ))}
+                </div>
+              ) : null
+            }
             <div class="flex flex-wrap items-center gap-2">
               <button
                 id="favorite-toggle"

@@ -4,9 +4,13 @@ import { Label } from "@/components/ui/label";
 import { MapControls, Map as MapGL, MapMarker, MarkerContent } from "@/components/ui/map";
 import { geocodeAddress, reverseGeocode } from "@/lib/geocoding";
 import { MapPin, Search } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
-type LocationPickerProps = {
+export type LocationPickerProps = {
+  pickerId?: string;
+  latFieldName?: string;
+  lngFieldName?: string;
+  locationTextFieldName?: string;
   initialLat?: number;
   initialLng?: number;
   initialAddress?: string;
@@ -18,6 +22,10 @@ type LocationPickerProps = {
 };
 
 export function LocationPicker({
+  pickerId,
+  latFieldName = "lat",
+  lngFieldName = "lng",
+  locationTextFieldName = "locationText",
   initialLat,
   initialLng,
   initialAddress,
@@ -31,6 +39,7 @@ export function LocationPicker({
   const [suggestions, setSuggestions] = useState<
     Array<{ lat: number; lng: number; displayName: string }>
   >([]);
+  const fieldIdPrefix = pickerId ?? useId().replace(/:/g, "");
   const mapRef = useRef<maplibregl.Map | null>(null);
   const onLocationChangeRef = useRef(onLocationChange);
   onLocationChangeRef.current = onLocationChange;
@@ -40,6 +49,35 @@ export function LocationPicker({
       onLocationChangeRef.current?.({ lat, lng, locationText: address });
     }
   }, [lat, lng, address]);
+
+  useEffect(() => {
+    if (!pickerId) {
+      return;
+    }
+
+    const eventName = `location-picker:set:${pickerId}`;
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        lat?: number;
+        lng?: number;
+        locationText?: string;
+      }>;
+      const nextLat = Number(customEvent.detail?.lat);
+      const nextLng = Number(customEvent.detail?.lng);
+      if (Number.isFinite(nextLat) && Number.isFinite(nextLng)) {
+        setLat(nextLat);
+        setLng(nextLng);
+        mapRef.current?.flyTo({ center: [nextLng, nextLat], zoom: 14, duration: 700 });
+      }
+
+      if (typeof customEvent.detail?.locationText === "string") {
+        setAddress(customEvent.detail.locationText);
+      }
+    };
+
+    window.addEventListener(eventName, handler as EventListener);
+    return () => window.removeEventListener(eventName, handler as EventListener);
+  }, [pickerId]);
 
   const handleMapClick = useCallback(async (e: maplibregl.MapMouseEvent) => {
     const { lng: clickLng, lat: clickLat } = e.lngLat;
@@ -61,6 +99,22 @@ export function LocationPicker({
       map.off("click", handleMapClick);
     };
   }, [handleMapClick]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || lat == null || lng == null) {
+      return;
+    }
+
+    const center = map.getCenter();
+    const lngDelta = Math.abs(center.lng - lng);
+    const latDelta = Math.abs(center.lat - lat);
+    if (lngDelta < 1e-6 && latDelta < 1e-6) {
+      return;
+    }
+
+    map.flyTo({ center: [lng, lat], duration: 500, essential: true });
+  }, [lat, lng]);
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
@@ -169,13 +223,17 @@ export function LocationPicker({
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label htmlFor="picker-lat">Latitude</Label>
+          <Label htmlFor={`${fieldIdPrefix}-lat`}>Latitude</Label>
           <Input
-            id="picker-lat"
+            id={`${fieldIdPrefix}-lat`}
             type="number"
             step="any"
             value={lat ?? ""}
             onChange={(e) => {
+              if (e.target.value.trim() === "") {
+                setLat(null);
+                return;
+              }
               const v = Number.parseFloat(e.target.value);
               if (Number.isFinite(v)) setLat(v);
             }}
@@ -183,13 +241,17 @@ export function LocationPicker({
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="picker-lng">Longitude</Label>
+          <Label htmlFor={`${fieldIdPrefix}-lng`}>Longitude</Label>
           <Input
-            id="picker-lng"
+            id={`${fieldIdPrefix}-lng`}
             type="number"
             step="any"
             value={lng ?? ""}
             onChange={(e) => {
+              if (e.target.value.trim() === "") {
+                setLng(null);
+                return;
+              }
               const v = Number.parseFloat(e.target.value);
               if (Number.isFinite(v)) setLng(v);
             }}
@@ -198,9 +260,9 @@ export function LocationPicker({
         </div>
       </div>
 
-      <input type="hidden" name="lat" value={lat ?? ""} />
-      <input type="hidden" name="lng" value={lng ?? ""} />
-      <input type="hidden" name="locationText" value={address} />
+      <input type="hidden" name={latFieldName} value={lat ?? ""} />
+      <input type="hidden" name={lngFieldName} value={lng ?? ""} />
+      <input type="hidden" name={locationTextFieldName} value={address} />
     </div>
   );
 }

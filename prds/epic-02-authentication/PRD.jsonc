@@ -184,7 +184,7 @@
       "description": "As a user, I want to update my profile.",
       "acceptanceCriteria": ["Display name editable", "Avatar upload works", "Home location saved"],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "",
       "tasks": [
         {
@@ -197,7 +197,7 @@
             "Updated types exported in shared package"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Keep location as structured lat/lng fields."
         },
         {
@@ -210,7 +210,7 @@
             "Input validation rejects malformed payloads"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Only current user can update self."
         },
         {
@@ -236,7 +236,7 @@
             "Saved profile includes uploaded avatar URL"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Temporary local storage is acceptable for MVP."
         },
         {
@@ -249,7 +249,7 @@
             "Success and error states shown clearly"
           ],
           "priority": 2,
-          "passes": false,
+          "passes": true,
           "notes": "Reuse form primitives from design system."
         }
       ]
