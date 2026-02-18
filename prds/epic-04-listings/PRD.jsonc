@@ -140,7 +140,7 @@
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Mock map events in tests."
+          "notes": "API invalid-coordinate coverage and reload persistence tests added; map click UI test still pending."
         }
       ]
     },

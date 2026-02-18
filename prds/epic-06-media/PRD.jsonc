@@ -105,7 +105,7 @@
           ],
           "priority": 1,
           "passes": false,
-          "notes": "Use mocked object storage in CI."
+          "notes": "Auth and upload-complete flow coverage added at API/controller layer; UI multi-file test automation still pending."
         }
       ]
     }
