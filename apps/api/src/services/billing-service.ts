@@ -81,8 +81,14 @@ export async function listPlans() {
     ...(plan as Plan),
     features: {
       maxListings: plan.maxListings,
+      track:
+        plan.slug === "viewer-plus"
+          ? "viewer"
+          : plan.slug === "creator-pro"
+            ? "creator"
+            : "general",
       unlimitedDiscovery: plan.slug !== "free",
-      boostedDiscovery: plan.slug === "pro",
+      boostedDiscovery: plan.slug === "pro" || plan.slug === "creator-pro",
     },
   }));
   return { plans: typedPlans };

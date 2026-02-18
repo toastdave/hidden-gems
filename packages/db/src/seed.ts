@@ -166,6 +166,20 @@ async function seed() {
   const seedPlans = [
     { id: "plan-free", name: "Free", slug: "free", priceMonthly: 0, maxListings: 3 },
     { id: "plan-starter", name: "Starter", slug: "starter", priceMonthly: 999, maxListings: 10 },
+    {
+      id: "plan-viewer-plus",
+      name: "Viewer Plus",
+      slug: "viewer-plus",
+      priceMonthly: 1499,
+      maxListings: 10,
+    },
+    {
+      id: "plan-creator-pro",
+      name: "Creator Pro",
+      slug: "creator-pro",
+      priceMonthly: 3999,
+      maxListings: 75,
+    },
     { id: "plan-pro", name: "Pro", slug: "pro", priceMonthly: 2999, maxListings: 50 },
   ];
 

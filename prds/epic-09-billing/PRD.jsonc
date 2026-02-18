@@ -120,8 +120,8 @@
             "Billing page supports selecting between viewer and creator-oriented upgrades"
           ],
           "priority": 1,
-          "passes": false,
-          "notes": "Current UI messaging is present; explicit checkout selection by track still pending."
+          "passes": true,
+          "notes": "Billing plan list and Polar plugin now support viewer-plus and creator-pro checkout tracks via environment-configured product IDs."
         },
         {
           "id": "US-801-T09",

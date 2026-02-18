@@ -18,5 +18,5 @@ export function isAdmin(email: string) {
 }
 
 export function listHasPremiumAccess(slug: string | null | undefined) {
-  return slug === "starter" || slug === "pro";
+  return slug === "starter" || slug === "pro" || slug === "viewer-plus" || slug === "creator-pro";
 }
