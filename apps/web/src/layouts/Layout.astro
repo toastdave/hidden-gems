@@ -9,6 +9,11 @@ interface Props {
 }
 
 const { title = "Hidden Gems" } = Astro.props;
+const isDiscoverPage = Astro.url.pathname === "/";
+const initialSearchQuery = Astro.url.searchParams.get("q") ?? "";
+const initialRadius = Astro.url.searchParams.get("radius") ?? "";
+const initialType = Astro.url.searchParams.get("type") ?? "";
+const initialSort = Astro.url.searchParams.get("sort") ?? "nearby";
 const sessionResult = await fetchApiJson<{ user: { email?: string } | null }>(
   `${apiServerBase}/api/auth/get-session`,
   {
@@ -46,7 +51,7 @@ const currentUser = sessionResult.data?.user ?? null;
   </head>
   <body class="app-shell min-h-screen bg-background text-foreground antialiased">
     <header class="sticky top-0 z-30 border-b bg-background">
-      <div class="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <div class="mx-auto grid w-full max-w-screen-2xl grid-cols-[auto,1fr,auto] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <a href="/" class="flex items-center gap-2">
           <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
             HG
@@ -54,16 +59,87 @@ const currentUser = sessionResult.data?.user ?? null;
           <span class="text-sm font-semibold tracking-[0.04em]">Hidden Gems</span>
         </a>
 
-        <nav class="hidden items-center gap-1 md:flex">
-          <Button variant="ghost" size="sm" asChild><a href="/">Discover</a></Button>
-          <Button variant="ghost" size="sm" asChild><a href="/listings/map">Map</a></Button>
-          {currentUser ? (
-            <>
-              <Button variant="ghost" size="sm" asChild><a href="/saved">Saved</a></Button>
-              <Button variant="ghost" size="sm" asChild><a href="/hosts/new">Host</a></Button>
-            </>
-          ) : null}
-        </nav>
+        {
+          isDiscoverPage ? (
+            <div class="col-span-3 order-3 md:order-none md:col-span-1 md:justify-self-center md:w-full md:max-w-5xl">
+              <div class="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2 shadow-sm">
+                <div class="flex h-10 min-w-[220px] flex-1 items-center gap-2 rounded-full border bg-background px-3">
+                  <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                  <input
+                    id="listing-search"
+                    data-listing-search
+                    name="q"
+                    type="search"
+                    value={initialSearchQuery}
+                    placeholder="Search neighborhood or keyword"
+                    class="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+
+                <select id="listing-radius" class="h-10 rounded-full border bg-background px-3 text-sm">
+                  <option value="" selected={initialRadius === ""}>Any distance</option>
+                  <option value="25" selected={initialRadius === "25"}>25 mi</option>
+                  <option value="50" selected={initialRadius === "50"}>50 mi</option>
+                  <option value="100" selected={initialRadius === "100"}>100 mi</option>
+                  <option value="250" selected={initialRadius === "250"}>250 mi</option>
+                </select>
+
+                <select id="listing-type" class="h-10 rounded-full border bg-background px-3 text-sm">
+                  <option value="" selected={initialType === ""}>All types</option>
+                  <option value="event" selected={initialType === "event"}>Event</option>
+                  <option value="activity" selected={initialType === "activity"}>Activity</option>
+                  <option value="place" selected={initialType === "place"}>Place</option>
+                </select>
+
+                <select id="listing-sort" class="h-10 rounded-full border bg-background px-3 text-sm">
+                  <option value="nearby" selected={initialSort === "nearby"}>Nearby</option>
+                  <option value="newest" selected={initialSort === "newest"}>Newest</option>
+                  <option value="a-z" selected={initialSort === "a-z"}>Title A-Z</option>
+                </select>
+
+                <div class="inline-flex rounded-full border p-1">
+                  <button class="view-toggle rounded-full px-3 py-1 text-xs font-medium" data-view="split" type="button">Split</button>
+                  <button class="view-toggle rounded-full px-3 py-1 text-xs font-medium" data-view="list" type="button">List</button>
+                  <button class="view-toggle rounded-full px-3 py-1 text-xs font-medium" data-view="map" type="button">Map</button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <form action="/" method="get" class="hidden items-center justify-self-center md:flex md:w-full md:max-w-xl">
+              <div class="flex h-11 w-full items-center gap-2 rounded-full border bg-card px-3 shadow-sm transition focus-within:border-primary/60 focus-within:shadow">
+                <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+                <input
+                  id="listing-search"
+                  data-listing-search
+                  name="q"
+                  type="search"
+                  value={initialSearchQuery}
+                  placeholder="Start your search"
+                  class="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+                <Button type="submit" size="sm">Search</Button>
+              </div>
+            </form>
+          )
+        }
 
         <div class="flex items-center gap-2">
           {currentUser ? (
@@ -85,6 +161,34 @@ const currentUser = sessionResult.data?.user ?? null;
           )}
           <ModeToggle client:load />
         </div>
+
+        {
+          !isDiscoverPage ? (
+            <form action="/" method="get" class="col-span-3 flex items-center md:hidden">
+              <div class="flex h-10 w-full items-center gap-2 rounded-full border bg-card px-3 shadow-sm">
+                <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+                <input
+                  id="listing-search-mobile"
+                  data-listing-search
+                  name="q"
+                  type="search"
+                  value={initialSearchQuery}
+                  placeholder="Start your search"
+                  class="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+            </form>
+          ) : null
+        }
       </div>
     </header>
     <main class="mx-auto w-full max-w-screen-2xl px-4 py-6 sm:px-6 lg:px-8">

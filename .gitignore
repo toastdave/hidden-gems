@@ -28,3 +28,4 @@ bun.lock
 
 # Drizzle
 packages/db/drizzle/meta/
+apps/web/.vite/
