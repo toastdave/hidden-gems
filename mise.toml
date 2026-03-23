@@ -13,7 +13,7 @@ run = "bun run dev"
 description = "Start the SvelteKit app locally"
 
 [tasks."dev:docker"]
-run = "docker compose up --build web"
+run = "docker compose up --build"
 description = "Start the fully containerized app"
 
 [tasks."docker:up"]

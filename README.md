@@ -22,7 +22,7 @@ Hidden Gems is a location-first discovery platform for yard sales, estate sales,
 - `apps/web` - buyer and host-facing SvelteKit app
 - `packages/db` - Drizzle schema, migrations, and seeding
 - `docs/prds` - epic PRDs and implementation task breakdowns
-- `docker/web` - container image for dev and production SSR
+- `apps/web/Dockerfile` - container image for dev and production SSR
 
 ## Quick start
 
@@ -34,7 +34,14 @@ Hidden Gems is a location-first discovery platform for yard sales, estate sales,
 6. `mise run seed`
 7. `mise run dev`
 
-To run the app fully inside Docker instead, use `mise run dev:docker`.
+To run the full app stack inside Docker with hot reload, use `mise run dev:docker`.
+
+## Auth setup
+
+- Email/password auth uses `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
+- GitHub OAuth callback: `http://localhost:5173/api/auth/callback/github`
+- Google OAuth callback: `http://localhost:5173/api/auth/callback/google`
+- Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` to enable those buttons.
 
 ## Core commands
 
