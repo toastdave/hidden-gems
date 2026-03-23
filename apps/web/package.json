@@ -15,7 +15,9 @@
 		"test": "bun test"
 	},
 	"dependencies": {
+		"@better-auth/drizzle-adapter": "^1.5.5",
 		"@hidden-gems/db": "workspace:*",
+		"better-auth": "^1.5.5",
 		"maplibre-gl": "^5.21.0"
 	},
 	"devDependencies": {

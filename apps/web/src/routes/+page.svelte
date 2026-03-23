@@ -1,5 +1,8 @@
 <script lang="ts">
 import { siteConfig } from '$lib/config/site'
+import type { PageData } from './$types'
+
+const { data } = $props<{ data: PageData }>()
 
 const epics = [
 	'Platform foundation',
@@ -51,6 +54,16 @@ const stack = [
 					This base scaffold locks the stack, containerizes the app, wires the database
 					package, and sets up the planning docs for the full MVP build.
 				</p>
+				<div class="flex flex-wrap gap-3">
+					<a class="rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-mist-100" href={data.user ? '/account' : '/auth/sign-up?redirectTo=/account'}>
+						{data.user ? 'Open account' : 'Create an account'}
+					</a>
+					{#if !data.user}
+						<a class="rounded-full border border-ink-950/10 bg-white/80 px-5 py-3 text-sm font-semibold text-ink-700" href="/auth/sign-in?redirectTo=/account">
+							Sign in
+						</a>
+					{/if}
+				</div>
 			</div>
 
 			<div class="rounded-[1.5rem] border border-ink-950/10 bg-ink-950 p-6 text-mist-100">
