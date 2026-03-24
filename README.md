@@ -39,9 +39,17 @@ To run the full app stack inside Docker with hot reload, use `mise run dev:docke
 ## Auth setup
 
 - Email/password auth uses `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
-- GitHub OAuth callback: `http://localhost:5173/api/auth/callback/github`
-- Google OAuth callback: `http://localhost:5173/api/auth/callback/google`
+- `BETTER_AUTH_TRUSTED_ORIGINS` accepts a comma-separated list of extra origins, including your Tailscale URL.
+- GitHub OAuth callback: `http://localhost:7411/api/auth/callback/github`
+- Google OAuth callback: `http://localhost:7411/api/auth/callback/google`
 - Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` to enable those buttons.
+
+## Tailscale serve
+
+1. Start the app with the repo env loaded so `DATABASE_URL` and auth settings are available.
+2. Run `tailscale serve --bg --https=443 http://127.0.0.1:7411`.
+3. Set `BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net` if you want Better Auth links and OAuth callbacks to resolve to your tailnet hostname.
+4. Add that same origin to `BETTER_AUTH_TRUSTED_ORIGINS` when you want to use both localhost and Tailscale during development.
 
 ## Core commands
 
