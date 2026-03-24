@@ -2,69 +2,136 @@
 
 Hidden Gems is a location-first discovery platform for yard sales, estate sales, flea markets, and pop-up vendor events.
 
-## Locked stack
+## Requirements
 
-- `SvelteKit` + `Svelte 5`
-- `Tailwind CSS v4`
-- `shadcn-svelte`
-- `mapcn-svelte`
-- `Drizzle ORM`
-- `Postgres`
-- `Better Auth`
-- `Polar`
-- `Bun workspaces`
-- `Biome`
-- `Docker Compose`
 - `mise`
+- `Docker` with `docker compose`
+- `Tailscale` for tailnet access
 
-## Workspace layout
+## Getting started
 
-- `apps/web` - buyer and host-facing SvelteKit app
-- `packages/db` - Drizzle schema, migrations, and seeding
-- `docs/prds` - epic PRDs and implementation task breakdowns
-- `apps/web/Dockerfile` - container image for dev and production SSR
+1. Copy the example environment file:
 
-## Quick start
+```bash
+cp .env.example .env
+```
 
-1. `cp .env.example .env`
-2. `mise install`
-3. `mise run install`
-4. `mise run docker:up`
-5. `mise run db:push`
-6. `mise run seed`
-7. `mise run dev`
+2. Update `.env` for your machine:
 
-To run the full app stack inside Docker with hot reload, use `mise run dev:docker`.
+```dotenv
+BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:7411,https://<device>.<tailnet>.ts.net
+```
 
-## Auth setup
+3. Install the toolchain and dependencies:
 
-- Email/password auth uses `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
-- `BETTER_AUTH_TRUSTED_ORIGINS` accepts a comma-separated list of extra origins, including your Tailscale URL.
-- GitHub OAuth callback: `http://localhost:7411/api/auth/callback/github`
-- Google OAuth callback: `http://localhost:7411/api/auth/callback/google`
-- Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` to enable those buttons.
+```bash
+mise install
+mise run install
+```
 
-## Tailscale serve
+## Local development
 
-1. Start the app with the repo env loaded so `DATABASE_URL` and auth settings are available.
-2. Run `tailscale serve --bg --https=443 http://127.0.0.1:7411`.
-3. Set `BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net` if you want Better Auth links and OAuth callbacks to resolve to your tailnet hostname.
-4. Add that same origin to `BETTER_AUTH_TRUSTED_ORIGINS` when you want to use both localhost and Tailscale during development.
+Run the supporting services in Docker and the web app on your host machine.
 
-## Core commands
+Start:
 
-- `mise run dev` - run the SvelteKit app locally with Bun
-- `mise run lint` - run Biome linting
-- `mise run format` - format the repo with Biome
-- `mise run check` - run Svelte and TypeScript checks
-- `mise run test` - run Bun tests
-- `mise run build` - produce the SSR build
-- `mise run db:generate` - generate Drizzle migrations
-- `mise run db:migrate` - apply migrations
-- `mise run db:studio` - open Drizzle Studio
+```bash
+mise run docker:up
+mise run db:push
+mise run seed
+mise run dev
+```
 
-## Notes
+App URLs:
 
-- We are intentionally starting with a `SvelteKit` monolith instead of a separate API service.
-- `svelte-adapter-bun` is used for Bun-native SSR output.
-- `Biome` replaces both Prettier and ESLint for the initial codebase.
+- Web app: `http://localhost:7411`
+- Mailpit: `http://localhost:8025`
+- MinIO console: `http://localhost:9001`
+
+Stop supporting services:
+
+```bash
+mise run docker:down
+```
+
+Reset local infrastructure data:
+
+```bash
+docker compose down -v
+```
+
+## Full Docker development
+
+Run the entire app stack inside Docker with hot reload.
+
+Start:
+
+```bash
+mise run dev:docker
+```
+
+In another shell, initialize the database if needed:
+
+```bash
+mise run db:push
+mise run seed
+```
+
+Open:
+
+- Web app: `http://localhost:7411`
+- Mailpit: `http://localhost:8025`
+- MinIO console: `http://localhost:9001`
+
+Stop:
+
+```bash
+docker compose down
+```
+
+Reset all Docker data:
+
+```bash
+docker compose down -v
+```
+
+## Tailscale access
+
+Expose the web app to your tailnet after either local or full Docker development is running.
+
+Start Tailscale Serve:
+
+```bash
+sudo tailscale serve --bg --https=443 http://127.0.0.1:7411
+```
+
+Check status:
+
+```bash
+tailscale serve status
+```
+
+Stop serving over Tailscale:
+
+```bash
+sudo tailscale serve reset
+```
+
+Open the app from another device on your tailnet:
+
+```text
+https://<device>.<tailnet>.ts.net
+```
+
+## Common commands
+
+```bash
+mise run check
+mise run lint
+mise run test
+mise run build
+mise run db:generate
+mise run db:migrate
+mise run db:studio
+```
