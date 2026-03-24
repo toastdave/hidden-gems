@@ -56,6 +56,9 @@ services:
     container_name: hidden-gems-web
     environment:
       CHOKIDAR_USEPOLLING: 'true'
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/hidden_gems
+      S3_ENDPOINT: http://minio:9000
+      SMTP_HOST: mailpit
     env_file:
       - .env
     depends_on:
@@ -64,11 +67,11 @@ services:
       minio:
         condition: service_started
     ports:
-      - '5173:5173'
+      - '7411:7411'
     volumes:
       - .:/app
       - /app/node_modules
-    command: bun run dev -- --host 0.0.0.0 --port 5173
+    command: bun run dev -- --host 0.0.0.0 --port 7411
 
 volumes:
   postgres-data:
