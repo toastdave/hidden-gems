@@ -5,20 +5,32 @@
 - `docs/prds/implementation-roadmap.md`
 
 ## Auth
-- Better Auth docs
-- Better Auth `llms.txt`
-- Preferred skill: `better-auth/skills/better-auth-best-practices`
+- Canonical docs: `https://www.better-auth.com/docs`
+- LLM docs: `https://www.better-auth.com/llms.txt`
+- Preferred local skill: `better-auth-best-practices`
 
-## UI
-- shadcn-svelte docs and registry
-- Preferred installed skill for visual polish: `anthropics/skills/frontend-design`
+## UI And Svelte
+- Canonical docs: `https://www.shadcn-svelte.com/llms.txt`
+- Registry and CLI: `https://www.shadcn-svelte.com/docs/cli`
+- Supporting docs: `https://svelte.dev/docs`
+- Preferred local skills: `svelte-code-writer`, `frontend-design`
 
 ## Maps
-- mapcn-svelte docs and registry components
+- Canonical docs: `https://www.mapcn-svelte.dev/docs`
+- Registry entrypoint: `https://www.mapcn-svelte.dev/docs/basic-map`
+- Preferred local skill: `svelte-code-writer`
+- Policy: use `mapcn-svelte` instead of new custom MapLibre wrappers
 
 ## Database
-- Drizzle docs
-- PostgreSQL docs
+- Canonical docs: `https://orm.drizzle.team/llms.txt`
+- Supporting docs: `https://www.postgresql.org/docs/current/`
+- Preferred local skill: `postgresql-optimization`
+
+## Git
+- Preferred local skill: `git-commit`
+
+## Browser Automation
+- Preferred local skill: `agent-browser`
 
 ## Local Development
 - `README.md`

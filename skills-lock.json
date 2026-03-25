@@ -1,10 +1,35 @@
 {
 	"version": 1,
 	"skills": {
+		"agent-browser": {
+			"source": "vercel-labs/agent-browser",
+			"sourceType": "github",
+			"computedHash": "34bde65aabea7d757dffb84f68e9f25bc79a12b77042511515b9c820a1d107f8"
+		},
+		"better-auth-best-practices": {
+			"source": "better-auth/skills",
+			"sourceType": "github",
+			"computedHash": "a4c830509e85557b59339d8d93a4e243e9e59c686e7678854d39230e12c2a6dc"
+		},
 		"frontend-design": {
 			"source": "anthropics/skills",
 			"sourceType": "github",
 			"computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+		},
+		"git-commit": {
+			"source": "github/awesome-copilot",
+			"sourceType": "github",
+			"computedHash": "2607fc60629b82b257136dd2a7a373f0a4466c0b49df7746d845d59313c99b21"
+		},
+		"postgresql-optimization": {
+			"source": "github/awesome-copilot",
+			"sourceType": "github",
+			"computedHash": "8022448de70ba9a485e3b5bce34c5bbc644f93eb39b68431c9f7dabcf03aeb09"
+		},
+		"svelte-code-writer": {
+			"source": "sveltejs/ai-tools",
+			"sourceType": "github",
+			"computedHash": "c0e2cce9855f8e312cbb0a05aef164b4659c672d7723e4e598ffa6bc94890542"
 		}
 	}
 }
