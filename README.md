@@ -103,19 +103,19 @@ Expose the web app to your tailnet after either local or full Docker development
 Start Tailscale Serve:
 
 ```bash
-sudo tailscale serve --bg --https=443 http://127.0.0.1:7411
+mise run tailscale:up
 ```
 
 Check status:
 
 ```bash
-tailscale serve status
+mise run tailscale:status
 ```
 
 Stop serving over Tailscale:
 
 ```bash
-sudo tailscale serve reset
+mise run tailscale:down
 ```
 
 Open the app from another device on your tailnet:

@@ -24,6 +24,18 @@ description = "Start local infrastructure containers"
 run = "docker compose down"
 description = "Stop Docker services"
 
+[tasks."tailscale:up"]
+run = "sudo tailscale serve --bg --https=443 http://127.0.0.1:7411"
+description = "Expose the web app over Tailscale"
+
+[tasks."tailscale:status"]
+run = "tailscale serve status"
+description = "Show Tailscale Serve status"
+
+[tasks."tailscale:down"]
+run = "sudo tailscale serve reset"
+description = "Stop Tailscale Serve"
+
 [tasks.check]
 depends = ["install"]
 run = "bun run check"
