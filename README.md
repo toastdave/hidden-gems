@@ -19,8 +19,8 @@ cp .env.example .env
 2. Update `.env` for your machine:
 
 ```dotenv
-BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net
-BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:7411,https://<device>.<tailnet>.ts.net
+BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net:7411
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:7411,https://<device>.<tailnet>.ts.net:7411
 ```
 
 3. Install the toolchain and dependencies:
@@ -119,6 +119,8 @@ The stack is safe to leave running during development. Code changes are picked u
 
 Expose the web app to your tailnet after either local or full Docker development is running.
 
+This repo uses the same port locally and over Tailscale so multiple projects can share one tailnet node without colliding on `443`.
+
 Start Tailscale Serve:
 
 ```bash
@@ -140,10 +142,10 @@ mise run tailscale:down
 Open the app from another device on your tailnet:
 
 ```text
-https://<device>.<tailnet>.ts.net
+https://<device>.<tailnet>.ts.net:7411
 ```
 
-Use the full `https://` URL. This setup serves HTTPS on port `443`; `http://` requests to the tailnet hostname will fail.
+Use the full `https://` URL. This setup serves HTTPS on port `7411`; `http://` requests to the tailnet hostname will fail.
 
 ## Common commands
 
