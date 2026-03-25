@@ -4,18 +4,18 @@
 
 - Finalize repository conventions, environments, local containers, tailnet preview flow, and CI entrypoints.
 - Establish Drizzle schema ownership, migrations, seeds, and workspace task runners.
-- Ship the SvelteKit shell, app layout, route groups, and design tokens.
+- Ship the SvelteKit shell, shadcn-svelte design foundations, mapcn-svelte map foundations, and route groups.
 
 ## Phase 2 - Host publishing core
 
 - Implement authentication, sessions, and account settings.
 - Ship host profile creation and host dashboard scaffolding.
-- Build listing draft, edit, publish, and lifecycle management flows.
+- Build listing draft, edit, publish, and lifecycle management flows with mobile-friendly shadcn-svelte surfaces.
 - Add media upload, ordering, and cover image handling.
 
 ## Phase 3 - Discovery MVP
 
-- Launch the home feed, listing detail pages, host pages, and map-first browsing.
+- Launch the discovery-first homepage, listing detail pages, host pages, and map-first browsing.
 - Add location search, date filters, event-type filters, and tag filters.
 - Add SEO, structured metadata, and mobile-first performance work.
 

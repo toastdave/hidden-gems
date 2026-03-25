@@ -16,16 +16,17 @@ Let hosts create, update, publish, unpublish, and manage event listings with min
 - As a host, I can publish a yard sale quickly from my phone.
 - As a host, I can update my event details if plans change.
 - As a host, I can unpublish or archive an old event.
+- As a host, I can manage listings from a polished mobile-friendly dashboard that does not feel like an internal tool.
 
 ## Task breakdown
 
 - Build dashboard list view with status tabs for draft, published, and archived.
-- Create listing form sections for basics, schedule, location, tags, and photos.
+- Create listing form sections for basics, schedule, location, tags, and photos using shadcn-svelte form primitives.
 - Add validation for required fields and publish readiness.
 - Add listing preview and detail page parity checks.
 - Support publish, unpublish, duplicate, archive, and delete behaviors.
 - Add server-side permissions so hosts only manage their own listings.
-- Store structured location data to support map and radius search.
+- Store structured location data to support mapcn-svelte map views and radius search.
 
 ## Acceptance criteria
 

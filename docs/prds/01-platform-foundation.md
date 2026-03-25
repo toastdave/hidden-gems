@@ -2,20 +2,20 @@
 
 ## Goal
 
-Create the technical and design foundation for a fast-moving SvelteKit monolith with Bun workspaces, Drizzle, containers, and a reusable UI system.
+Create the technical and design foundation for a fast-moving SvelteKit monolith with Bun workspaces, Drizzle, containers, a shadcn-svelte UI system, and mapcn-svelte maps.
 
 ## MVP scope
 
 - Monorepo structure with `apps/web` and `packages/db`
 - Bun-native SSR output, local Docker services, detached full-stack Docker dev, and mise task runners
 - Environment handling, database schema ownership, local seeding, and optional Tailscale preview access
-- Shared visual tokens, app shell, navigation skeleton, and route organization
+- Shared visual tokens, shadcn-svelte component foundations, mapcn-svelte maps, and route organization
 
 ## Requirements
 
 - Local, full Docker, and tailnet preview setups work from a fresh clone with documented commands.
 - Core environments exist for local, preview, and production.
-- The app has a consistent shell for public, auth, and host areas.
+- The app has a consistent shell for public, auth, host, and discovery areas.
 - Database changes are versioned and repeatable.
 
 ## Task breakdown
@@ -23,9 +23,10 @@ Create the technical and design foundation for a fast-moving SvelteKit monolith 
 - Create workspace, package management, and repository conventions.
 - Set up Biome, TypeScript checks, and baseline test entrypoints.
 - Containerize Postgres, object storage, mail testing, and SSR app runtime.
-- Build route groups and placeholder layouts for public, account, and host areas.
+- Build route groups and placeholder layouts for public, account, host, and discovery areas.
 - Add seed scripts, fake data fixtures, reset instructions, and remote-preview runbooks.
 - Define environment variables for auth, billing, storage, and maps.
+- Establish shadcn-svelte as the default UI primitive system and mapcn-svelte as the default map system.
 - Add CI-ready commands for install, check, lint, test, and build.
 
 ## Acceptance criteria

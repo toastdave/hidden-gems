@@ -16,12 +16,14 @@ Give sellers and organizers a trustworthy public identity that ties listings tog
 - Host creation is simple enough for an individual weekend seller.
 - Public host pages feel more trustworthy than anonymous classifieds.
 - Hosts can update profile details without touching listing content.
+- Host onboarding and public profile UI should be built from shadcn-svelte primitives unless a custom surface is clearly warranted.
 
 ## Task breakdown
 
 - Create host onboarding flow after account creation.
 - Build host edit form with slug validation and preview states.
 - Create public host profile page with header, bio, and listing grid.
+- Use shared shadcn-svelte cards, forms, and status patterns for host surfaces.
 - Add host status indicators such as verified, featured, or new.
 - Add ownership checks and permissions for host editing.
 - Expose host summary cards in listing and search results.
