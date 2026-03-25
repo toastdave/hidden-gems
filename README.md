@@ -30,6 +30,11 @@ mise install
 mise run install
 ```
 
+4. Choose a development workflow:
+
+- `mise run dev` for the web app on your host machine with Docker-managed support services
+- `mise run dev:docker` for the entire stack in Docker with hot reload
+
 ## Local development
 
 Run the supporting services in Docker and the web app on your host machine.
@@ -42,6 +47,8 @@ mise run db:push
 mise run seed
 mise run dev
 ```
+
+`mise run db:push` may prompt before applying schema changes. Accept the prompt, then run `mise run seed`.
 
 App URLs:
 
@@ -61,6 +68,8 @@ Reset local infrastructure data:
 docker compose down -v
 ```
 
+The app supports hot reload in this mode. Leave the Docker services running while you edit files locally.
+
 ## Full Docker development
 
 Run the entire app stack inside Docker with hot reload.
@@ -71,12 +80,20 @@ Start:
 mise run dev:docker
 ```
 
+This task runs detached. Follow the app logs with:
+
+```bash
+docker compose logs -f web
+```
+
 In another shell, initialize the database if needed:
 
 ```bash
 mise run db:push
 mise run seed
 ```
+
+`mise run db:push` may prompt before applying schema changes. Accept the prompt, then run `mise run seed`.
 
 Open:
 
@@ -87,7 +104,7 @@ Open:
 Stop:
 
 ```bash
-docker compose down
+mise run docker:down
 ```
 
 Reset all Docker data:
@@ -95,6 +112,8 @@ Reset all Docker data:
 ```bash
 docker compose down -v
 ```
+
+The stack is safe to leave running during development. Code changes are picked up by the containerized Vite dev server.
 
 ## Tailscale access
 
@@ -123,6 +142,8 @@ Open the app from another device on your tailnet:
 ```text
 https://<device>.<tailnet>.ts.net
 ```
+
+Use the full `https://` URL. This setup serves HTTPS on port `443`; `http://` requests to the tailnet hostname will fail.
 
 ## Common commands
 

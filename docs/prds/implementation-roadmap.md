@@ -2,7 +2,7 @@
 
 ## Phase 1 - Foundation
 
-- Finalize repository conventions, environments, local containers, and CI entrypoints.
+- Finalize repository conventions, environments, local containers, tailnet preview flow, and CI entrypoints.
 - Establish Drizzle schema ownership, migrations, seeds, and workspace task runners.
 - Ship the SvelteKit shell, app layout, route groups, and design tokens.
 
