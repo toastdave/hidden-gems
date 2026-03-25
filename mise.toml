@@ -13,16 +13,20 @@ run = "bun run dev"
 description = "Start the SvelteKit app locally"
 
 [tasks."dev:docker"]
-run = "docker compose up --build"
+run = "./scripts/compose.sh up --build"
 description = "Start the fully containerized app"
 
 [tasks."docker:up"]
-run = "docker compose up -d postgres minio createbuckets mailpit"
+run = "./scripts/compose.sh up -d postgres minio createbuckets mailpit"
 description = "Start local infrastructure containers"
 
 [tasks."docker:down"]
-run = "docker compose down"
+run = "./scripts/compose.sh down"
 description = "Stop Docker services"
+
+[tasks."docker:reset"]
+run = "./scripts/compose.sh down -v"
+description = "Stop Docker services and remove volumes"
 
 [tasks.check]
 depends = ["install"]

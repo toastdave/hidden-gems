@@ -8,6 +8,8 @@ Hidden Gems is a location-first discovery platform for yard sales, estate sales,
 - `Docker` with `docker compose`
 - `Tailscale` for tailnet access
 
+All Docker commands in this README are available through `mise` tasks so they work consistently in standard shells and WSL.
+
 ## Getting started
 
 1. Copy the example environment file:
@@ -58,7 +60,7 @@ mise run docker:down
 Reset local infrastructure data:
 
 ```bash
-docker compose down -v
+mise run docker:reset
 ```
 
 ## Full Docker development
@@ -87,13 +89,13 @@ Open:
 Stop:
 
 ```bash
-docker compose down
+mise run docker:down
 ```
 
 Reset all Docker data:
 
 ```bash
-docker compose down -v
+mise run docker:reset
 ```
 
 ## Tailscale access
