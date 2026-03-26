@@ -1,315 +1,315 @@
 <script lang="ts">
-import { onMount, onDestroy, setContext, untrack } from 'svelte'
-import MapLibreGL from 'maplibre-gl'
-import 'maplibre-gl/dist/maplibre-gl.css'
-import { browser } from '$app/environment'
-import { theme } from '$lib/theme'
-import { resolveMapTheme } from './theme'
+	import { onMount, onDestroy, setContext, untrack } from "svelte";
+	import MapLibreGL from "maplibre-gl";
+	import "maplibre-gl/dist/maplibre-gl.css";
+	import { browser } from "$app/environment";
+	import { theme } from "$lib/theme";
+	import { resolveMapTheme } from "./theme";
 
-// Check document class for theme (works with next-themes, etc.)
-function getDocumentTheme(): 'light' | 'dark' | null {
-	if (typeof document === 'undefined') return null
-	if (document.documentElement.classList.contains('dark')) return 'dark'
-	if (document.documentElement.classList.contains('light')) return 'light'
-	return null
-}
-
-// Get system preference
-function getSystemTheme(): 'light' | 'dark' {
-	if (typeof window === 'undefined') return 'light'
-	return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
-let tailwindTheme: 'light' | 'dark' = $state('light')
-
-type MapStyleOption = string | MapLibreGL.StyleSpecification
-
-/** Map viewport state */
-export type MapViewport = {
-	/** Center coordinates [longitude, latitude] */
-	center: [number, number]
-	/** Zoom level */
-	zoom: number
-	/** Bearing (rotation) in degrees */
-	bearing: number
-	/** Pitch (tilt) in degrees */
-	pitch: number
-}
-
-interface Props {
-	children?: import('svelte').Snippet
-	styles?: {
-		light?: MapStyleOption
-		dark?: MapStyleOption
+	// Check document class for theme (works with next-themes, etc.)
+	function getDocumentTheme(): "light" | "dark" | null {
+		if (typeof document === "undefined") return null;
+		if (document.documentElement.classList.contains("dark")) return "dark";
+		if (document.documentElement.classList.contains("light")) return "light";
+		return null;
 	}
-	theme?: 'light' | 'dark'
-	/** Map projection type. Use `{ type: "globe" }` for 3D globe view. */
-	projection?: MapLibreGL.ProjectionSpecification
-	center?: [number, number]
-	zoom?: number
-	options?: Omit<MapLibreGL.MapOptions, 'container' | 'style'>
-	/**
-	 * Controlled viewport. When provided with onViewportChange,
-	 * the map becomes controlled and viewport is driven by this prop.
-	 */
-	viewport?: Partial<MapViewport>
-	/**
-	 * Callback fired continuously as the viewport changes (pan, zoom, rotate, pitch).
-	 * Can be used standalone to observe changes, or with `viewport` prop
-	 * to enable controlled mode where the map viewport is driven by your state.
-	 */
-	onviewportchange?: (viewport: MapViewport) => void
-}
 
-const defaultStyles = {
-	dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-	light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-}
-
-let {
-	children,
-	styles,
-	theme: explicitTheme,
-	projection,
-	center = [13.405, 52.52],
-	zoom = 0,
-	options = {},
-	viewport,
-	onviewportchange,
-}: Props = $props()
-
-let mapContainer: HTMLDivElement
-let map: MapLibreGL.Map | null = $state(null)
-let isMounted = $state(false)
-let isLoaded = $state(false)
-let isStyleLoaded = $state(false)
-let isInteracting = $state(false)
-let hasInitiallyLoaded = $state(false)
-let initialStyleApplied = false
-let initialCenterZoomApplied = false
-let styleTimeoutId: ReturnType<typeof setTimeout> | null = null
-let internalUpdate = false
-
-const isControlled = $derived(viewport !== undefined && onviewportchange !== undefined)
-
-function getViewport(mapInstance: MapLibreGL.Map): MapViewport {
-	const c = mapInstance.getCenter()
-	return {
-		center: [c.lng, c.lat],
-		zoom: mapInstance.getZoom(),
-		bearing: mapInstance.getBearing(),
-		pitch: mapInstance.getPitch(),
+	// Get system preference
+	function getSystemTheme(): "light" | "dark" {
+		if (typeof window === "undefined") return "light";
+		return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 	}
-}
 
-const mapStyles = $derived({
-	dark: styles?.dark ?? defaultStyles.dark,
-	light: styles?.light ?? defaultStyles.light,
-})
+	let tailwindTheme: "light" | "dark" = $state("light");
 
-const resolvedTheme = $derived(resolveMapTheme({ explicitTheme, ambientTheme: tailwindTheme }))
+	type MapStyleOption = string | MapLibreGL.StyleSpecification;
 
-const currentStyle = $derived(resolvedTheme === 'light' ? mapStyles.light : mapStyles.dark)
+	/** Map viewport state */
+	export type MapViewport = {
+		/** Center coordinates [longitude, latitude] */
+		center: [number, number];
+		/** Zoom level */
+		zoom: number;
+		/** Bearing (rotation) in degrees */
+		bearing: number;
+		/** Pitch (tilt) in degrees */
+		pitch: number;
+	};
 
-const isReady = $derived(isMounted && isLoaded && isStyleLoaded)
-
-setContext('map', {
-	getMap: () => map,
-	isLoaded: () => hasInitiallyLoaded,
-	isStyleReady: () => isReady,
-})
-
-function clearStyleTimeout() {
-	if (styleTimeoutId) {
-		clearTimeout(styleTimeoutId)
-		styleTimeoutId = null
+	interface Props {
+		children?: import("svelte").Snippet;
+		styles?: {
+			light?: MapStyleOption;
+			dark?: MapStyleOption;
+		};
+		theme?: "light" | "dark";
+		/** Map projection type. Use `{ type: "globe" }` for 3D globe view. */
+		projection?: MapLibreGL.ProjectionSpecification;
+		center?: [number, number];
+		zoom?: number;
+		options?: Omit<MapLibreGL.MapOptions, "container" | "style">;
+		/**
+		 * Controlled viewport. When provided with onViewportChange,
+		 * the map becomes controlled and viewport is driven by this prop.
+		 */
+		viewport?: Partial<MapViewport>;
+		/**
+		 * Callback fired continuously as the viewport changes (pan, zoom, rotate, pitch).
+		 * Can be used standalone to observe changes, or with `viewport` prop
+		 * to enable controlled mode where the map viewport is driven by your state.
+		 */
+		onviewportchange?: (viewport: MapViewport) => void;
 	}
-}
 
-onMount(() => {
-	isMounted = true
+	const defaultStyles = {
+		dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+		light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+	};
 
-	// Subscribe to theme store for instant updates
-	const themeUnsubscribe = theme.subscribe((value) => {
-		tailwindTheme = value
-	})
+	let {
+		children,
+		styles,
+		theme: explicitTheme,
+		projection,
+		center = [13.405, 52.52],
+		zoom = 0,
+		options = {},
+		viewport,
+		onviewportchange,
+	}: Props = $props();
 
-	// Clean up theme subscription
-	onDestroy(() => {
-		themeUnsubscribe()
-	})
+	let mapContainer: HTMLDivElement;
+	let map: MapLibreGL.Map | null = $state(null);
+	let isMounted = $state(false);
+	let isLoaded = $state(false);
+	let isStyleLoaded = $state(false);
+	let isInteracting = $state(false);
+	let hasInitiallyLoaded = $state(false);
+	let initialStyleApplied = false;
+	let initialCenterZoomApplied = false;
+	let styleTimeoutId: ReturnType<typeof setTimeout> | null = null;
+	let internalUpdate = false;
 
-	if (browser) {
-		// Also watch for document class changes (e.g., external theme togglers)
-		const updateTheme = () => {
-			const docTheme = getDocumentTheme()
-			// Only use document theme if set, otherwise fall back to system preference
-			tailwindTheme = docTheme ?? getSystemTheme()
+	const isControlled = $derived(viewport !== undefined && onviewportchange !== undefined);
+
+	function getViewport(mapInstance: MapLibreGL.Map): MapViewport {
+		const c = mapInstance.getCenter();
+		return {
+			center: [c.lng, c.lat],
+			zoom: mapInstance.getZoom(),
+			bearing: mapInstance.getBearing(),
+			pitch: mapInstance.getPitch(),
+		};
+	}
+
+	const mapStyles = $derived({
+		dark: styles?.dark ?? defaultStyles.dark,
+		light: styles?.light ?? defaultStyles.light,
+	});
+
+	const resolvedTheme = $derived(resolveMapTheme({ explicitTheme, ambientTheme: tailwindTheme }));
+
+	const currentStyle = $derived(resolvedTheme === "light" ? mapStyles.light : mapStyles.dark);
+
+	const isReady = $derived(isMounted && isLoaded && isStyleLoaded);
+
+	setContext("map", {
+		getMap: () => map,
+		isLoaded: () => hasInitiallyLoaded,
+		isStyleReady: () => isReady,
+	});
+
+	function clearStyleTimeout() {
+		if (styleTimeoutId) {
+			clearTimeout(styleTimeoutId);
+			styleTimeoutId = null;
 		}
+	}
 
-		updateTheme()
+	onMount(() => {
+		isMounted = true;
 
-		const observer = new MutationObserver(updateTheme)
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class'],
-		})
+		// Subscribe to theme store for instant updates
+		const themeUnsubscribe = theme.subscribe((value) => {
+			tailwindTheme = value;
+		});
 
-		// Also watch for system preference changes
-		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-		const handleSystemChange = (e: MediaQueryListEvent) => {
-			// Only use system preference if no document class is set
-			if (!getDocumentTheme()) {
-				tailwindTheme = e.matches ? 'dark' : 'light'
-			}
-		}
-		mediaQuery.addEventListener('change', handleSystemChange)
-
+		// Clean up theme subscription
 		onDestroy(() => {
-			observer.disconnect()
-			mediaQuery.removeEventListener('change', handleSystemChange)
-		})
-	}
+			themeUnsubscribe();
+		});
 
-	const mapInstance = new MapLibreGL.Map({
-		container: mapContainer,
-		style: currentStyle,
-		fadeDuration: 0,
-		renderWorldCopies: false,
-		attributionControl: {
-			compact: true,
-		},
-		center: viewport?.center ?? center,
-		zoom: viewport?.zoom ?? zoom,
-		bearing: viewport?.bearing ?? 0,
-		pitch: viewport?.pitch ?? 0,
-		...options,
-	})
+		if (browser) {
+			// Also watch for document class changes (e.g., external theme togglers)
+			const updateTheme = () => {
+				const docTheme = getDocumentTheme();
+				// Only use document theme if set, otherwise fall back to system preference
+				tailwindTheme = docTheme ?? getSystemTheme();
+			};
 
-	const styleDataHandler = () => {
-		clearStyleTimeout()
-		// Delay to ensure style is fully processed before allowing layer operations
-		// This is a workaround to avoid race conditions with the style loading
-		// else we have to force update every layer on setStyle change
-		styleTimeoutId = setTimeout(() => {
-			isStyleLoaded = true
-			if (!initialStyleApplied) {
-				initialStyleApplied = true
-			}
-			if (!hasInitiallyLoaded) {
-				hasInitiallyLoaded = true
-			}
-			if (projection) {
-				mapInstance.setProjection(projection)
-			}
-		}, 100)
-	}
+			updateTheme();
 
-	const loadHandler = () => {
-		isLoaded = true
-	}
+			const observer = new MutationObserver(updateTheme);
+			observer.observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ["class"],
+			});
 
-	// Viewport change handler - skip if triggered by internal update
-	const handleMove = () => {
-		if (internalUpdate) return
-		onviewportchange?.(getViewport(mapInstance))
-	}
+			// Also watch for system preference changes
+			const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+			const handleSystemChange = (e: MediaQueryListEvent) => {
+				// Only use system preference if no document class is set
+				if (!getDocumentTheme()) {
+					tailwindTheme = e.matches ? "dark" : "light";
+				}
+			};
+			mediaQuery.addEventListener("change", handleSystemChange);
 
-	mapInstance.on('load', loadHandler)
-	mapInstance.on('styledata', styleDataHandler)
-	mapInstance.on('move', handleMove)
+			onDestroy(() => {
+				observer.disconnect();
+				mediaQuery.removeEventListener("change", handleSystemChange);
+			});
+		}
 
-	mapInstance.on('dragstart', () => (isInteracting = true))
-	mapInstance.on('dragend', () => (isInteracting = false))
-	mapInstance.on('zoomstart', () => (isInteracting = true))
-	mapInstance.on('zoomend', () => (isInteracting = false))
-	mapInstance.on('rotatestart', () => (isInteracting = true))
-	mapInstance.on('rotateend', () => (isInteracting = false))
-	mapInstance.on('pitchstart', () => (isInteracting = true))
-	mapInstance.on('pitchend', () => (isInteracting = false))
+		const mapInstance = new MapLibreGL.Map({
+			container: mapContainer,
+			style: currentStyle,
+			fadeDuration: 0,
+			renderWorldCopies: false,
+			attributionControl: {
+				compact: true,
+			},
+			center: viewport?.center ?? center,
+			zoom: viewport?.zoom ?? zoom,
+			bearing: viewport?.bearing ?? 0,
+			pitch: viewport?.pitch ?? 0,
+			...options,
+		});
 
-	map = mapInstance
-})
+		const styleDataHandler = () => {
+			clearStyleTimeout();
+			// Delay to ensure style is fully processed before allowing layer operations
+			// This is a workaround to avoid race conditions with the style loading
+			// else we have to force update every layer on setStyle change
+			styleTimeoutId = setTimeout(() => {
+				isStyleLoaded = true;
+				if (!initialStyleApplied) {
+					initialStyleApplied = true;
+				}
+				if (!hasInitiallyLoaded) {
+					hasInitiallyLoaded = true;
+				}
+				if (projection) {
+					mapInstance.setProjection(projection);
+				}
+			}, 100);
+		};
 
-// Sync controlled viewport to map
-$effect(() => {
-	if (!map || !isControlled || !viewport) return
-	if (map.isMoving()) return
+		const loadHandler = () => {
+			isLoaded = true;
+		};
 
-	const current = getViewport(map)
-	const next = {
-		center: viewport.center ?? current.center,
-		zoom: viewport.zoom ?? current.zoom,
-		bearing: viewport.bearing ?? current.bearing,
-		pitch: viewport.pitch ?? current.pitch,
-	}
+		// Viewport change handler - skip if triggered by internal update
+		const handleMove = () => {
+			if (internalUpdate) return;
+			onviewportchange?.(getViewport(mapInstance));
+		};
 
-	if (
-		next.center[0] === current.center[0] &&
-		next.center[1] === current.center[1] &&
-		next.zoom === current.zoom &&
-		next.bearing === current.bearing &&
-		next.pitch === current.pitch
-	) {
-		return
-	}
+		mapInstance.on("load", loadHandler);
+		mapInstance.on("styledata", styleDataHandler);
+		mapInstance.on("move", handleMove);
 
-	internalUpdate = true
-	map!.once('moveend', () => {
-		internalUpdate = false
-	})
-	map.jumpTo(next)
-})
+		mapInstance.on("dragstart", () => (isInteracting = true));
+		mapInstance.on("dragend", () => (isInteracting = false));
+		mapInstance.on("zoomstart", () => (isInteracting = true));
+		mapInstance.on("zoomend", () => (isInteracting = false));
+		mapInstance.on("rotatestart", () => (isInteracting = true));
+		mapInstance.on("rotateend", () => (isInteracting = false));
+		mapInstance.on("pitchstart", () => (isInteracting = true));
+		mapInstance.on("pitchend", () => (isInteracting = false));
 
-$effect(() => {
-	const style = currentStyle
+		map = mapInstance;
+	});
 
-	if (!map || !initialStyleApplied) {
-		return
-	}
+	// Sync controlled viewport to map
+	$effect(() => {
+		if (!map || !isControlled || !viewport) return;
+		if (map.isMoving()) return;
 
-	untrack(() => {
-		const currCenter = map!.getCenter()
-		const currZoom = map!.getZoom()
-		const currBearing = map!.getBearing()
-		const currPitch = map!.getPitch()
+		const current = getViewport(map);
+		const next = {
+			center: viewport.center ?? current.center,
+			zoom: viewport.zoom ?? current.zoom,
+			bearing: viewport.bearing ?? current.bearing,
+			pitch: viewport.pitch ?? current.pitch,
+		};
 
-		isStyleLoaded = false
-		map!.setStyle(style, { diff: true })
+		if (
+			next.center[0] === current.center[0] &&
+			next.center[1] === current.center[1] &&
+			next.zoom === current.zoom &&
+			next.bearing === current.bearing &&
+			next.pitch === current.pitch
+		) {
+			return;
+		}
 
-		map!.once('styledata', () => {
-			map!.jumpTo({
-				center: currCenter,
-				zoom: currZoom,
-				bearing: currBearing,
-				pitch: currPitch,
-			})
-		})
-	})
-})
+		internalUpdate = true;
+		map!.once("moveend", () => {
+			internalUpdate = false;
+		});
+		map.jumpTo(next);
+	});
 
-$effect(() => {
-	if (!map || !isReady || isInteracting || initialCenterZoomApplied || isControlled) {
-		return
-	}
+	$effect(() => {
+		const style = currentStyle;
 
-	// Only apply initial center/zoom once, then let user move freely
-	// Skip if controlled mode is enabled
-	initialCenterZoomApplied = true
+		if (!map || !initialStyleApplied) {
+			return;
+		}
 
-	const [lng, lat] = center
+		untrack(() => {
+			const currCenter = map!.getCenter();
+			const currZoom = map!.getZoom();
+			const currBearing = map!.getBearing();
+			const currPitch = map!.getPitch();
 
-	untrack(() => {
-		map!.easeTo({ center: [lng, lat], zoom })
-	})
-})
+			isStyleLoaded = false;
+			map!.setStyle(style, { diff: true });
 
-onDestroy(() => {
-	map?.remove()
-	map = null
-	isLoaded = false
-	isStyleLoaded = false
-})
+			map!.once("styledata", () => {
+				map!.jumpTo({
+					center: currCenter,
+					zoom: currZoom,
+					bearing: currBearing,
+					pitch: currPitch,
+				});
+			});
+		});
+	});
+
+	$effect(() => {
+		if (!map || !isReady || isInteracting || initialCenterZoomApplied || isControlled) {
+			return;
+		}
+
+		// Only apply initial center/zoom once, then let user move freely
+		// Skip if controlled mode is enabled
+		initialCenterZoomApplied = true;
+
+		const [lng, lat] = center;
+
+		untrack(() => {
+			map!.easeTo({ center: [lng, lat], zoom });
+		});
+	});
+
+	onDestroy(() => {
+		map?.remove();
+		map = null;
+		isLoaded = false;
+		isStyleLoaded = false;
+	});
 </script>
 
 <div bind:this={mapContainer} class="relative h-full w-full">

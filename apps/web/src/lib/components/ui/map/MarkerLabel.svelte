@@ -1,18 +1,18 @@
 <script lang="ts">
-import { cn } from '$lib/utils.js'
+	import { cn } from "$lib/utils.js";
 
-interface Props {
-	children?: import('svelte').Snippet
-	class?: string
-	position?: 'top' | 'bottom'
-}
+	interface Props {
+		children?: import("svelte").Snippet;
+		class?: string;
+		position?: "top" | "bottom";
+	}
 
-let { children, class: className, position = 'top' }: Props = $props()
+	let { children, class: className, position = "top" }: Props = $props();
 
-const positionClasses = {
-	top: 'bottom-full mb-1',
-	bottom: 'top-full mt-1',
-}
+	const positionClasses = {
+		top: "bottom-full mb-1",
+		bottom: "top-full mt-1",
+	};
 </script>
 
 <div
