@@ -8,7 +8,7 @@ import * as schema from '@hidden-gems/db/schema'
 import { betterAuth } from 'better-auth'
 import { sveltekitCookies } from 'better-auth/svelte-kit'
 
-const localDevOrigins = ['http://127.0.0.1:7411', 'http://localhost:7411']
+const localDevOrigins = ['http://127.0.0.1:1101', 'http://localhost:1101']
 
 function parseOrigins(value: string | undefined) {
 	if (!value) {

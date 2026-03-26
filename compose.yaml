@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - '5432:5432'
+      - '1102:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -24,8 +24,8 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
     ports:
-      - '9000:9000'
-      - '9001:9001'
+      - '1105:9000'
+      - '1106:9001'
     volumes:
       - minio-data:/data
 
@@ -45,8 +45,8 @@ services:
     image: axllent/mailpit:v1.29.4
     container_name: hidden-gems-mailpit
     ports:
-      - '1025:1025'
-      - '8025:8025'
+      - '1103:1025'
+      - '1104:8025'
 
   web:
     build:
@@ -67,11 +67,11 @@ services:
       minio:
         condition: service_started
     ports:
-      - '7411:7411'
+      - '1101:1101'
     volumes:
       - .:/app
       - /app/node_modules
-    command: bun run dev -- --host 0.0.0.0 --port 7411
+    command: bun run dev -- --host 0.0.0.0 --port 1101
 
 volumes:
   postgres-data:

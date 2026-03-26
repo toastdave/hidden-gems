@@ -19,8 +19,8 @@ cp .env.example .env
 2. Update `.env` for your machine:
 
 ```dotenv
-BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net:7411
-BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:7411,https://<device>.<tailnet>.ts.net:7411
+BETTER_AUTH_URL=https://<device>.<tailnet>.ts.net:1101
+BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:1101,https://<device>.<tailnet>.ts.net:1101
 ```
 
 3. Install the toolchain and dependencies:
@@ -52,9 +52,9 @@ mise run dev
 
 App URLs:
 
-- Web app: `http://localhost:7411`
-- Mailpit: `http://localhost:8025`
-- MinIO console: `http://localhost:9001`
+- Web app: `http://localhost:1101`
+- Mailpit: `http://localhost:1104`
+- MinIO console: `http://localhost:1106`
 
 Stop supporting services:
 
@@ -97,9 +97,9 @@ mise run seed
 
 Open:
 
-- Web app: `http://localhost:7411`
-- Mailpit: `http://localhost:8025`
-- MinIO console: `http://localhost:9001`
+- Web app: `http://localhost:1101`
+- Mailpit: `http://localhost:1104`
+- MinIO console: `http://localhost:1106`
 
 Stop:
 
@@ -142,10 +142,10 @@ mise run tailscale:down
 Open the app from another device on your tailnet:
 
 ```text
-https://<device>.<tailnet>.ts.net:7411
+https://<device>.<tailnet>.ts.net:1101
 ```
 
-Use the full `https://` URL. This setup serves HTTPS on port `7411`; `http://` requests to the tailnet hostname will fail.
+Use the full `https://` URL. This setup serves HTTPS on port `1101`; `http://` requests to the tailnet hostname will fail.
 
 ## Common commands
 
