@@ -64,6 +64,10 @@ const { data } = $props<{ data: PageData }>()
 						Have the title, date, neighborhood, and standout items ready so the publish flow stays fast.
 					</p>
 				</div>
+				<Button href="/host/listings/new" class="w-full rounded-full">
+					<PenSquare class="mr-1 size-4" />
+					Create a listing
+				</Button>
 				<Button href="/" variant="secondary" class="w-full rounded-full">
 					See the discovery experience
 				</Button>
@@ -112,6 +116,11 @@ const { data } = $props<{ data: PageData }>()
 									{getEventTypeLabel(listing.eventType)}
 								</span>
 							</div>
+							<div class="mt-4 flex flex-wrap gap-2">
+								<Button href={`/host/listings/${listing.id}`} variant="outline" size="sm" class="rounded-full">
+									Edit listing
+								</Button>
+							</div>
 						</div>
 					{/each}
 				{/if}
@@ -136,9 +145,9 @@ const { data } = $props<{ data: PageData }>()
 					<p class="font-semibold text-ink-950">3. Standout details</p>
 					<p class="mt-2 leading-6">What shoppers can actually expect to find when they arrive.</p>
 				</div>
-				<Button variant="outline" class="w-full rounded-full" disabled>
+				<Button href="/host/listings/new" variant="outline" class="w-full rounded-full">
 					<PenSquare class="mr-1 size-4" />
-					Listing editor coming next
+					Start a new listing
 				</Button>
 			</CardContent>
 		</Card>
