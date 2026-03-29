@@ -391,7 +391,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 					</CardDescription>
 				</div>
 				<Button
-					href={data.user ? '/account' : '/auth/sign-up?redirectTo=/account'}
+					href={data.user ? '/host' : '/auth/sign-up?redirectTo=/host'}
 					variant="outline"
 					size="sm"
 					class="rounded-full"
@@ -516,7 +516,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 				{data.user ? 'Account' : 'Sign in'}
 			</Button>
 			<Button
-				href={data.user ? '/account' : '/auth/sign-up?redirectTo=/account'}
+				href={data.user ? '/host' : '/auth/sign-up?redirectTo=/host'}
 				size="sm"
 				class="rounded-full"
 			>

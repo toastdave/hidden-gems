@@ -1,6 +1,13 @@
 <script lang="ts">
 import { goto, invalidateAll } from '$app/navigation'
 import { authClient } from '$lib/auth-client'
+import { Badge } from '$lib/components/ui/badge'
+import { Button } from '$lib/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
+import CalendarDays from '@lucide/svelte/icons/calendar-days'
+import Compass from '@lucide/svelte/icons/compass'
+import Store from '@lucide/svelte/icons/store'
+import UserRound from '@lucide/svelte/icons/user-round'
 import type { PageData } from './$types'
 
 const { data } = $props<{ data: PageData }>()
@@ -30,60 +37,124 @@ async function signOut() {
 	<title>Account | Hidden Gems</title>
 </svelte:head>
 
-<section class="mx-auto max-w-6xl px-6 py-10 sm:px-8 lg:px-10">
-	<div class="grid gap-6 lg:grid-cols-[1fr_1fr]">
-		<div class="rounded-[2rem] border border-white/70 bg-white/75 p-8 shadow-[0_32px_120px_-48px_rgba(19,34,38,0.45)] backdrop-blur">
-			<p class="font-display text-sm uppercase tracking-[0.3em] text-leaf-400">Account</p>
-			<h1 class="mt-4 font-display text-4xl leading-none text-ink-950">Hi, {data.user.name}.</h1>
-			<p class="mt-4 max-w-xl text-base leading-8 text-ink-700">
-				Your Better Auth integration is live. This account is ready for favorites, follows,
-				alerts, and host tools.
-			</p>
-
-			<div class="mt-8 grid gap-4 sm:grid-cols-2">
-				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-4">
+<section class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+	<div class="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_360px]">
+		<Card class="border-white/80 bg-white/88 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.35)] backdrop-blur">
+			<CardHeader class="gap-3">
+				<Badge class="bg-ink-950 text-mist-100">Account</Badge>
+				<CardTitle class="font-display text-4xl text-ink-950">Hi, {data.user.name}.</CardTitle>
+				<CardDescription class="max-w-2xl text-base leading-7 text-ink-700">
+					Keep your account ready for saved finds, followed hosts, and a polished hosting presence when you are ready to publish.
+				</CardDescription>
+			</CardHeader>
+			<CardContent class="grid gap-4 px-4 pb-5 sm:grid-cols-2 sm:px-6">
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
 					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Email</p>
 					<p class="mt-2 text-sm font-semibold text-ink-950">{data.user.email}</p>
 				</div>
-				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-4">
-					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Email verified</p>
-					<p class="mt-2 text-sm font-semibold text-ink-950">{data.user.emailVerified ? 'Verified' : 'Not yet verified'}</p>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
+					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Status</p>
+					<p class="mt-2 text-sm font-semibold text-ink-950">
+						{data.user.emailVerified ? 'Email verified' : 'Verify your email soon'}
+					</p>
 				</div>
-				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-4">
-					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Session ID</p>
-					<p class="mt-2 text-sm font-semibold text-ink-950">{data.session.id}</p>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
+					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Host profile</p>
+					<p class="mt-2 text-sm font-semibold text-ink-950">
+						{data.host ? data.host.displayName : 'Not set up yet'}
+					</p>
 				</div>
-				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-4">
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
 					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Session expires</p>
-					<p class="mt-2 text-sm font-semibold text-ink-950">{new Date(data.session.expiresAt).toLocaleString()}</p>
+					<p class="mt-2 text-sm font-semibold text-ink-950">
+						{new Date(data.session.expiresAt).toLocaleString()}
+					</p>
 				</div>
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 
-		<div class="rounded-[2rem] border border-ink-950/10 bg-white/85 p-8 shadow-[0_24px_90px_-54px_rgba(19,34,38,0.55)] backdrop-blur">
-			<p class="text-sm uppercase tracking-[0.28em] text-coral-500">What is ready now</p>
-			<ul class="mt-5 space-y-3 text-sm leading-7 text-ink-700">
-				<li>Email + password sign-up and sign-in</li>
-				<li>Google OAuth callback wiring</li>
-				<li>GitHub OAuth callback wiring</li>
-				<li>SSR session hydration via SvelteKit locals</li>
-				<li>Protected route gating for account-only pages</li>
-			</ul>
-
-			<div class="mt-8 flex flex-wrap gap-3">
-				<a class="rounded-full border border-ink-950/10 bg-white px-5 py-3 text-sm font-semibold text-ink-900" href="/">
-					Back home
-				</a>
-				<button class="rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-mist-100 disabled:cursor-not-allowed disabled:opacity-70" disabled={isSigningOut} onclick={signOut} type="button">
+		<Card class="border-white/80 bg-ink-950 text-mist-100 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.55)]">
+			<CardHeader>
+				<CardTitle class="font-display text-2xl text-mist-100">Your next move</CardTitle>
+				<CardDescription class="text-mist-100/75">
+					{#if data.host}
+						Your host profile is ready. Review your dashboard and get ready to publish listings.
+					{:else}
+						Create a host profile to publish sales, pop-ups, and markets people can discover nearby.
+					{/if}
+				</CardDescription>
+			</CardHeader>
+			<CardContent class="space-y-4 px-4 pb-5 sm:px-6">
+				<div class="rounded-2xl border border-white/10 bg-white/6 p-4 text-sm text-mist-100/80">
+					<p class="flex items-center gap-2 font-semibold text-mist-100">
+						<UserRound class="size-4" />
+						Account ready
+					</p>
+					<p class="mt-2 leading-6">You can sign in across devices and keep your discovery activity in one place.</p>
+				</div>
+				<div class="rounded-2xl border border-white/10 bg-white/6 p-4 text-sm text-mist-100/80">
+					<p class="flex items-center gap-2 font-semibold text-mist-100">
+						<Store class="size-4" />
+						Hosting path
+					</p>
+					<p class="mt-2 leading-6">
+						{#if data.host}
+							Your public host identity is live at /@{data.host.slug}.
+						{:else}
+							Set up a recognizable host name so shoppers trust what they are clicking into.
+						{/if}
+					</p>
+				</div>
+				<Button href={data.host ? '/host' : '/host/onboarding'} class="w-full rounded-full">
+					{data.host ? 'Open host dashboard' : 'Create host profile'}
+				</Button>
+				<Button href="/" variant="secondary" class="w-full rounded-full">Back to discovery</Button>
+				<Button variant="outline" class="w-full rounded-full border-white/20 bg-transparent text-mist-100 hover:bg-white/8 hover:text-mist-100" disabled={isSigningOut} onclick={signOut} type="button">
 					{isSigningOut ? 'Signing out...' : 'Sign out'}
-				</button>
-			</div>
+				</Button>
 
-			{#if errorMessage}
-				<p class="mt-5 rounded-2xl border border-coral-500/20 bg-coral-500/10 px-4 py-3 text-sm text-coral-500">
-					{errorMessage}
-				</p>
-			{/if}
-		</div>
+				{#if errorMessage}
+					<p class="rounded-2xl border border-coral-500/20 bg-coral-500/10 px-4 py-3 text-sm text-coral-200">
+						{errorMessage}
+					</p>
+				{/if}
+			</CardContent>
+		</Card>
+	</div>
+
+	<div class="mt-6 grid gap-6 lg:grid-cols-3">
+		<Card class="border-white/80 bg-white/88 backdrop-blur">
+			<CardHeader>
+				<CardTitle class="flex items-center gap-2 text-xl text-ink-950">
+					<Compass class="size-5 text-coral-500" />
+					Discovery ready
+				</CardTitle>
+			</CardHeader>
+			<CardContent class="px-4 pb-5 text-sm leading-7 text-ink-700 sm:px-6">
+				Browse nearby events, keep tabs on promising weekends, and use your account as the base for later saved activity.
+			</CardContent>
+		</Card>
+		<Card class="border-white/80 bg-white/88 backdrop-blur">
+			<CardHeader>
+				<CardTitle class="flex items-center gap-2 text-xl text-ink-950">
+					<CalendarDays class="size-5 text-leaf-400" />
+					Publishing next
+				</CardTitle>
+			</CardHeader>
+			<CardContent class="px-4 pb-5 text-sm leading-7 text-ink-700 sm:px-6">
+				The listing editor is the next step, so your account and host setup are ready before the publish flow lands.
+			</CardContent>
+		</Card>
+		<Card class="border-white/80 bg-white/88 backdrop-blur">
+			<CardHeader>
+				<CardTitle class="flex items-center gap-2 text-xl text-ink-950">
+					<Store class="size-5 text-ink-950" />
+					Hosting focus
+				</CardTitle>
+			</CardHeader>
+			<CardContent class="px-4 pb-5 text-sm leading-7 text-ink-700 sm:px-6">
+				A clear host identity, a clean event title, and location confidence are the biggest levers for getting clicks.
+			</CardContent>
+		</Card>
 	</div>
 </section>
