@@ -19,6 +19,7 @@
 		"@hidden-gems/db": "workspace:*",
 		"better-auth": "^1.5.5",
 		"bits-ui": "^2.16.3",
+		"drizzle-orm": "^0.44.7",
 		"maplibre-gl": "^5.21.1"
 	},
 	"devDependencies": {

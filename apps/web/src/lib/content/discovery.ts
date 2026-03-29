@@ -38,6 +38,13 @@ export type DiscoveryListing = {
 	mood: 'sunrise' | 'market' | 'garden' | 'night'
 }
 
+export type DiscoveryFilters = {
+	near?: string | null
+	q?: string | null
+	type?: string | null
+	radius?: string | null
+}
+
 const DAY = 24 * 60 * 60 * 1000
 
 export const discoveryCenters: DiscoveryCenter[] = [
@@ -118,6 +125,26 @@ function toIso(date: Date) {
 
 export function getEventTypeLabel(eventType: DiscoveryEventType) {
 	return eventTypeOptions.find((option) => option.value === eventType)?.label ?? 'Local event'
+}
+
+export function getDiscoveryMood(
+	listing: Pick<DiscoveryListing, 'eventType' | 'isFeatured' | 'startsAt'>
+) {
+	const hour = new Date(listing.startsAt).getHours()
+
+	if (hour >= 16) {
+		return 'night'
+	}
+
+	if (listing.isFeatured || listing.eventType === 'estate_sale') {
+		return 'garden'
+	}
+
+	if (listing.eventType === 'flea_market' || listing.eventType === 'pop_up_market') {
+		return 'market'
+	}
+
+	return 'sunrise'
 }
 
 export function getDiscoveryCenter(key?: string | null) {
@@ -336,21 +363,19 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 	]
 }
 
-export function getDiscoveryResults(filters: {
-	near?: string | null
-	q?: string | null
-	type?: string | null
-	radius?: string | null
-}) {
+export function buildDiscoveryResults(
+	filters: DiscoveryFilters,
+	sourceListings: DiscoveryListing[],
+	now = new Date()
+) {
 	const center = getDiscoveryCenter(filters.near)
 	const query = filters.q?.trim().toLowerCase() ?? ''
 	const activeType = eventTypeOptions.some((option) => option.value === filters.type)
 		? (filters.type as 'all' | DiscoveryEventType)
 		: 'all'
 	const radiusMiles = radiusOptions.includes(Number(filters.radius)) ? Number(filters.radius) : 15
-	const now = new Date()
 
-	const listings = getSampleListings(now)
+	const listings = sourceListings
 		.filter((listing) => {
 			if (activeType !== 'all' && listing.eventType !== activeType) {
 				return false
@@ -418,4 +443,10 @@ export function getDiscoveryResults(filters: {
 			).length,
 		},
 	}
+}
+
+export function getDiscoveryResults(filters: DiscoveryFilters) {
+	const now = new Date()
+
+	return buildDiscoveryResults(filters, getSampleListings(now), now)
 }
