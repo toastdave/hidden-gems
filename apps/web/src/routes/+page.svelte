@@ -369,6 +369,14 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 									{formatDateRange(highlightedListing.startsAt, highlightedListing.endsAt)}
 								</span>
 							</div>
+							<div class="pointer-events-auto mt-4 flex flex-wrap gap-2">
+								<Button href={`/sale/${highlightedListing.slug}`} size="sm" class="rounded-full">
+									Open listing
+								</Button>
+								<Button href={`/hosts/${highlightedListing.hostSlug}`} variant="outline" size="sm" class="rounded-full">
+									View host
+								</Button>
+							</div>
 						</div>
 					</div>
 				{/if}
@@ -426,64 +434,72 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 			{:else}
 				<div class="space-y-3">
 					{#each visibleListings as listing (listing.slug)}
-						<button
-							type="button"
-							onclick={() => selectListing(listing)}
+						<div
 							class={cn(
 								'block w-full rounded-[1.5rem] border border-transparent text-left transition-all hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ink-950/20 focus-visible:outline-none',
 								listing.slug === selectedSlug && 'ring-2 ring-ink-950/14'
 							)}
 						>
 							<Card class="border-ink-950/8 bg-white shadow-sm">
-								<div
-									class={cn(
-										'flex min-h-28 items-end justify-between border-b border-ink-950/8 px-4 py-4 text-ink-950',
-										`bg-gradient-to-br ${moodClasses[listing.mood]}`
-									)}
-								>
-									<div>
-										<p class="text-xs font-semibold uppercase tracking-[0.24em] text-ink-700/70">
-											{listing.hostName}
-										</p>
-										<p class="mt-2 max-w-[16rem] text-xl font-semibold leading-tight">
-											{listing.title}
-										</p>
+								<button type="button" class="block w-full text-left" onclick={() => selectListing(listing)}>
+									<div
+										class={cn(
+											'flex min-h-28 items-end justify-between border-b border-ink-950/8 px-4 py-4 text-ink-950',
+											`bg-gradient-to-br ${moodClasses[listing.mood]}`
+										)}
+									>
+										<div>
+											<p class="text-xs font-semibold uppercase tracking-[0.24em] text-ink-700/70">
+												{listing.hostName}
+											</p>
+											<p class="mt-2 max-w-[16rem] text-xl font-semibold leading-tight">
+												{listing.title}
+											</p>
+										</div>
+										{#if listing.isFeatured}
+											<Badge class="bg-ink-950 text-mist-100">
+												<Sparkles class="mr-1 size-3.5" />
+												Featured
+											</Badge>
+										{/if}
 									</div>
-									{#if listing.isFeatured}
-										<Badge class="bg-ink-950 text-mist-100">
-											<Sparkles class="mr-1 size-3.5" />
-											Featured
-										</Badge>
-									{/if}
+									<CardContent class="space-y-3 px-4 py-4">
+										<div class="flex flex-wrap items-center gap-2">
+											<Badge variant="outline">{getEventTypeLabel(listing.eventType)}</Badge>
+											<Badge variant="outline">{formatDistance(listing.liveDistanceMiles)}</Badge>
+											<Badge variant="outline">{listing.priceSummary}</Badge>
+										</div>
+										<p class="line-clamp-2 text-sm leading-6 text-ink-700">
+											{listing.description}
+										</p>
+										<div class="flex flex-wrap gap-3 text-sm text-ink-700">
+											<span class="inline-flex items-center gap-1.5">
+												<CalendarDays class="size-4 text-ink-700/60" />
+												{formatDateRange(listing.startsAt, listing.endsAt)}
+											</span>
+											<span class="inline-flex items-center gap-1.5">
+												<MapPinned class="size-4 text-ink-700/60" />
+												{listing.locationLabel}
+											</span>
+										</div>
+										<Separator />
+									</CardContent>
+								</button>
+								<div class="flex flex-wrap gap-2 px-4 pb-4">
+									<Button href={`/sale/${listing.slug}`} variant="secondary" size="sm" class="rounded-full">
+										Open listing
+									</Button>
+									<Button href={`/hosts/${listing.hostSlug}`} variant="outline" size="sm" class="rounded-full">
+										View host
+									</Button>
 								</div>
-								<CardContent class="space-y-3 px-4 py-4">
-									<div class="flex flex-wrap items-center gap-2">
-										<Badge variant="outline">{getEventTypeLabel(listing.eventType)}</Badge>
-										<Badge variant="outline">{formatDistance(listing.liveDistanceMiles)}</Badge>
-										<Badge variant="outline">{listing.priceSummary}</Badge>
-									</div>
-									<p class="line-clamp-2 text-sm leading-6 text-ink-700">
-										{listing.description}
-									</p>
-									<div class="flex flex-wrap gap-3 text-sm text-ink-700">
-										<span class="inline-flex items-center gap-1.5">
-											<CalendarDays class="size-4 text-ink-700/60" />
-											{formatDateRange(listing.startsAt, listing.endsAt)}
-										</span>
-										<span class="inline-flex items-center gap-1.5">
-											<MapPinned class="size-4 text-ink-700/60" />
-											{listing.locationLabel}
-										</span>
-									</div>
-									<Separator />
-									<div class="flex flex-wrap gap-2">
-										{#each listing.tags as tag}
-											<Badge variant="secondary">{tag}</Badge>
-										{/each}
-									</div>
-								</CardContent>
+								<div class="flex flex-wrap gap-2">
+									{#each listing.tags as tag}
+										<Badge variant="secondary">{tag}</Badge>
+									{/each}
+								</div>
 							</Card>
-						</button>
+						</div>
 					{/each}
 				</div>
 			{/if}

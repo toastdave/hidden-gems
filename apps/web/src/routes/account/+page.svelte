@@ -99,7 +99,7 @@ async function signOut() {
 					</p>
 					<p class="mt-2 leading-6">
 						{#if data.host}
-							Your public host identity is live at /@{data.host.slug}.
+							Your public host identity is live at /hosts/{data.host.slug}.
 						{:else}
 							Set up a recognizable host name so shoppers trust what they are clicking into.
 						{/if}

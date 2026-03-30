@@ -24,6 +24,7 @@ export type DiscoveryListing = {
 	title: string
 	description: string
 	hostName: string
+	hostSlug: string
 	eventType: DiscoveryEventType
 	locationLabel: string
 	city: string
@@ -188,6 +189,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Multi-home porch sale with records, art books, small furniture, and kitchen finds.',
 			hostName: 'Cherrywood Neighbors',
+			hostSlug: 'cherrywood-neighbors',
 			eventType: 'yard_sale',
 			locationLabel: 'Maplewood Ave & E 38 1/2 St',
 			city: 'Austin',
@@ -208,6 +210,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Curated estate sale with teak furniture, glassware, framed art, and garage tools.',
 			hostName: 'Hill Country Estate Co.',
+			hostSlug: 'hill-country-estate-co',
 			eventType: 'estate_sale',
 			locationLabel: 'Scenic Dr near Enfield Rd',
 			city: 'Austin',
@@ -228,6 +231,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Rotating racks of vintage denim, handmade jewelry, ceramics, and fresh pastries.',
 			hostName: 'Mercado Club',
+			hostSlug: 'mercado-club',
 			eventType: 'pop_up_market',
 			locationLabel: 'Springdale Station',
 			city: 'Austin',
@@ -248,6 +252,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Open-air flea blend with plants, vintage lamps, records, and neighborhood bakers.',
 			hostName: 'Mueller Makers Row',
+			hostSlug: 'mercado-club',
 			eventType: 'flea_market',
 			locationLabel: 'Aldrich St Plaza',
 			city: 'Austin',
@@ -268,6 +273,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Family garage sale block with bikes, games, patio gear, and back-to-school finds.',
 			hostName: 'Travis Heights Homes',
+			hostSlug: 'cherrywood-neighbors',
 			eventType: 'garage_sale',
 			locationLabel: 'Fairmount Ave',
 			city: 'Austin',
@@ -288,6 +294,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'One-stop neighborhood sale with strollers, patio sets, power tools, and sports gear.',
 			hostName: 'Brushy Creek PTA',
+			hostSlug: 'round-rock-neighbors',
 			eventType: 'community_sale',
 			locationLabel: 'Lakeline Park Pavilion',
 			city: 'Cedar Park',
@@ -308,6 +315,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Food trucks, handmade candles, secondhand fashion, and a late-evening vintage row.',
 			hostName: 'Downtown Round Rock Alliance',
+			hostSlug: 'downtown-round-rock-alliance',
 			eventType: 'pop_up_market',
 			locationLabel: 'Prete Main St Plaza',
 			city: 'Round Rock',
@@ -327,6 +335,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			title: 'Buda Barn Treasure Sale',
 			description: 'Big-lot sale with antique mirrors, iron patio pieces, farm tables, and linens.',
 			hostName: 'Old Oak Barn',
+			hostSlug: 'old-oak-barn',
 			eventType: 'estate_sale',
 			locationLabel: 'Old Black Colony Rd',
 			city: 'Buda',
@@ -347,6 +356,7 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 			description:
 				'Compact sidewalk setup with decor, old cameras, records, and small apartment furniture.',
 			hostName: 'The Front Yard Collective',
+			hostSlug: 'front-yard-collective',
 			eventType: 'yard_sale',
 			locationLabel: 'Pedernales St near Cesar Chavez',
 			city: 'Austin',

@@ -39,6 +39,7 @@ function toDiscoveryListing(
 		title: listing.title,
 		description: listing.description ?? '',
 		hostName: host.displayName,
+		hostSlug: host.slug,
 		eventType: listing.eventType,
 		locationLabel: listing.locationLabel,
 		city: listing.city ?? host.locationLabel ?? 'Nearby',

@@ -45,7 +45,7 @@ const { data } = $props<{ data: PageData }>()
 				</div>
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
 					<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">Profile link</p>
-					<p class="mt-2 text-sm font-semibold text-ink-950">/@{data.host.slug}</p>
+					<p class="mt-2 text-sm font-semibold text-ink-950">/hosts/{data.host.slug}</p>
 				</div>
 			</CardContent>
 		</Card>
@@ -67,6 +67,9 @@ const { data } = $props<{ data: PageData }>()
 				<Button href="/host/listings/new" class="w-full rounded-full">
 					<PenSquare class="mr-1 size-4" />
 					Create a listing
+				</Button>
+				<Button href={`/hosts/${data.host.slug}`} variant="outline" class="w-full rounded-full">
+					View public host page
 				</Button>
 				<Button href="/" variant="secondary" class="w-full rounded-full">
 					See the discovery experience
@@ -117,6 +120,9 @@ const { data } = $props<{ data: PageData }>()
 								</span>
 							</div>
 							<div class="mt-4 flex flex-wrap gap-2">
+								<Button href={`/sale/${listing.slug}`} variant="secondary" size="sm" class="rounded-full">
+									View public page
+								</Button>
 								<Button href={`/host/listings/${listing.id}`} variant="outline" size="sm" class="rounded-full">
 									Edit listing
 								</Button>

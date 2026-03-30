@@ -76,11 +76,11 @@ const errors = $derived(form?.errors ?? {})
 						</div>
 
 						<div class="grid gap-2">
-							<label class="text-sm font-semibold text-ink-950" for="slug">Profile link</label>
-							<div class="relative">
-								<span class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-ink-700/60">/@</span>
-								<Input id="slug" name="slug" value={values.slug} class="pl-10" />
-							</div>
+						<label class="text-sm font-semibold text-ink-950" for="slug">Profile link</label>
+						<div class="relative">
+							<span class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-ink-700/60">/hosts/</span>
+							<Input id="slug" name="slug" value={values.slug} class="pl-16" />
+						</div>
 							{#if errors.slug}
 								<p class="text-sm text-coral-500">{errors.slug}</p>
 							{:else}

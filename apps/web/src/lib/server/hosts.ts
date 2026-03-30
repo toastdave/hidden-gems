@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db'
 import * as schema from '@hidden-gems/db/schema'
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
 export type HostRecord = typeof schema.host.$inferSelect
 export type HostListingRecord = typeof schema.listing.$inferSelect
@@ -37,5 +37,13 @@ export async function getHostListings(hostId: string) {
 		.select()
 		.from(schema.listing)
 		.where(eq(schema.listing.hostId, hostId))
+		.orderBy(desc(schema.listing.isFeatured), desc(schema.listing.startAt))
+}
+
+export async function getPublishedHostListings(hostId: string) {
+	return db
+		.select()
+		.from(schema.listing)
+		.where(and(eq(schema.listing.hostId, hostId), eq(schema.listing.status, 'published')))
 		.orderBy(desc(schema.listing.isFeatured), desc(schema.listing.startAt))
 }

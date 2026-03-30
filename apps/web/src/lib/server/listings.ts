@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db'
 import * as schema from '@hidden-gems/db/schema'
-import { and, desc, eq, ne } from 'drizzle-orm'
+import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 
 export type HostListingRecord = typeof schema.listing.$inferSelect
 
@@ -150,4 +150,68 @@ export async function ensureListingSlugAvailable(slug: string, listingId?: strin
 		.limit(1)
 
 	return rows.length === 0
+}
+
+export async function getListingBySlug(slug: string) {
+	const rows = await db
+		.select({
+			listing: schema.listing,
+			host: schema.host,
+		})
+		.from(schema.listing)
+		.innerJoin(schema.host, eq(schema.listing.hostId, schema.host.id))
+		.where(and(eq(schema.listing.slug, slug), eq(schema.listing.status, 'published')))
+		.limit(1)
+
+	return rows[0] ?? null
+}
+
+export async function getPublicListingTags(listingId: string) {
+	return getListingTags(listingId)
+}
+
+export async function getRelatedPublishedListings(
+	listingId: string,
+	city: string | null,
+	hostId: string
+) {
+	const rows = await db
+		.select({
+			listing: schema.listing,
+			host: schema.host,
+		})
+		.from(schema.listing)
+		.innerJoin(schema.host, eq(schema.listing.hostId, schema.host.id))
+		.where(
+			and(
+				eq(schema.listing.status, 'published'),
+				ne(schema.listing.id, listingId),
+				city ? eq(schema.listing.city, city) : sql`true`
+			)
+		)
+		.orderBy(desc(schema.listing.isFeatured), desc(schema.listing.startAt))
+		.limit(4)
+
+	const relatedIds = rows.map(({ listing }) => listing.id)
+	const tagRows = relatedIds.length
+		? await db
+				.select({ listingId: schema.listingTag.listingId, tag: schema.listingTag.tag })
+				.from(schema.listingTag)
+				.where(inArray(schema.listingTag.listingId, relatedIds))
+		: []
+
+	const tagsByListingId = new Map<string, string[]>()
+
+	for (const row of tagRows) {
+		const tags = tagsByListingId.get(row.listingId) ?? []
+		tags.push(row.tag)
+		tagsByListingId.set(row.listingId, tags)
+	}
+
+	return rows.map(({ listing, host }) => ({
+		listing,
+		host,
+		tags: tagsByListingId.get(listing.id) ?? [],
+		isSameHost: listing.hostId === hostId,
+	}))
 }
