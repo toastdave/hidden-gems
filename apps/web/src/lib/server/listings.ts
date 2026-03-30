@@ -1,8 +1,9 @@
 import { db } from '$lib/server/db'
 import * as schema from '@hidden-gems/db/schema'
-import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 
 export type HostListingRecord = typeof schema.listing.$inferSelect
+export type ListingMediaRecord = typeof schema.media.$inferSelect
 
 export type ListingEditorValues = {
 	title: string
@@ -152,6 +153,84 @@ export async function ensureListingSlugAvailable(slug: string, listingId?: strin
 	return rows.length === 0
 }
 
+export async function getListingMedia(listingId: string) {
+	return db
+		.select()
+		.from(schema.media)
+		.where(eq(schema.media.listingId, listingId))
+		.orderBy(asc(schema.media.sortOrder), asc(schema.media.createdAt))
+}
+
+export async function getMediaById(mediaId: string) {
+	const rows = await db.select().from(schema.media).where(eq(schema.media.id, mediaId)).limit(1)
+
+	return rows[0] ?? null
+}
+
+export async function addListingMedia(input: {
+	id: string
+	listingId: string
+	objectKey: string
+	url: string
+	altText?: string | null
+	width?: number | null
+	height?: number | null
+}) {
+	const existingMedia = await getListingMedia(input.listingId)
+
+	const [media] = await db
+		.insert(schema.media)
+		.values({
+			id: input.id,
+			listingId: input.listingId,
+			objectKey: input.objectKey,
+			url: input.url,
+			altText: input.altText ?? null,
+			sortOrder: existingMedia.length,
+			width: input.width ?? null,
+			height: input.height ?? null,
+		})
+		.returning()
+
+	return media
+}
+
+export async function setCoverMedia(listingId: string, mediaId: string) {
+	const media = await getListingMedia(listingId)
+	const ordered = [
+		...media.filter((item) => item.id === mediaId),
+		...media.filter((item) => item.id !== mediaId),
+	]
+
+	await Promise.all(
+		ordered.map((item, index) =>
+			db.update(schema.media).set({ sortOrder: index }).where(eq(schema.media.id, item.id))
+		)
+	)
+
+	return ordered
+}
+
+export async function deleteMediaRecord(mediaId: string) {
+	const media = await getMediaById(mediaId)
+
+	if (!media) {
+		return null
+	}
+
+	await db.delete(schema.media).where(eq(schema.media.id, mediaId))
+
+	const remainingMedia = await getListingMedia(media.listingId)
+
+	await Promise.all(
+		remainingMedia.map((item, index) =>
+			db.update(schema.media).set({ sortOrder: index }).where(eq(schema.media.id, item.id))
+		)
+	)
+
+	return media
+}
+
 export async function getListingBySlug(slug: string) {
 	const rows = await db
 		.select({
@@ -168,6 +247,10 @@ export async function getListingBySlug(slug: string) {
 
 export async function getPublicListingTags(listingId: string) {
 	return getListingTags(listingId)
+}
+
+export async function getPublicListingMedia(listingId: string) {
+	return getListingMedia(listingId)
 }
 
 export async function getRelatedPublishedListings(
@@ -199,8 +282,16 @@ export async function getRelatedPublishedListings(
 				.from(schema.listingTag)
 				.where(inArray(schema.listingTag.listingId, relatedIds))
 		: []
+	const mediaRows = relatedIds.length
+		? await db
+				.select()
+				.from(schema.media)
+				.where(inArray(schema.media.listingId, relatedIds))
+				.orderBy(asc(schema.media.sortOrder), asc(schema.media.createdAt))
+		: []
 
 	const tagsByListingId = new Map<string, string[]>()
+	const mediaByListingId = new Map<string, ListingMediaRecord[]>()
 
 	for (const row of tagRows) {
 		const tags = tagsByListingId.get(row.listingId) ?? []
@@ -208,10 +299,17 @@ export async function getRelatedPublishedListings(
 		tagsByListingId.set(row.listingId, tags)
 	}
 
+	for (const media of mediaRows) {
+		const items = mediaByListingId.get(media.listingId) ?? []
+		items.push(media)
+		mediaByListingId.set(media.listingId, items)
+	}
+
 	return rows.map(({ listing, host }) => ({
 		listing,
 		host,
 		tags: tagsByListingId.get(listing.id) ?? [],
+		media: mediaByListingId.get(listing.id) ?? [],
 		isSameHost: listing.hostId === hostId,
 	}))
 }

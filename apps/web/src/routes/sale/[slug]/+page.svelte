@@ -44,6 +44,20 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 <section class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
 	<div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_340px]">
 		<Card class="overflow-hidden border-white/80 bg-white/88 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.35)] backdrop-blur">
+			{#if data.media.length > 0}
+				<div class="grid gap-2 bg-mist-100/60 p-2 sm:grid-cols-[minmax(0,1fr)_160px]">
+					<img
+						src={data.media[0].url}
+						alt={data.media[0].altText || data.listing.title}
+						class="h-72 w-full rounded-[1.4rem] object-cover sm:h-80"
+					/>
+					<div class="grid grid-cols-3 gap-2 sm:grid-cols-1">
+						{#each data.media.slice(1, 4) as media}
+							<img src={media.url} alt={media.altText || data.listing.title} class="h-24 w-full rounded-2xl object-cover sm:h-full" />
+						{/each}
+					</div>
+				</div>
+			{/if}
 			<div class="flex min-h-56 items-end justify-between bg-gradient-to-br from-amber-200 via-orange-100 to-white px-5 py-5 sm:px-6">
 				<div>
 					<div class="flex flex-wrap items-center gap-2">
@@ -146,6 +160,9 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 							<CardDescription>{item.host.displayName}</CardDescription>
 						</CardHeader>
 						<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
+							{#if item.media.length > 0}
+								<img src={item.media[0].url} alt={item.media[0].altText || item.listing.title} class="h-40 w-full rounded-2xl object-cover" />
+							{/if}
 							<p class="text-sm text-ink-700">{item.listing.locationLabel}</p>
 							<p class="text-sm leading-6 text-ink-700">
 								{item.listing.description || 'Published with the essentials ready to explore.'}

@@ -1,5 +1,6 @@
 import {
 	getListingBySlug,
+	getPublicListingMedia,
 	getPublicListingTags,
 	getRelatedPublishedListings,
 } from '$lib/server/listings'
@@ -13,7 +14,10 @@ export const load: PageServerLoad = async ({ params }) => {
 		throw error(404, 'Listing not found')
 	}
 
-	const tags = await getPublicListingTags(record.listing.id)
+	const [tags, media] = await Promise.all([
+		getPublicListingTags(record.listing.id),
+		getPublicListingMedia(record.listing.id),
+	])
 	const relatedListings = await getRelatedPublishedListings(
 		record.listing.id,
 		record.listing.city,
@@ -23,6 +27,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		host: record.host,
 		listing: record.listing,
+		media,
 		tags,
 		relatedListings,
 	}

@@ -14,6 +14,14 @@ const tagsByListingId = $derived(
 		data.listingTags.map((entry: PageData['listingTags'][number]) => [entry.listingId, entry.tags])
 	)
 )
+const mediaByListingId = $derived(
+	new Map<string, PageData['listingMedia'][number]['media']>(
+		data.listingMedia.map((entry: PageData['listingMedia'][number]) => [
+			entry.listingId,
+			entry.media,
+		])
+	)
+)
 
 function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 	const start = new Date(startAt)
@@ -72,6 +80,9 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 		{:else}
 			{#each data.listings as listing}
 				<Card class="border-white/80 bg-white/88 backdrop-blur">
+					{#if (mediaByListingId.get(listing.id) ?? []).length > 0}
+						<img src={(mediaByListingId.get(listing.id) ?? [])[0].url} alt={(mediaByListingId.get(listing.id) ?? [])[0].altText || listing.title} class="h-48 w-full object-cover" />
+					{/if}
 					<CardHeader>
 						<div class="flex flex-wrap items-center gap-2">
 							<Badge variant="outline">{getEventTypeLabel(listing.eventType)}</Badge>
