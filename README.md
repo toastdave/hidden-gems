@@ -147,6 +147,24 @@ https://<device>.<tailnet>.ts.net:1101
 
 Use the full `https://` URL. This setup serves HTTPS on port `1101`; `http://` requests to the tailnet hostname will fail.
 
+## Billing setup
+
+- `POLAR_ACCESS_TOKEN` is used for Polar API access.
+- `POLAR_WEBHOOK_SECRET` validates webhook deliveries.
+- `POLAR_SERVER` should remain `sandbox` until subscription upgrade flows and entitlement syncing are verified end-to-end.
+
+## Billing environments
+
+- Local app development: use seeded plans and entitlement stubs to exercise upgrade UI and gated states.
+- Polar sandbox: use `https://sandbox.polar.sh/start` for fake-money checkout and `https://sandbox-api.polar.sh` for API calls.
+- Production Polar: enable only after sandbox checkout, webhook replay handling, and entitlement sync are verified.
+
+Sandbox notes:
+
+- Polar sandbox is a separate environment, not a production test-mode toggle.
+- Sandbox uses separate accounts, organizations, and tokens.
+- Stripe test cards work in Polar sandbox, for example `4242 4242 4242 4242` with a future expiry and any CVC.
+
 ## Common commands
 
 ```bash

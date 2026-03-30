@@ -28,6 +28,7 @@
 ## Phase 5 - Monetization and trust
 
 - Launch Polar checkout, entitlements, and premium feature gates.
+- Validate upgrade checkout and entitlement sync in Polar sandbox before enabling live billing.
 - Add reporting, moderation queues, and basic abuse tooling.
 - Add operational dashboards, error tracking, audit trails, and launch analytics.
 
@@ -37,4 +38,5 @@
 - Core actions have empty, loading, success, and error states.
 - Seed data supports realistic local discovery demos.
 - Billing, auth, and upload secrets are separated by environment.
+- Billing environments are explicit: local app development, Polar sandbox, then live production.
 - Moderation and error logging exist before public launch.
