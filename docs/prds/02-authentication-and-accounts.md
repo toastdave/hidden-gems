@@ -27,6 +27,12 @@ Enable secure sign-up, sign-in, session handling, and account settings for hosts
 - Add email verification hooks, even if sending stays behind a feature flag initially.
 - Add audit-friendly logging for auth failures and account lifecycle events.
 
+## Current implementation status
+
+- Completed: Better Auth integration, protected routes, session persistence, sign-up/sign-in/sign-out flows, and a basic account area that links into host onboarding.
+- In progress: account settings remain lightweight and do not yet support profile editing or notification preferences.
+- Not started: password reset, email verification delivery, and audit-friendly auth logging.
+
 ## Acceptance criteria
 
 - Protected routes redirect anonymous users.

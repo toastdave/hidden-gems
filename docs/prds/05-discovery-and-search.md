@@ -30,6 +30,12 @@ Make it easy for buyers to find worthwhile local events fast, especially on Frid
 - Add empty states, no-results states, and fallback prompts for location access.
 - Remove internal-tech messaging from discovery surfaces.
 
+## Current implementation status
+
+- Completed: discovery-first homepage, DB-backed published listings, map/list sync, current radius/type/tag text filtering, listing detail pages, host detail pages, related listings, and product-facing discovery copy.
+- In progress: media thumbnails across discovery cards, broader SEO metadata, and stronger performance/code-splitting polish.
+- Not started: real geocoding provider integration, browser geolocation fallback UX, and deeper date-based discovery controls.
+
 ## Acceptance criteria
 
 - A user can search by location and refine results without signing in.

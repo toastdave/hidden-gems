@@ -28,6 +28,12 @@ Let hosts create, update, publish, unpublish, and manage event listings with min
 - Add server-side permissions so hosts only manage their own listings.
 - Store structured location data to support mapcn-svelte map views and radius search.
 
+## Current implementation status
+
+- Completed: draft and publish flow, edit flow, dashboard entrypoints, location/tag validation, server-side ownership checks, and public listing detail pages.
+- In progress: richer dashboard states, listing lifecycle actions beyond save/publish, and closer preview/detail parity.
+- Not started: duplicate/archive/cancel actions and a dedicated preview surface.
+
 ## Acceptance criteria
 
 - Hosts can create a draft and publish it from the dashboard.

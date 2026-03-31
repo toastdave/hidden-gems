@@ -6,6 +6,8 @@
 - Establish Drizzle schema ownership, migrations, seeds, and workspace task runners.
 - Ship the SvelteKit shell, shadcn-svelte design foundations, mapcn-svelte map foundations, and route groups.
 
+Status: complete for the current MVP foundation.
+
 ## Phase 2 - Host publishing core
 
 - Implement authentication, sessions, and account settings.
@@ -13,11 +15,15 @@
 - Build listing draft, edit, publish, and lifecycle management flows with mobile-friendly shadcn-svelte surfaces.
 - Add media upload, ordering, and cover image handling.
 
+Status: mostly complete. Authentication, host onboarding, host dashboard, listing creation/edit/publish, public host pages, and image upload/remove/cover flows are live. Remaining work is listing lifecycle polish, host profile editing, and richer media management.
+
 ## Phase 3 - Discovery MVP
 
 - Launch the discovery-first homepage, listing detail pages, host pages, and map-first browsing.
 - Add location search, date filters, event-type filters, and tag filters.
 - Add SEO, structured metadata, and mobile-first performance work.
+
+Status: in progress. The homepage, listing detail pages, host pages, DB-backed discovery, and current filters are live. Remaining work centers on real geocoding/location search, media thumbnails throughout discovery, and SEO/performance polish.
 
 ## Phase 4 - Engagement and retention
 
@@ -25,12 +31,16 @@
 - Add notification preferences and transactional messaging.
 - Add host and listing activity surfaces that reinforce repeat usage.
 
+Status: next priority after discovery and publishing polish.
+
 ## Phase 5 - Monetization and trust
 
 - Launch Polar checkout, entitlements, and premium feature gates.
 - Validate upgrade checkout and entitlement sync in Polar sandbox before enabling live billing.
 - Add reporting, moderation queues, and basic abuse tooling.
 - Add operational dashboards, error tracking, audit trails, and launch analytics.
+
+Status: not started.
 
 ## Cross-cutting launch checklist
 

@@ -28,6 +28,12 @@ Give sellers and organizers a trustworthy public identity that ties listings tog
 - Add ownership checks and permissions for host editing.
 - Expose host summary cards in listing and search results.
 
+## Current implementation status
+
+- Completed: one-host-per-user onboarding, slug validation, public host pages, host dashboard access, and host links from discovery and listing surfaces.
+- In progress: host profile editing, richer host trust states, and stronger host activity surfaces.
+- Not started: follow actions and buyer-facing host affinity features.
+
 ## Acceptance criteria
 
 - A signed-in user can create a host profile in one guided flow.

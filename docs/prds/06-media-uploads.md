@@ -27,6 +27,12 @@ Give hosts an easy way to add appealing photos, because image quality strongly a
 - Add cleanup logic for deleted or orphaned media objects.
 - Expose plan-based limits in the upload experience.
 
+## Current implementation status
+
+- Completed: server-backed image uploads to object storage, file type/size validation, cover image management, deletion cleanup, and media rendering on listing and host pages.
+- In progress: better upload UX polish and surfacing listing media throughout discovery results.
+- Not started: reorder via drag-and-drop, retry/progress states, replace flows, and plan-based media limits.
+
 ## Acceptance criteria
 
 - Hosts can upload, reorder, and delete listing photos.
