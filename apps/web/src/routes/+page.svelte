@@ -1,4 +1,5 @@
 <script lang="ts">
+import { browser } from '$app/environment'
 import { goto } from '$app/navigation'
 import { env as publicEnv } from '$env/dynamic/public'
 import LocationAutocomplete from '$lib/components/discovery/location-autocomplete.svelte'
@@ -6,7 +7,6 @@ import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
 import { Input } from '$lib/components/ui/input'
-import { Map as DiscoveryMap, MapControls, MapMarker, MarkerContent } from '$lib/components/ui/map'
 import { Separator } from '$lib/components/ui/separator'
 import { Skeleton } from '$lib/components/ui/skeleton'
 import { siteConfig } from '$lib/config/site'
@@ -15,16 +15,17 @@ import { buildAbsoluteUrl, resolveMetaImageUrl } from '$lib/seo'
 import { cn } from '$lib/utils'
 import ArrowRight from '@lucide/svelte/icons/arrow-right'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
-import Compass from '@lucide/svelte/icons/compass'
 import MapPinned from '@lucide/svelte/icons/map-pinned'
 import Search from '@lucide/svelte/icons/search'
 import Sparkles from '@lucide/svelte/icons/sparkles'
 import Store from '@lucide/svelte/icons/store'
+import { onMount } from 'svelte'
 import type { PageData } from './$types'
 
 const { data }: { data: PageData } = $props()
 
 type DiscoveryListing = PageData['listings'][number]
+type HomepageMapPanelModule = typeof import('$lib/components/discovery/homepage-map-panel.svelte')
 
 const moodClasses: Record<DiscoveryListing['mood'], string> = {
 	sunrise: 'from-amber-200 via-orange-100 to-white',
@@ -37,6 +38,7 @@ const mapStyles = publicEnv.PUBLIC_MAP_STYLE_URL
 	? { light: publicEnv.PUBLIC_MAP_STYLE_URL, dark: publicEnv.PUBLIC_MAP_STYLE_URL }
 	: undefined
 
+let homepageMapPanelPromise = $state<Promise<HomepageMapPanelModule> | null>(null)
 let selectedSlug = $state<string | null>(null)
 // biome-ignore lint/style/useConst: state changes via button interactions in the template
 let mobileView = $state<'map' | 'list'>('map')
@@ -55,6 +57,28 @@ $effect(() => {
 		zoom: data.center.zoom,
 		bearing: 0,
 		pitch: 0,
+	}
+})
+
+function ensureHomepageMapPanel() {
+	if (!browser || homepageMapPanelPromise) {
+		return
+	}
+
+	homepageMapPanelPromise = import('$lib/components/discovery/homepage-map-panel.svelte')
+}
+
+onMount(() => {
+	if (!browser) {
+		return
+	}
+
+	const timeoutId = window.setTimeout(() => {
+		ensureHomepageMapPanel()
+	}, 180)
+
+	return () => {
+		window.clearTimeout(timeoutId)
 	}
 })
 
@@ -87,7 +111,7 @@ const visibleListings = $derived.by<Array<DiscoveryListing & { liveDistanceMiles
 		})
 })
 
-function selectListing(listing: DiscoveryListing) {
+function selectListing(listing: Pick<DiscoveryListing, 'slug' | 'longitude' | 'latitude'>) {
 	selectedSlug = listing.slug
 	mapViewport = {
 		...mapViewport,
@@ -443,7 +467,7 @@ const homepageImageUrl = $derived(
 	</Card>
 {/snippet}
 
-{#snippet mapPanel()}
+{#snippet mapPanelFallback()}
 	<Card class="border-white/80 bg-white/88 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.35)] backdrop-blur">
 		<CardHeader>
 			<div class="flex items-center justify-between gap-3">
@@ -453,100 +477,49 @@ const homepageImageUrl = $derived(
 						Map nearby
 					</CardTitle>
 					<CardDescription class="mt-1">
-						Tap a pin or card to lock onto a promising stop.
+						Loading the interactive map after the first paint.
 					</CardDescription>
 				</div>
-				{#if highlightedListing}
-					<Badge class="bg-ink-950 text-mist-100">{highlightedListing.locationLabel}</Badge>
-				{/if}
+				<Badge class="bg-ink-950 text-mist-100">Preparing map</Badge>
 			</div>
 		</CardHeader>
 		<CardContent class="px-4 pb-4 sm:px-6 sm:pb-6">
-			<div class="relative overflow-hidden rounded-[1.5rem] border border-ink-950/8 bg-white">
-				<div class="h-[380px] sm:h-[460px]">
-					<DiscoveryMap
-						styles={mapStyles}
-						viewport={mapViewport}
-						onviewportchange={(viewport) => {
-							mapViewport = viewport
-						}}
-						options={{
-							attributionControl: false,
-						}}
-					>
-						{#each visibleListings as listing (listing.slug)}
-							<MapMarker
-								longitude={listing.longitude}
-								latitude={listing.latitude}
-								onclick={() => selectListing(listing)}
-							>
-								<MarkerContent>
-									<button
-										type="button"
-										class={cn(
-											'flex min-w-[5.25rem] items-center justify-center rounded-full border border-white px-3 py-2 text-xs font-semibold shadow-lg transition-all',
-											listing.slug === selectedSlug
-												? 'bg-ink-950 text-white'
-												: 'bg-white/95 text-ink-950 hover:bg-mist-100'
-										)}
-										aria-label={`Focus ${listing.title}`}
-									>
-										{formatDistance(listing.liveDistanceMiles)}
-									</button>
-								</MarkerContent>
-							</MapMarker>
-						{/each}
-						<MapControls showZoom showLocate onlocate={handleLocate} onlocateerror={handleLocateError} />
-					</DiscoveryMap>
+			<div class="overflow-hidden rounded-[1.5rem] border border-ink-950/8 bg-white p-4">
+				<Skeleton class="h-[380px] w-full rounded-[1.25rem] sm:h-[460px]" />
+				<div class="mt-4 flex flex-wrap gap-2">
+					<Skeleton class="h-7 w-28 rounded-full" />
+					<Skeleton class="h-7 w-24 rounded-full" />
 				</div>
-
-				{#if highlightedListing}
-					<div class="pointer-events-none absolute inset-x-4 bottom-4">
-						<div class="rounded-2xl border border-white/85 bg-white/92 p-4 shadow-xl backdrop-blur">
-							<div class="flex items-start justify-between gap-3">
-								<div class="flex min-w-0 items-start gap-3">
-									{#if highlightedListing.coverImageUrl}
-										<img
-											src={highlightedListing.coverImageUrl}
-											alt={highlightedListing.coverImageAlt || highlightedListing.title}
-											class="size-16 rounded-2xl object-cover"
-										/>
-									{/if}
-									<div class="min-w-0">
-										<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">
-											Selected stop
-										</p>
-										<p class="mt-1 text-lg font-semibold text-ink-950">
-											{highlightedListing.title}
-										</p>
-									</div>
-								</div>
-								<Badge variant="outline">{getEventTypeLabel(highlightedListing.eventType)}</Badge>
-							</div>
-							<div class="mt-3 flex flex-wrap gap-3 text-sm text-ink-700">
-								<span class="inline-flex items-center gap-1.5">
-									<Compass class="size-4 text-ink-700/60" />
-									{formatDistance(highlightedListing.liveDistanceMiles)}
-								</span>
-								<span class="inline-flex items-center gap-1.5">
-									<CalendarDays class="size-4 text-ink-700/60" />
-									{formatDateRange(highlightedListing.startsAt, highlightedListing.endsAt)}
-								</span>
-							</div>
-							<div class="pointer-events-auto mt-4 flex flex-wrap gap-2">
-								<Button href={`/sale/${highlightedListing.slug}`} size="sm" class="rounded-full">
-									Open listing
-								</Button>
-								<Button href={`/hosts/${highlightedListing.hostSlug}`} variant="outline" size="sm" class="rounded-full">
-									View host
-								</Button>
-							</div>
-						</div>
-					</div>
-				{/if}
 			</div>
 		</CardContent>
 	</Card>
+{/snippet}
+
+{#snippet mapPanel()}
+	{#if homepageMapPanelPromise}
+		{#await homepageMapPanelPromise}
+			{@render mapPanelFallback()}
+		{:then module}
+			{@const HomepageMapPanel = module.default}
+			<HomepageMapPanel
+				mapStyles={mapStyles}
+				viewport={mapViewport}
+				listings={visibleListings}
+				selectedSlug={selectedSlug}
+				highlightedListing={highlightedListing}
+				onselectlisting={selectListing}
+				onviewportchange={(viewport) => {
+					mapViewport = viewport
+				}}
+				onlocate={handleLocate}
+				onlocateerror={handleLocateError}
+			/>
+		{:catch}
+			{@render mapPanelFallback()}
+		{/await}
+	{:else}
+		{@render mapPanelFallback()}
+	{/if}
 {/snippet}
 
 {#snippet resultsPanel()}
@@ -752,6 +725,7 @@ const homepageImageUrl = $derived(
 						variant={mobileView === 'map' ? 'default' : 'ghost'}
 						class="rounded-full"
 						onclick={() => {
+							ensureHomepageMapPanel()
 							mobileView = 'map'
 						}}
 					>

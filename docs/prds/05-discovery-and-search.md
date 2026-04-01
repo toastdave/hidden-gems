@@ -33,7 +33,7 @@ Make it easy for buyers to find worthwhile local events fast, especially on Frid
 ## Current implementation status
 
 - Completed: discovery-first homepage, DB-backed published listings, map/list sync, sharable date/type/radius/tag filtering, deeper date filters for today/tomorrow/this weekend/next 7 days, listing detail pages, host detail pages, homepage discovery media thumbnails, product-facing discovery copy, MapTiler-backed location geocoding, richer location autocomplete suggestions, public-page canonical/open graph metadata, and browser geolocation fallback messaging.
-- In progress: stronger performance/code-splitting polish.
+- In progress: stronger performance/code-splitting polish, with the homepage map surface now lazy-loaded after the first paint.
 - Not started: saved search alerts tied to geocoded locations.
 
 ## Implementation notes
@@ -45,6 +45,7 @@ Make it easy for buyers to find worthwhile local events fast, especially on Frid
 - Date filters now ship as sharable homepage state with `today`, `tomorrow`, `this weekend`, and `next 7 days` presets, plus contextual counts to help people plan ahead without opening each listing.
 - Homepage discovery cards and the selected map stop now surface listing cover media when hosts have uploaded photos, while keeping the existing branded fallback for image-light listings.
 - Homepage, listing, and host detail pages now ship canonical URLs plus richer open graph and Twitter metadata, with JSON-LD on public listing and host pages to strengthen organic discovery.
+- The homepage now defers the heavy interactive map bundle until after the initial route shell renders, keeping list/search content visible while the map hydrates.
 - Browser geolocation still remains optional; when denied, the UI should steer people back toward manual place search without blocking discovery.
 - Host listing save flows geocode structured addresses automatically and still allow optional coordinate overrides when the pin needs manual correction.
 
