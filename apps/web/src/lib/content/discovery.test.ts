@@ -46,4 +46,38 @@ describe('buildDiscoveryResults', () => {
 		expect(results.filters.latitude).toBe('')
 		expect(results.filters.longitude).toBe('')
 	})
+
+	test('filters listings to today when a today window is selected', () => {
+		const now = new Date('2026-04-03T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				date: 'today',
+				radius: '50',
+			},
+			getSampleListings(now),
+			now
+		)
+
+		expect(results.filters.date).toBe('today')
+		expect(results.listings.map((listing) => listing.slug)).toEqual(['round-rock-night-market'])
+	})
+
+	test('filters listings to this weekend when the weekend window is selected', () => {
+		const now = new Date('2026-04-03T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				date: 'this_weekend',
+				radius: '50',
+			},
+			getSampleListings(now),
+			now
+		)
+
+		expect(results.filters.date).toBe('this_weekend')
+		expect(results.listings.length).toBeGreaterThan(1)
+		expect(results.listings.some((listing) => listing.slug === 'round-rock-night-market')).toBe(
+			true
+		)
+		expect(results.listings.some((listing) => listing.slug === 'cherrywood-porch-sale')).toBe(true)
+	})
 })

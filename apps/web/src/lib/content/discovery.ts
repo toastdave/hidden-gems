@@ -44,17 +44,20 @@ export type DiscoveryFilters = {
 	place?: string | null
 	lat?: string | null
 	lng?: string | null
+	date?: string | null
 	q?: string | null
 	type?: string | null
 	radius?: string | null
 }
+
+export type DiscoveryDateFilter = 'all' | 'today' | 'this_weekend'
 
 export type DiscoveryCenterOverride = Pick<
 	DiscoveryCenter,
 	'label' | 'latitude' | 'longitude' | 'zoom' | 'description'
 >
 
-const DAY = 24 * 60 * 60 * 1000
+const DISCOVERY_TIME_ZONE = 'America/Chicago'
 
 export const discoveryCenters: DiscoveryCenter[] = [
 	{
@@ -101,6 +104,12 @@ export const discoveryCenters: DiscoveryCenter[] = [
 
 export const radiusOptions = [5, 10, 15, 25, 50]
 
+export const dateFilterOptions: Array<{ value: DiscoveryDateFilter; label: string }> = [
+	{ value: 'all', label: 'Any date' },
+	{ value: 'today', label: 'Today' },
+	{ value: 'this_weekend', label: 'This weekend' },
+]
+
 export const eventTypeOptions: Array<{ value: 'all' | DiscoveryEventType; label: string }> = [
 	{ value: 'all', label: 'All events' },
 	{ value: 'yard_sale', label: 'Yard sales' },
@@ -134,6 +143,10 @@ function toIso(date: Date) {
 
 export function getEventTypeLabel(eventType: DiscoveryEventType) {
 	return eventTypeOptions.find((option) => option.value === eventType)?.label ?? 'Local event'
+}
+
+export function getDateFilterLabel(dateFilter: DiscoveryDateFilter) {
+	return dateFilterOptions.find((option) => option.value === dateFilter)?.label ?? 'Any date'
 }
 
 export function getDiscoveryMood(
@@ -188,6 +201,66 @@ export function milesBetween(
 		Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2
 
 	return 2 * earthRadiusMiles * Math.atan2(Math.sqrt(haversineValue), Math.sqrt(1 - haversineValue))
+}
+
+function getZonedDateParts(date: Date) {
+	const formatter = new Intl.DateTimeFormat('en-US', {
+		timeZone: DISCOVERY_TIME_ZONE,
+		weekday: 'short',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+	})
+
+	const parts = formatter.formatToParts(date)
+	const values = Object.fromEntries(
+		parts.filter((part) => part.type !== 'literal').map((part) => [part.type, part.value])
+	) as Record<'weekday' | 'year' | 'month' | 'day', string>
+
+	return {
+		weekday: values.weekday,
+		dateKey: `${values.year}-${values.month}-${values.day}`,
+	}
+}
+
+function addDaysToDateKey(dateKey: string, days: number) {
+	const [year, month, day] = dateKey.split('-').map(Number)
+	const date = new Date(Date.UTC(year, month - 1, day + days))
+
+	return date.toISOString().slice(0, 10)
+}
+
+function getWeekendDateKeys(now: Date) {
+	const { dateKey, weekday } = getZonedDateParts(now)
+	const weekdayIndexMap = {
+		Sun: 0,
+		Mon: 1,
+		Tue: 2,
+		Wed: 3,
+		Thu: 4,
+		Fri: 5,
+		Sat: 6,
+	} as const
+	const weekdayIndex = weekdayIndexMap[weekday as keyof typeof weekdayIndexMap] ?? 5
+
+	const fridayOffset = weekdayIndex === 0 ? -2 : 5 - weekdayIndex
+	const friday = addDaysToDateKey(dateKey, fridayOffset)
+
+	return new Set([friday, addDaysToDateKey(friday, 1), addDaysToDateKey(friday, 2)])
+}
+
+function matchesDateFilter(startAt: string, dateFilter: DiscoveryDateFilter, now: Date) {
+	if (dateFilter === 'all') {
+		return true
+	}
+
+	const listingDateKey = getZonedDateParts(new Date(startAt)).dateKey
+
+	if (dateFilter === 'today') {
+		return listingDateKey === getZonedDateParts(now).dateKey
+	}
+
+	return getWeekendDateKeys(now).has(listingDateKey)
 }
 
 export function getSampleListings(now = new Date()): DiscoveryListing[] {
@@ -399,6 +472,9 @@ export function buildDiscoveryResults(
 	const center = centerOverride
 		? createDiscoveryCenterOverride(centerOverride)
 		: getDiscoveryCenter(filters.near)
+	const activeDate = dateFilterOptions.some((option) => option.value === filters.date)
+		? (filters.date as DiscoveryDateFilter)
+		: 'all'
 	const query = filters.q?.trim().toLowerCase() ?? ''
 	const place = filters.place?.trim() ?? ''
 	const activeType = eventTypeOptions.some((option) => option.value === filters.type)
@@ -408,6 +484,10 @@ export function buildDiscoveryResults(
 
 	const listings = sourceListings
 		.filter((listing) => {
+			if (!matchesDateFilter(listing.startsAt, activeDate, now)) {
+				return false
+			}
+
 			if (activeType !== 'all' && listing.eventType !== activeType) {
 				return false
 			}
@@ -452,8 +532,6 @@ export function buildDiscoveryResults(
 			return new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime()
 		})
 
-	const weekendCutoff = now.getTime() + DAY * 3
-
 	return {
 		center,
 		filters: {
@@ -461,19 +539,21 @@ export function buildDiscoveryResults(
 			place,
 			latitude: centerOverride ? String(center.latitude) : '',
 			longitude: centerOverride ? String(center.longitude) : '',
+			date: activeDate,
 			q: filters.q?.trim() ?? '',
 			type: activeType,
 			radiusMiles,
 		},
 		listings,
 		locationOptions: discoveryCenters,
+		dateOptions: dateFilterOptions,
 		typeOptions: eventTypeOptions,
 		radiusOptions,
 		stats: {
 			matching: listings.length,
 			featured: listings.filter((listing) => listing.isFeatured).length,
-			thisWeekend: listings.filter(
-				(listing) => new Date(listing.startsAt).getTime() <= weekendCutoff
+			thisWeekend: listings.filter((listing) =>
+				matchesDateFilter(listing.startsAt, 'this_weekend', now)
 			).length,
 		},
 	}

@@ -9,7 +9,7 @@ import { Map as DiscoveryMap, MapControls, MapMarker, MarkerContent } from '$lib
 import { Separator } from '$lib/components/ui/separator'
 import { Skeleton } from '$lib/components/ui/skeleton'
 import { siteConfig } from '$lib/config/site'
-import { getEventTypeLabel, milesBetween } from '$lib/content/discovery'
+import { getDateFilterLabel, getEventTypeLabel, milesBetween } from '$lib/content/discovery'
 import { cn } from '$lib/utils'
 import ArrowRight from '@lucide/svelte/icons/arrow-right'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
@@ -118,7 +118,10 @@ function handleLocateError(message: string) {
 
 function buildQuery(
 	overrides: Partial<
-		Record<'near' | 'place' | 'lat' | 'lng' | 'type' | 'radius' | 'q', string | number | null>
+		Record<
+			'near' | 'place' | 'lat' | 'lng' | 'date' | 'type' | 'radius' | 'q',
+			string | number | null
+		>
 	>
 ) {
 	const params = new URLSearchParams()
@@ -127,6 +130,7 @@ function buildQuery(
 		place: data.filters.place,
 		lat: data.filters.latitude,
 		lng: data.filters.longitude,
+		date: data.filters.date,
 		type: data.filters.type,
 		radius: String(data.filters.radiusMiles),
 		q: data.filters.q,
@@ -147,6 +151,10 @@ function buildQuery(
 
 	if (next.lng) {
 		params.set('lng', String(next.lng))
+	}
+
+	if (next.date && next.date !== 'all') {
+		params.set('date', String(next.date))
 	}
 
 	if (next.type && next.type !== 'all') {
@@ -232,6 +240,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 		<CardContent class="space-y-5 px-4 pb-5 sm:px-6">
 			<form method="GET" class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto]">
 				<input type="hidden" name="near" value={data.filters.near} />
+				<input type="hidden" name="date" value={data.filters.date} />
 				<input type="hidden" name="type" value={data.filters.type} />
 				<input type="hidden" name="radius" value={data.filters.radiusMiles} />
 				<div class="relative">
@@ -304,6 +313,19 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 						Clear searched place
 					</Button>
 				{/if}
+			</div>
+
+			<div class="flex flex-wrap gap-2">
+				{#each data.dateOptions as option (option.value)}
+					<Button
+						href={buildQuery({ date: option.value === 'all' ? null : option.value })}
+						variant={option.value === data.filters.date ? 'secondary' : 'ghost'}
+						size="sm"
+						class="rounded-full"
+					>
+						{option.label}
+					</Button>
+				{/each}
 			</div>
 
 			<div class="flex flex-wrap gap-2">
@@ -461,6 +483,9 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 				{#if data.filters.q}
 					<Badge variant="outline">Searching for “{data.filters.q}”</Badge>
 				{/if}
+				{#if data.filters.date !== 'all'}
+					<Badge variant="outline">{getDateFilterLabel(data.filters.date)}</Badge>
+				{/if}
 				{#if data.filters.type !== 'all'}
 					<Badge variant="outline">{getEventTypeLabel(data.filters.type)}</Badge>
 				{/if}
@@ -470,10 +495,10 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 				<div class="rounded-[1.5rem] border border-dashed border-ink-950/15 bg-mist-100/70 p-6 text-sm text-ink-700">
 					<p class="text-base font-semibold text-ink-950">Nothing matched this mix yet.</p>
 					<p class="mt-2 leading-7">
-						Try widening the radius, switching neighborhoods, or clearing the search phrase.
+						Try widening the radius, switching the date window, or clearing the search phrase.
 					</p>
 					<div class="mt-4 flex flex-wrap gap-2">
-						<Button href={buildQuery({ q: null, type: null, radius: 25 })} size="sm">
+						<Button href={buildQuery({ q: null, date: null, type: null, radius: 25 })} size="sm">
 							Reset filters
 						</Button>
 					</div>
