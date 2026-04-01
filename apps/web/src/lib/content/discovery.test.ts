@@ -62,6 +62,23 @@ describe('buildDiscoveryResults', () => {
 		expect(results.listings.map((listing) => listing.slug)).toEqual(['round-rock-night-market'])
 	})
 
+	test('filters listings to tomorrow and exposes contextual date counts', () => {
+		const now = new Date('2026-04-03T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				date: 'tomorrow',
+				radius: '50',
+			},
+			getSampleListings(now),
+			now
+		)
+
+		expect(results.filters.date).toBe('tomorrow')
+		expect(results.listings.length).toBe(6)
+		expect(results.dateOptions.find((option) => option.value === 'tomorrow')?.count).toBe(6)
+		expect(results.dateOptions.find((option) => option.value === 'next_7_days')?.count).toBe(9)
+	})
+
 	test('preserves optional cover image metadata through results building', () => {
 		const now = new Date('2026-04-03T12:00:00.000Z')
 		const [firstListing] = getSampleListings(now)
@@ -100,6 +117,21 @@ describe('buildDiscoveryResults', () => {
 			true
 		)
 		expect(results.listings.some((listing) => listing.slug === 'cherrywood-porch-sale')).toBe(true)
+	})
+
+	test('filters listings to the next seven days when selected', () => {
+		const now = new Date('2026-04-03T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				date: 'next_7_days',
+				radius: '50',
+			},
+			getSampleListings(now),
+			now
+		)
+
+		expect(results.filters.date).toBe('next_7_days')
+		expect(results.listings).toHaveLength(9)
 	})
 
 	test('supports sharable tag filters and exposes matching tag options', () => {

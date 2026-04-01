@@ -271,6 +271,9 @@ const homepageImageUrl = $derived(
 				<Badge variant="outline" class="border-emerald-300/80 bg-emerald-100/70 text-emerald-900">
 					{data.stats.thisWeekend} happening this weekend
 				</Badge>
+				<Badge variant="outline" class="border-sky-300/80 bg-sky-100/70 text-sky-900">
+					{data.stats.tomorrow} worth checking tomorrow
+				</Badge>
 			</div>
 			<CardTitle class="font-display text-3xl leading-tight text-ink-950 sm:text-4xl">
 				The best yard sales, estate finds, and pop-up markets worth driving to.
@@ -328,13 +331,20 @@ const homepageImageUrl = $derived(
 				</div>
 			{/if}
 
-			<div class="grid gap-3 md:grid-cols-3">
+			<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
 					<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">
 						Matching now
 					</p>
 					<p class="mt-2 font-display text-3xl text-ink-950">{data.stats.matching}</p>
 					<p class="mt-1 text-sm text-ink-700">Within {data.filters.radiusMiles} miles.</p>
+				</div>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
+					<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">
+						Tomorrow
+					</p>
+					<p class="mt-2 font-display text-3xl text-ink-950">{data.stats.tomorrow}</p>
+					<p class="mt-1 text-sm text-ink-700">Good for planning your next outing.</p>
 				</div>
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
 					<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">
@@ -379,9 +389,14 @@ const homepageImageUrl = $derived(
 						class="rounded-full"
 					>
 						{option.label}
+						<span class="text-ink-700/60">{option.count}</span>
 					</Button>
 				{/each}
 			</div>
+
+			<p class="text-sm leading-6 text-ink-700/80">
+				Plan ahead with {data.stats.tomorrow} happening tomorrow and {data.stats.next7Days} across the next 7 days.
+			</p>
 
 			<div class="flex flex-wrap gap-2">
 				{#each data.typeOptions as option (option.value)}

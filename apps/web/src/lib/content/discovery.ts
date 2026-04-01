@@ -53,7 +53,7 @@ export type DiscoveryFilters = {
 	radius?: string | null
 }
 
-export type DiscoveryDateFilter = 'all' | 'today' | 'this_weekend'
+export type DiscoveryDateFilter = 'all' | 'today' | 'tomorrow' | 'this_weekend' | 'next_7_days'
 
 export type DiscoveryCenterOverride = Pick<
 	DiscoveryCenter,
@@ -116,7 +116,9 @@ export const radiusOptions = [5, 10, 15, 25, 50]
 export const dateFilterOptions: Array<{ value: DiscoveryDateFilter; label: string }> = [
 	{ value: 'all', label: 'Any date' },
 	{ value: 'today', label: 'Today' },
+	{ value: 'tomorrow', label: 'Tomorrow' },
 	{ value: 'this_weekend', label: 'This weekend' },
+	{ value: 'next_7_days', label: 'Next 7 days' },
 ]
 
 export const eventTypeOptions: Array<{ value: 'all' | DiscoveryEventType; label: string }> = [
@@ -313,15 +315,30 @@ function getWeekendDateKeys(now: Date) {
 	return new Set([friday, addDaysToDateKey(friday, 1), addDaysToDateKey(friday, 2)])
 }
 
+function getRollingDateKeys(now: Date, length: number) {
+	const startDateKey = getZonedDateParts(now).dateKey
+
+	return new Set(Array.from({ length }, (_, index) => addDaysToDateKey(startDateKey, index)))
+}
+
 function matchesDateFilter(startAt: string, dateFilter: DiscoveryDateFilter, now: Date) {
 	if (dateFilter === 'all') {
 		return true
 	}
 
+	const currentDateKey = getZonedDateParts(now).dateKey
 	const listingDateKey = getZonedDateParts(new Date(startAt)).dateKey
 
 	if (dateFilter === 'today') {
-		return listingDateKey === getZonedDateParts(now).dateKey
+		return listingDateKey === currentDateKey
+	}
+
+	if (dateFilter === 'tomorrow') {
+		return listingDateKey === addDaysToDateKey(currentDateKey, 1)
+	}
+
+	if (dateFilter === 'next_7_days') {
+		return getRollingDateKeys(now, 7).has(listingDateKey)
 	}
 
 	return getWeekendDateKeys(now).has(listingDateKey)
@@ -549,10 +566,6 @@ export function buildDiscoveryResults(
 
 	const listingsInContext = sourceListings
 		.filter((listing) => {
-			if (!matchesDateFilter(listing.startsAt, activeDate, now)) {
-				return false
-			}
-
 			if (activeType !== 'all' && listing.eventType !== activeType) {
 				return false
 			}
@@ -570,32 +583,47 @@ export function buildDiscoveryResults(
 		}))
 		.filter((listing) => listing.distanceMiles <= radiusMiles)
 
-	const tagOptions = getTagOptions(listingsInContext, activeTag)
+	const listingsMatchingSearch = listingsInContext.filter((listing) => {
+		if (activeTag && !listing.tags.some((tag) => normalizeTag(tag) === activeTag)) {
+			return false
+		}
 
-	const listings = listingsInContext
-		.filter((listing) => {
-			if (activeTag && !listing.tags.some((tag) => normalizeTag(tag) === activeTag)) {
-				return false
-			}
+		if (!query) {
+			return true
+		}
 
-			if (!query) {
-				return true
-			}
+		const haystack = [
+			listing.title,
+			listing.description,
+			listing.hostName,
+			listing.locationLabel,
+			listing.city,
+			listing.region,
+			...listing.tags,
+		]
+			.join(' ')
+			.toLowerCase()
 
-			const haystack = [
-				listing.title,
-				listing.description,
-				listing.hostName,
-				listing.locationLabel,
-				listing.city,
-				listing.region,
-				...listing.tags,
-			]
-				.join(' ')
-				.toLowerCase()
+		return haystack.includes(query)
+	})
 
-			return haystack.includes(query)
-		})
+	const tagOptions = getTagOptions(
+		listingsInContext.filter((listing) => matchesDateFilter(listing.startsAt, activeDate, now)),
+		activeTag
+	)
+
+	const dateOptions = dateFilterOptions.map((option) => ({
+		...option,
+		count:
+			option.value === 'all'
+				? listingsMatchingSearch.length
+				: listingsMatchingSearch.filter((listing) =>
+						matchesDateFilter(listing.startsAt, option.value, now)
+					).length,
+	}))
+
+	const listings = listingsMatchingSearch
+		.filter((listing) => matchesDateFilter(listing.startsAt, activeDate, now))
 		.sort((left, right) => {
 			if (left.isFeatured !== right.isFeatured) {
 				return Number(right.isFeatured) - Number(left.isFeatured)
@@ -623,15 +651,21 @@ export function buildDiscoveryResults(
 		},
 		listings,
 		locationOptions: discoveryCenters,
-		dateOptions: dateFilterOptions,
+		dateOptions,
 		tagOptions,
 		typeOptions: eventTypeOptions,
 		radiusOptions,
 		stats: {
 			matching: listings.length,
 			featured: listings.filter((listing) => listing.isFeatured).length,
-			thisWeekend: listings.filter((listing) =>
+			thisWeekend: listingsMatchingSearch.filter((listing) =>
 				matchesDateFilter(listing.startsAt, 'this_weekend', now)
+			).length,
+			tomorrow: listingsMatchingSearch.filter((listing) =>
+				matchesDateFilter(listing.startsAt, 'tomorrow', now)
+			).length,
+			next7Days: listingsMatchingSearch.filter((listing) =>
+				matchesDateFilter(listing.startsAt, 'next_7_days', now)
 			).length,
 		},
 	}
