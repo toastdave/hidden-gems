@@ -1,4 +1,5 @@
 import { db } from '$lib/server/db'
+import { geocodeListingAddress } from '$lib/server/geocoding'
 import {
 	type ListingEditorValues,
 	type ListingFormErrors,
@@ -36,6 +37,10 @@ function parseCoordinate(value: string) {
 
 	const parsed = Number(value)
 	return Number.isFinite(parsed) ? parsed : Number.NaN
+}
+
+function formatCoordinate(value: number) {
+	return value.toFixed(6)
 }
 
 export function getListingValuesFromForm(formData: FormData): ListingEditorValues {
@@ -77,8 +82,6 @@ export async function validateListingValues(
 	const errors: ListingFormErrors = {}
 	const startAt = parseDateTime(values.startAt)
 	const endAt = parseDateTime(values.endAt)
-	const latitude = parseCoordinate(values.latitude)
-	const longitude = parseCoordinate(values.longitude)
 
 	if (values.title.length < 4) {
 		errors.title = 'Use a title with at least 4 characters.'
@@ -124,31 +127,88 @@ export async function validateListingValues(
 		errors.description = 'Add a little more detail before publishing.'
 	}
 
-	if (
-		!values.latitude ||
-		Number.isNaN(latitude) ||
-		latitude === null ||
-		latitude < -90 ||
-		latitude > 90
-	) {
-		errors.latitude = 'Use a valid latitude between -90 and 90.'
-	}
-
-	if (
-		!values.longitude ||
-		Number.isNaN(longitude) ||
-		longitude === null ||
-		longitude < -180 ||
-		longitude > 180
-	) {
-		errors.longitude = 'Use a valid longitude between -180 and 180.'
-	}
-
 	if (!(await ensureListingSlugAvailable(values.slug, listingId))) {
 		errors.slug = 'That listing link is already taken.'
 	}
 
 	return errors
+}
+
+export async function prepareListingSubmission(
+	values: ListingEditorValues,
+	listingId?: string
+): Promise<{ errors: ListingFormErrors; values: ListingEditorValues }> {
+	const errors = await validateListingValues(values, listingId)
+	const hasManualLatitude = values.latitude.trim().length > 0
+	const hasManualLongitude = values.longitude.trim().length > 0
+	const latitude = parseCoordinate(values.latitude)
+	const longitude = parseCoordinate(values.longitude)
+
+	if (hasManualLatitude || hasManualLongitude) {
+		if (
+			!values.latitude ||
+			Number.isNaN(latitude) ||
+			latitude === null ||
+			latitude < -90 ||
+			latitude > 90
+		) {
+			errors.latitude = 'Use a valid latitude between -90 and 90.'
+		}
+
+		if (
+			!values.longitude ||
+			Number.isNaN(longitude) ||
+			longitude === null ||
+			longitude < -180 ||
+			longitude > 180
+		) {
+			errors.longitude = 'Use a valid longitude between -180 and 180.'
+		}
+
+		return {
+			errors,
+			values:
+				Object.keys(errors).length === 0
+					? {
+							...values,
+							latitude: formatCoordinate(latitude as number),
+							longitude: formatCoordinate(longitude as number),
+						}
+					: values,
+		}
+	}
+
+	if (!values.addressLine1.trim()) {
+		errors.addressLine1 = 'Add the street address so we can place this listing on the map.'
+		return { errors, values }
+	}
+
+	const geocoded = await geocodeListingAddress({
+		addressLine1: values.addressLine1,
+		addressLine2: values.addressLine2,
+		city: values.city,
+		region: values.region,
+		postalCode: values.postalCode,
+		countryCode: values.countryCode,
+	})
+
+	if (!geocoded.ok) {
+		errors.addressLine1 =
+			geocoded.reason === 'unavailable'
+				? 'We could not geocode this address right now. Add coordinates below or try again later.'
+				: 'We could not place that address. Double-check the street, city, or postal code.'
+
+		return { errors, values }
+	}
+
+	return {
+		errors,
+		values: {
+			...values,
+			latitude: formatCoordinate(geocoded.result.latitude),
+			longitude: formatCoordinate(geocoded.result.longitude),
+		},
+	}
 }
 
 export async function saveListing(options: {

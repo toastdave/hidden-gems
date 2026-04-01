@@ -23,7 +23,7 @@ Status: mostly complete. Authentication, host onboarding, host dashboard, listin
 - Add location search, date filters, event-type filters, and tag filters.
 - Add SEO, structured metadata, and mobile-first performance work.
 
-Status: in progress. The homepage, listing detail pages, host pages, DB-backed discovery, and current filters are live. Remaining work centers on real geocoding/location search, media thumbnails throughout discovery, and SEO/performance polish.
+Status: in progress. The homepage, listing detail pages, host pages, DB-backed discovery, real MapTiler-backed geocoding/location search, and host-side address geocoding are live. Remaining work centers on richer autocomplete/date filters, media thumbnails throughout discovery, and SEO/performance polish.
 
 ## Phase 4 - Engagement and retention
 

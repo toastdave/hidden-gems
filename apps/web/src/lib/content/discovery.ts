@@ -41,10 +41,18 @@ export type DiscoveryListing = {
 
 export type DiscoveryFilters = {
 	near?: string | null
+	place?: string | null
+	lat?: string | null
+	lng?: string | null
 	q?: string | null
 	type?: string | null
 	radius?: string | null
 }
+
+export type DiscoveryCenterOverride = Pick<
+	DiscoveryCenter,
+	'label' | 'latitude' | 'longitude' | 'zoom' | 'description'
+>
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -150,6 +158,15 @@ export function getDiscoveryMood(
 
 export function getDiscoveryCenter(key?: string | null) {
 	return discoveryCenters.find((center) => center.key === key) ?? discoveryCenters[0]
+}
+
+export function createDiscoveryCenterOverride(input: DiscoveryCenterOverride): DiscoveryCenter {
+	return {
+		key: 'searched-location',
+		city: input.label,
+		region: '',
+		...input,
+	}
 }
 
 export function milesBetween(
@@ -376,10 +393,14 @@ export function getSampleListings(now = new Date()): DiscoveryListing[] {
 export function buildDiscoveryResults(
 	filters: DiscoveryFilters,
 	sourceListings: DiscoveryListing[],
-	now = new Date()
+	now = new Date(),
+	centerOverride?: DiscoveryCenterOverride | null
 ) {
-	const center = getDiscoveryCenter(filters.near)
+	const center = centerOverride
+		? createDiscoveryCenterOverride(centerOverride)
+		: getDiscoveryCenter(filters.near)
 	const query = filters.q?.trim().toLowerCase() ?? ''
+	const place = filters.place?.trim() ?? ''
 	const activeType = eventTypeOptions.some((option) => option.value === filters.type)
 		? (filters.type as 'all' | DiscoveryEventType)
 		: 'all'
@@ -436,7 +457,10 @@ export function buildDiscoveryResults(
 	return {
 		center,
 		filters: {
-			near: center.key,
+			near: centerOverride ? null : center.key,
+			place,
+			latitude: centerOverride ? String(center.latitude) : '',
+			longitude: centerOverride ? String(center.longitude) : '',
 			q: filters.q?.trim() ?? '',
 			type: activeType,
 			radiusMiles,
@@ -455,8 +479,11 @@ export function buildDiscoveryResults(
 	}
 }
 
-export function getDiscoveryResults(filters: DiscoveryFilters) {
+export function getDiscoveryResults(
+	filters: DiscoveryFilters,
+	centerOverride?: DiscoveryCenterOverride | null
+) {
 	const now = new Date()
 
-	return buildDiscoveryResults(filters, getSampleListings(now), now)
+	return buildDiscoveryResults(filters, getSampleListings(now), now, centerOverride)
 }

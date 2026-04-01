@@ -1,8 +1,8 @@
 import { getHostForUser } from '$lib/server/hosts'
 import {
 	getListingValuesFromForm,
+	prepareListingSubmission,
 	saveListing,
-	validateListingValues,
 } from '$lib/server/listing-editor'
 import { defaultListingValues } from '$lib/server/listings'
 import { fail, redirect } from '@sveltejs/kit'
@@ -50,8 +50,8 @@ export const actions: Actions = {
 			throw redirect(303, '/host/onboarding')
 		}
 
-		const values = getListingValuesFromForm(await request.formData())
-		const errors = await validateListingValues(values)
+		const submittedValues = getListingValuesFromForm(await request.formData())
+		const { errors, values } = await prepareListingSubmission(submittedValues)
 
 		if (Object.keys(errors).length > 0) {
 			return fail(400, { errors, values })

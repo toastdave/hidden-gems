@@ -1,0 +1,49 @@
+import { describe, expect, test } from 'bun:test'
+import { buildDiscoveryResults, getSampleListings } from './discovery'
+
+describe('buildDiscoveryResults', () => {
+	test('uses a searched location override when provided', () => {
+		const now = new Date('2026-04-01T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				place: '78702',
+				radius: '25',
+				type: 'all',
+			},
+			getSampleListings(now),
+			now,
+			{
+				label: '78702, Austin, Texas',
+				latitude: 30.2653,
+				longitude: -97.7182,
+				zoom: 11.8,
+				description: 'Showing results around your searched location.',
+			}
+		)
+
+		expect(results.center.label).toBe('78702, Austin, Texas')
+		expect(results.filters.near).toBeNull()
+		expect(results.filters.place).toBe('78702')
+		expect(results.filters.latitude).toBe('30.2653')
+		expect(results.filters.longitude).toBe('-97.7182')
+		expect(results.listings.length).toBeGreaterThan(0)
+	})
+
+	test('falls back to the selected preset center when no override exists', () => {
+		const now = new Date('2026-04-01T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				near: 'cedar-park',
+				radius: '10',
+			},
+			getSampleListings(now),
+			now
+		)
+
+		expect(results.center.key).toBe('cedar-park')
+		expect(results.filters.near).toBe('cedar-park')
+		expect(results.filters.place).toBe('')
+		expect(results.filters.latitude).toBe('')
+		expect(results.filters.longitude).toBe('')
+	})
+})

@@ -67,7 +67,7 @@ const fieldClass =
 				<div class="grid gap-2">
 					<label class="text-sm font-semibold text-ink-950" for="eventType">Event type</label>
 					<select id="eventType" name="eventType" class={fieldClass}>
-						{#each eventOptions as option}
+						{#each eventOptions as option (option.value)}
 							<option value={option.value} selected={option.value === values.eventType}>
 								{option.label}
 							</option>
@@ -123,6 +123,12 @@ const fieldClass =
 				<div class="grid gap-2 md:col-span-2">
 					<label class="text-sm font-semibold text-ink-950" for="addressLine1">Street address</label>
 					<Input id="addressLine1" name="addressLine1" value={values.addressLine1} placeholder="1234 Elm Street" />
+					<p class="text-sm text-ink-700/70">
+						We geocode this address on save so the listing lands in the right part of the map.
+					</p>
+					{#if errors.addressLine1}
+						<p class="text-sm text-coral-500">{errors.addressLine1}</p>
+					{/if}
 				</div>
 
 				<div class="grid gap-2">
@@ -157,16 +163,18 @@ const fieldClass =
 				</div>
 
 				<div class="grid gap-2">
-					<label class="text-sm font-semibold text-ink-950" for="latitude">Latitude</label>
-					<Input id="latitude" name="latitude" value={values.latitude} placeholder="30.288200" required />
+					<label class="text-sm font-semibold text-ink-950" for="latitude">Latitude override</label>
+					<Input id="latitude" name="latitude" value={values.latitude} placeholder="30.288200" />
+					<p class="text-sm text-ink-700/70">Optional fallback if the address lookup lands in the wrong place.</p>
 					{#if errors.latitude}
 						<p class="text-sm text-coral-500">{errors.latitude}</p>
 					{/if}
 				</div>
 
 				<div class="grid gap-2">
-					<label class="text-sm font-semibold text-ink-950" for="longitude">Longitude</label>
-					<Input id="longitude" name="longitude" value={values.longitude} placeholder="-97.718400" required />
+					<label class="text-sm font-semibold text-ink-950" for="longitude">Longitude override</label>
+					<Input id="longitude" name="longitude" value={values.longitude} placeholder="-97.718400" />
+					<p class="text-sm text-ink-700/70">Leave blank unless you need to correct the map pin manually.</p>
 					{#if errors.longitude}
 						<p class="text-sm text-coral-500">{errors.longitude}</p>
 					{/if}

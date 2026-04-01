@@ -16,6 +16,7 @@
 		showFullscreen?: boolean;
 		class?: string;
 		onlocate?: (coords: { longitude: number; latitude: number }) => void;
+		onlocateerror?: (message: string) => void;
 	}
 
 	let {
@@ -26,6 +27,7 @@
 		showFullscreen = false,
 		class: className,
 		onlocate,
+		onlocateerror,
 	}: Props = $props();
 
 	const mapCtx = getContext<{
@@ -86,29 +88,37 @@
 		const map = mapCtx.getMap();
 		if (!map) return;
 
+		if (!("geolocation" in navigator)) {
+			onlocateerror?.("This browser cannot share a location. Search by neighborhood, city, or ZIP instead.");
+			return;
+		}
+
 		waitingForLocation = true;
 
-		if ("geolocation" in navigator) {
-			navigator.geolocation.getCurrentPosition(
-				(position) => {
-					const coords = {
-						longitude: position.coords.longitude,
-						latitude: position.coords.latitude,
-					};
-					map.flyTo({
-						center: [coords.longitude, coords.latitude],
-						zoom: 14,
-						duration: 1500,
-					});
-					onlocate?.(coords);
-					waitingForLocation = false;
-				},
-				(error) => {
-					console.error("Error getting location:", error);
-					waitingForLocation = false;
-				}
-			);
-		}
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				const coords = {
+					longitude: position.coords.longitude,
+					latitude: position.coords.latitude,
+				};
+				map.flyTo({
+					center: [coords.longitude, coords.latitude],
+					zoom: 14,
+					duration: 1500,
+				});
+				onlocate?.(coords);
+				waitingForLocation = false;
+			},
+			(error) => {
+				console.error("Error getting location:", error);
+				const message =
+					error.code === error.PERMISSION_DENIED
+						? "Location access is off. Search by neighborhood, city, or ZIP instead."
+						: "We could not read your current location. Search by neighborhood, city, or ZIP instead.";
+				onlocateerror?.(message);
+				waitingForLocation = false;
+			}
+		);
 	}
 
 	function handleFullscreen() {

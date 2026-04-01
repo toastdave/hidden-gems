@@ -1,8 +1,8 @@
 import { getHostForUser } from '$lib/server/hosts'
 import {
 	getListingValuesFromForm,
+	prepareListingSubmission,
 	saveListing,
-	validateListingValues,
 } from '$lib/server/listing-editor'
 import {
 	addListingMedia,
@@ -173,8 +173,8 @@ export const actions: Actions = {
 			throw redirect(303, '/host')
 		}
 
-		const values = getListingValuesFromForm(await request.formData())
-		const errors = await validateListingValues(values, listing.id)
+		const submittedValues = getListingValuesFromForm(await request.formData())
+		const { errors, values } = await prepareListingSubmission(submittedValues, listing.id)
 
 		if (Object.keys(errors).length > 0) {
 			return fail(400, { errors, values })

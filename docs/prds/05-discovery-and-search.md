@@ -32,9 +32,16 @@ Make it easy for buyers to find worthwhile local events fast, especially on Frid
 
 ## Current implementation status
 
-- Completed: discovery-first homepage, DB-backed published listings, map/list sync, current radius/type/tag text filtering, listing detail pages, host detail pages, related listings, and product-facing discovery copy.
-- In progress: media thumbnails across discovery cards, broader SEO metadata, and stronger performance/code-splitting polish.
-- Not started: real geocoding provider integration, browser geolocation fallback UX, and deeper date-based discovery controls.
+- Completed: discovery-first homepage, DB-backed published listings, map/list sync, current radius/type/tag text filtering, listing detail pages, host detail pages, related listings, product-facing discovery copy, MapTiler-backed location geocoding, and browser geolocation fallback messaging.
+- In progress: media thumbnails across discovery cards, broader SEO metadata, stronger performance/code-splitting polish, and richer autocomplete/date filter UX.
+- Not started: deeper date-based discovery controls and saved search alerts tied to geocoded locations.
+
+## Implementation notes
+
+- Discovery location search now supports typed place lookups via a server-side MapTiler geocoding adapter, keeping API keys off the client.
+- Shared URL state now carries searched `place`, `lat`, and `lng` values so radius and type filters stay in sync after geocoding.
+- Browser geolocation still remains optional; when denied, the UI should steer people back toward manual place search without blocking discovery.
+- Host listing save flows geocode structured addresses automatically and still allow optional coordinate overrides when the pin needs manual correction.
 
 ## Acceptance criteria
 

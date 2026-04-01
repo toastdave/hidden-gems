@@ -1,11 +1,13 @@
 import { env } from '$env/dynamic/private'
 import {
+	type DiscoveryCenterOverride,
 	type DiscoveryFilters,
 	type DiscoveryListing,
 	buildDiscoveryResults,
 	getDiscoveryMood,
 	getDiscoveryResults,
 } from '$lib/content/discovery'
+import { geocodeSearchQuery } from '$lib/server/geocoding'
 import * as schema from '@hidden-gems/db/schema'
 import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 
@@ -118,12 +120,87 @@ async function getPublishedListings() {
 	}
 }
 
+function getCoordinate(value: string | null | undefined, bounds: { min: number; max: number }) {
+	if (!value?.trim()) {
+		return null
+	}
+
+	const parsed = Number(value)
+
+	if (!Number.isFinite(parsed) || parsed < bounds.min || parsed > bounds.max) {
+		return null
+	}
+
+	return parsed
+}
+
+async function resolveDiscoveryCenterOverride(filters: DiscoveryFilters): Promise<{
+	centerOverride: DiscoveryCenterOverride | null
+	locationError: string | null
+}> {
+	const latitude = getCoordinate(filters.lat, { min: -90, max: 90 })
+	const longitude = getCoordinate(filters.lng, { min: -180, max: 180 })
+	const place = filters.place?.trim() ?? ''
+
+	if (latitude !== null && longitude !== null) {
+		return {
+			centerOverride: {
+				label: place || 'Current location',
+				latitude,
+				longitude,
+				zoom: 11.8,
+				description: place
+					? 'Showing results around your searched location.'
+					: 'Showing results around your current location.',
+			},
+			locationError: null,
+		}
+	}
+
+	if (!place) {
+		return {
+			centerOverride: null,
+			locationError: null,
+		}
+	}
+
+	const geocoded = await geocodeSearchQuery(place, {
+		autocomplete: false,
+		countryCode: 'US',
+	})
+
+	if (!geocoded.ok) {
+		return {
+			centerOverride: null,
+			locationError: geocoded.message,
+		}
+	}
+
+	return {
+		centerOverride: {
+			label: geocoded.result.label,
+			latitude: geocoded.result.latitude,
+			longitude: geocoded.result.longitude,
+			zoom: 11.8,
+			description: 'Showing results around your searched location.',
+		},
+		locationError: null,
+	}
+}
+
 export async function getHomepageDiscoveryResults(filters: DiscoveryFilters) {
+	const { centerOverride, locationError } = await resolveDiscoveryCenterOverride(filters)
 	const listings = await getPublishedListings()
 
 	if (listings === null || listings.length === 0) {
-		return getDiscoveryResults(filters)
+		return {
+			...getDiscoveryResults(filters, centerOverride),
+			locationError,
+		}
 	}
 
-	return buildDiscoveryResults(filters, listings)
+	return {
+		...buildDiscoveryResults(filters, listings, new Date(), centerOverride),
+		locationError,
+	}
 }

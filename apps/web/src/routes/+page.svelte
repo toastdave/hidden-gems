@@ -1,4 +1,5 @@
 <script lang="ts">
+import { goto } from '$app/navigation'
 import { env as publicEnv } from '$env/dynamic/public'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
@@ -37,6 +38,7 @@ const mapStyles = publicEnv.PUBLIC_MAP_STYLE_URL
 let selectedSlug = $state<string | null>(null)
 // biome-ignore lint/style/useConst: state changes via button interactions in the template
 let mobileView = $state<'map' | 'list'>('map')
+let locationFeedback = $state<string | null>(null)
 let mapViewport = $state({
 	center: [0, 0] as [number, number],
 	zoom: 0,
@@ -99,19 +101,32 @@ function selectListing(listing: DiscoveryListing) {
 }
 
 function handleLocate(coords: { longitude: number; latitude: number }) {
-	mapViewport = {
-		...mapViewport,
-		center: [coords.longitude, coords.latitude],
-		zoom: 12.8,
-	}
+	locationFeedback = null
+	void goto(
+		buildQuery({
+			near: null,
+			place: 'Current location',
+			lat: coords.latitude,
+			lng: coords.longitude,
+		})
+	)
+}
+
+function handleLocateError(message: string) {
+	locationFeedback = message
 }
 
 function buildQuery(
-	overrides: Partial<Record<'near' | 'type' | 'radius' | 'q', string | number | null>>
+	overrides: Partial<
+		Record<'near' | 'place' | 'lat' | 'lng' | 'type' | 'radius' | 'q', string | number | null>
+	>
 ) {
 	const params = new URLSearchParams()
 	const next = {
 		near: data.filters.near,
+		place: data.filters.place,
+		lat: data.filters.latitude,
+		lng: data.filters.longitude,
 		type: data.filters.type,
 		radius: String(data.filters.radiusMiles),
 		q: data.filters.q,
@@ -120,6 +135,18 @@ function buildQuery(
 
 	if (next.near) {
 		params.set('near', String(next.near))
+	}
+
+	if (next.place) {
+		params.set('place', String(next.place))
+	}
+
+	if (next.lat) {
+		params.set('lat', String(next.lat))
+	}
+
+	if (next.lng) {
+		params.set('lng', String(next.lng))
 	}
 
 	if (next.type && next.type !== 'all') {
@@ -203,10 +230,19 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 			</CardDescription>
 		</CardHeader>
 		<CardContent class="space-y-5 px-4 pb-5 sm:px-6">
-			<form method="GET" class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+			<form method="GET" class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto]">
 				<input type="hidden" name="near" value={data.filters.near} />
 				<input type="hidden" name="type" value={data.filters.type} />
 				<input type="hidden" name="radius" value={data.filters.radiusMiles} />
+				<div class="relative">
+					<MapPinned class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-700/60" />
+					<Input
+						name="place"
+						value={data.filters.place}
+						placeholder="Search Austin, 78702, South Congress..."
+						class="h-11 rounded-full border-white/70 bg-white pl-10 shadow-sm"
+					/>
+				</div>
 				<div class="relative">
 					<Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-700/60" />
 					<Input
@@ -221,6 +257,12 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 					<ArrowRight />
 				</Button>
 			</form>
+
+			{#if data.locationError || locationFeedback}
+				<div class="rounded-2xl border border-coral-500/20 bg-coral-500/10 px-4 py-3 text-sm text-coral-600">
+					{data.locationError ?? locationFeedback}
+				</div>
+			{/if}
 
 			<div class="grid gap-3 md:grid-cols-3">
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
@@ -247,9 +289,9 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 			</div>
 
 			<div class="flex flex-wrap gap-2">
-				{#each data.locationOptions as location}
+				{#each data.locationOptions as location (location.key)}
 					<Button
-						href={buildQuery({ near: location.key })}
+						href={buildQuery({ near: location.key, place: null, lat: null, lng: null })}
 						variant={location.key === data.filters.near ? 'default' : 'outline'}
 						size="sm"
 						class="rounded-full"
@@ -257,10 +299,15 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 						{location.label}
 					</Button>
 				{/each}
+				{#if data.filters.place && !data.filters.near}
+					<Button href={buildQuery({ place: null, lat: null, lng: null })} variant="secondary" size="sm" class="rounded-full">
+						Clear searched place
+					</Button>
+				{/if}
 			</div>
 
 			<div class="flex flex-wrap gap-2">
-				{#each data.typeOptions as option}
+				{#each data.typeOptions as option (option.value)}
 					<Button
 						href={buildQuery({ type: option.value === 'all' ? null : option.value })}
 						variant={option.value === data.filters.type ? 'secondary' : 'ghost'}
@@ -273,7 +320,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 			</div>
 
 			<div class="flex flex-wrap gap-2">
-				{#each data.radiusOptions as radiusMiles}
+				{#each data.radiusOptions as radiusMiles (radiusMiles)}
 					<Button
 						href={buildQuery({ radius: radiusMiles })}
 						variant={radiusMiles === data.filters.radiusMiles ? 'outline' : 'ghost'}
@@ -341,7 +388,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 								</MarkerContent>
 							</MapMarker>
 						{/each}
-						<MapControls showZoom showLocate onlocate={handleLocate} />
+						<MapControls showZoom showLocate onlocate={handleLocate} onlocateerror={handleLocateError} />
 					</DiscoveryMap>
 				</div>
 
@@ -494,7 +541,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 									</Button>
 								</div>
 								<div class="flex flex-wrap gap-2">
-									{#each listing.tags as tag}
+									{#each listing.tags as tag (`${listing.slug}-${tag}`)}
 										<Badge variant="secondary">{tag}</Badge>
 									{/each}
 								</div>
