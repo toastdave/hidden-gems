@@ -27,11 +27,11 @@ Status: in progress. The homepage, listing detail pages, host pages, DB-backed d
 
 ## Phase 4 - Engagement and retention
 
-- Add favorites, follows, and saved search alerts.
-- Add notification preferences and transactional messaging.
-- Add host and listing activity surfaces that reinforce repeat usage.
+- Ship the engagement MVP first: favorites, follows, and saved account views.
+- Add notification preferences and saved search alerts after the engagement data model is live.
+- Add host and listing activity surfaces after the core buyer retention loop is working.
 
-Status: next priority after discovery and publishing polish.
+Status: next priority after discovery and publishing polish. The recommended next implementation slice is favorites, follows, saved listings, and followed hosts because it builds directly on the live auth, host, listing, discovery, and account surfaces while setting up alerts for the following phase.
 
 ## Phase 5 - Monetization and trust
 
