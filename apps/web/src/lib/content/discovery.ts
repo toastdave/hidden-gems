@@ -23,6 +23,8 @@ export type DiscoveryListing = {
 	slug: string
 	title: string
 	description: string
+	coverImageUrl?: string
+	coverImageAlt?: string
 	hostName: string
 	hostSlug: string
 	eventType: DiscoveryEventType

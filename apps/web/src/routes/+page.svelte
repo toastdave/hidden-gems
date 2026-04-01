@@ -418,13 +418,22 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 					<div class="pointer-events-none absolute inset-x-4 bottom-4">
 						<div class="rounded-2xl border border-white/85 bg-white/92 p-4 shadow-xl backdrop-blur">
 							<div class="flex items-start justify-between gap-3">
-								<div>
-									<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">
-										Selected stop
-									</p>
-									<p class="mt-1 text-lg font-semibold text-ink-950">
-										{highlightedListing.title}
-									</p>
+								<div class="flex min-w-0 items-start gap-3">
+									{#if highlightedListing.coverImageUrl}
+										<img
+											src={highlightedListing.coverImageUrl}
+											alt={highlightedListing.coverImageAlt || highlightedListing.title}
+											class="size-16 rounded-2xl object-cover"
+										/>
+									{/if}
+									<div class="min-w-0">
+										<p class="text-xs font-semibold uppercase tracking-[0.26em] text-ink-700/70">
+											Selected stop
+										</p>
+										<p class="mt-1 text-lg font-semibold text-ink-950">
+											{highlightedListing.title}
+										</p>
+									</div>
 								</div>
 								<Badge variant="outline">{getEventTypeLabel(highlightedListing.eventType)}</Badge>
 							</div>
@@ -514,27 +523,54 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 						>
 							<Card class="border-ink-950/8 bg-white shadow-sm">
 								<button type="button" class="block w-full text-left" onclick={() => selectListing(listing)}>
-									<div
-										class={cn(
-											'flex min-h-28 items-end justify-between border-b border-ink-950/8 px-4 py-4 text-ink-950',
-											`bg-gradient-to-br ${moodClasses[listing.mood]}`
-										)}
-									>
-										<div>
-											<p class="text-xs font-semibold uppercase tracking-[0.24em] text-ink-700/70">
-												{listing.hostName}
-											</p>
-											<p class="mt-2 max-w-[16rem] text-xl font-semibold leading-tight">
-												{listing.title}
-											</p>
+									{#if listing.coverImageUrl}
+										<div class="relative min-h-36 overflow-hidden border-b border-ink-950/8">
+										<img
+											src={listing.coverImageUrl}
+											alt={listing.coverImageAlt || listing.title}
+											class="h-40 w-full object-cover"
+										/>
+										<div class="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/10 to-transparent"></div>
+											<div class="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-4 py-4 text-white">
+												<div>
+													<p class="text-xs font-semibold uppercase tracking-[0.24em] text-white/80">
+														{listing.hostName}
+													</p>
+													<p class="mt-2 max-w-[16rem] text-xl font-semibold leading-tight">
+														{listing.title}
+													</p>
+												</div>
+												{#if listing.isFeatured}
+													<Badge class="bg-ink-950 text-mist-100">
+														<Sparkles class="mr-1 size-3.5" />
+														Featured
+													</Badge>
+												{/if}
+											</div>
 										</div>
-										{#if listing.isFeatured}
-											<Badge class="bg-ink-950 text-mist-100">
-												<Sparkles class="mr-1 size-3.5" />
-												Featured
-											</Badge>
-										{/if}
-									</div>
+									{:else}
+										<div
+											class={cn(
+												'flex min-h-28 items-end justify-between border-b border-ink-950/8 px-4 py-4 text-ink-950',
+												`bg-gradient-to-br ${moodClasses[listing.mood]}`
+											)}
+										>
+											<div>
+												<p class="text-xs font-semibold uppercase tracking-[0.24em] text-ink-700/70">
+													{listing.hostName}
+												</p>
+												<p class="mt-2 max-w-[16rem] text-xl font-semibold leading-tight">
+													{listing.title}
+												</p>
+											</div>
+											{#if listing.isFeatured}
+												<Badge class="bg-ink-950 text-mist-100">
+													<Sparkles class="mr-1 size-3.5" />
+													Featured
+												</Badge>
+											{/if}
+										</div>
+									{/if}
 									<CardContent class="space-y-3 px-4 py-4">
 										<div class="flex flex-wrap items-center gap-2">
 											<Badge variant="outline">{getEventTypeLabel(listing.eventType)}</Badge>

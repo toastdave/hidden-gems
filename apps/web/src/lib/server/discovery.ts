@@ -9,10 +9,11 @@ import {
 } from '$lib/content/discovery'
 import { geocodeSearchQuery } from '$lib/server/geocoding'
 import * as schema from '@hidden-gems/db/schema'
-import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 
 type ListingRow = typeof schema.listing.$inferSelect
 type HostRow = typeof schema.host.$inferSelect
+type MediaRow = typeof schema.media.$inferSelect
 
 function toNumber(value: string | number | null) {
 	if (value === null) {
@@ -26,7 +27,8 @@ function toNumber(value: string | number | null) {
 function toDiscoveryListing(
 	listing: ListingRow,
 	host: HostRow,
-	tags: string[]
+	tags: string[],
+	coverMedia?: MediaRow
 ): DiscoveryListing | null {
 	const latitude = toNumber(listing.latitude)
 	const longitude = toNumber(listing.longitude)
@@ -40,6 +42,8 @@ function toDiscoveryListing(
 		slug: listing.slug,
 		title: listing.title,
 		description: listing.description ?? '',
+		coverImageUrl: coverMedia?.url ?? undefined,
+		coverImageAlt: coverMedia?.altText ?? listing.title,
 		hostName: host.displayName,
 		hostSlug: host.slug,
 		eventType: listing.eventType,
@@ -102,6 +106,12 @@ async function getPublishedListings() {
 			.where(inArray(schema.listingTag.listingId, listingIds))
 
 		const tagsByListingId = new Map<string, string[]>()
+		const mediaRows = await db
+			.select()
+			.from(schema.media)
+			.where(inArray(schema.media.listingId, listingIds))
+			.orderBy(asc(schema.media.sortOrder), asc(schema.media.createdAt))
+		const coverMediaByListingId = new Map<string, MediaRow>()
 
 		for (const row of tagRows) {
 			const tags = tagsByListingId.get(row.listingId) ?? []
@@ -109,9 +119,20 @@ async function getPublishedListings() {
 			tagsByListingId.set(row.listingId, tags)
 		}
 
+		for (const media of mediaRows) {
+			if (!coverMediaByListingId.has(media.listingId)) {
+				coverMediaByListingId.set(media.listingId, media)
+			}
+		}
+
 		return publishedRows
 			.map(({ listing, host }) =>
-				toDiscoveryListing(listing, host, tagsByListingId.get(listing.id) ?? [])
+				toDiscoveryListing(
+					listing,
+					host,
+					tagsByListingId.get(listing.id) ?? [],
+					coverMediaByListingId.get(listing.id)
+				)
 			)
 			.filter((listing): listing is DiscoveryListing => Boolean(listing))
 	} catch (error) {

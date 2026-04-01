@@ -62,6 +62,27 @@ describe('buildDiscoveryResults', () => {
 		expect(results.listings.map((listing) => listing.slug)).toEqual(['round-rock-night-market'])
 	})
 
+	test('preserves optional cover image metadata through results building', () => {
+		const now = new Date('2026-04-03T12:00:00.000Z')
+		const [firstListing] = getSampleListings(now)
+		const results = buildDiscoveryResults(
+			{
+				radius: '50',
+			},
+			[
+				{
+					...firstListing,
+					coverImageUrl: 'https://example.com/cover.jpg',
+					coverImageAlt: 'Front porch preview',
+				},
+			],
+			now
+		)
+
+		expect(results.listings[0]?.coverImageUrl).toBe('https://example.com/cover.jpg')
+		expect(results.listings[0]?.coverImageAlt).toBe('Front porch preview')
+	})
+
 	test('filters listings to this weekend when the weekend window is selected', () => {
 		const now = new Date('2026-04-03T12:00:00.000Z')
 		const results = buildDiscoveryResults(
