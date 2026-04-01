@@ -1,6 +1,7 @@
 <script lang="ts">
 import { goto } from '$app/navigation'
 import { env as publicEnv } from '$env/dynamic/public'
+import LocationAutocomplete from '$lib/components/discovery/location-autocomplete.svelte'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
@@ -10,6 +11,7 @@ import { Separator } from '$lib/components/ui/separator'
 import { Skeleton } from '$lib/components/ui/skeleton'
 import { siteConfig } from '$lib/config/site'
 import { getDateFilterLabel, getEventTypeLabel, milesBetween } from '$lib/content/discovery'
+import { buildAbsoluteUrl, resolveMetaImageUrl } from '$lib/seo'
 import { cn } from '$lib/utils'
 import ArrowRight from '@lucide/svelte/icons/arrow-right'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
@@ -20,7 +22,7 @@ import Sparkles from '@lucide/svelte/icons/sparkles'
 import Store from '@lucide/svelte/icons/store'
 import type { PageData } from './$types'
 
-const { data } = $props<{ data: PageData }>()
+const { data }: { data: PageData } = $props()
 
 type DiscoveryListing = PageData['listings'][number]
 
@@ -55,12 +57,6 @@ $effect(() => {
 		pitch: 0,
 	}
 })
-
-const selectedListing = $derived(
-	data.listings.find((listing: DiscoveryListing) => listing.slug === selectedSlug) ??
-		data.listings[0] ??
-		null
-)
 
 const visibleListings = $derived.by<Array<DiscoveryListing & { liveDistanceMiles: number }>>(() => {
 	const [longitude, latitude] = mapViewport.center
@@ -119,7 +115,7 @@ function handleLocateError(message: string) {
 function buildQuery(
 	overrides: Partial<
 		Record<
-			'near' | 'place' | 'lat' | 'lng' | 'date' | 'type' | 'radius' | 'q',
+			'near' | 'place' | 'lat' | 'lng' | 'date' | 'tag' | 'type' | 'radius' | 'q',
 			string | number | null
 		>
 	>
@@ -131,6 +127,7 @@ function buildQuery(
 		lat: data.filters.latitude,
 		lng: data.filters.longitude,
 		date: data.filters.date,
+		tag: data.filters.tag,
 		type: data.filters.type,
 		radius: String(data.filters.radiusMiles),
 		q: data.filters.q,
@@ -155,6 +152,10 @@ function buildQuery(
 
 	if (next.date && next.date !== 'all') {
 		params.set('date', String(next.date))
+	}
+
+	if (next.tag) {
+		params.set('tag', String(next.tag))
 	}
 
 	if (next.type && next.type !== 'all') {
@@ -210,12 +211,54 @@ function formatDistance(distanceMiles: number) {
 	return `${Math.round(distanceMiles)} mi`
 }
 
-const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? null)
+const highlightedListing = $derived(
+	visibleListings.find((listing) => listing.slug === selectedSlug) ?? visibleListings[0] ?? null
+)
+const homepageTitle = $derived(
+	data.filters.place
+		? `${data.filters.place} yard sales, estate sales, and pop-up markets | ${siteConfig.name}`
+		: `${siteConfig.name} | Yard sales, estate sales, and flea markets nearby`
+)
+const homepageDescription = $derived.by(() => {
+	const eventCountLabel = `${data.stats.matching} local stop${data.stats.matching === 1 ? '' : 's'}`
+	const placeLabel = data.filters.place || data.center.label
+	const activeFilters = [
+		data.filters.date !== 'all' ? getDateFilterLabel(data.filters.date) : null,
+		data.filters.type !== 'all' ? getEventTypeLabel(data.filters.type) : null,
+		data.filters.tag ? `tagged ${data.filters.tag}` : null,
+	]
+		.filter(Boolean)
+		.join(', ')
+
+	return activeFilters
+		? `Browse ${eventCountLabel} around ${placeLabel} on Hidden Gems, filtered for ${activeFilters}.`
+		: `Browse ${eventCountLabel} around ${placeLabel} on Hidden Gems and map out your next yard sale, estate sale, or flea market run.`
+})
+const homepageCanonicalUrl = $derived(
+	buildAbsoluteUrl(publicEnv.PUBLIC_APP_URL, data.canonicalPath)
+)
+const homepageImageUrl = $derived(
+	resolveMetaImageUrl(publicEnv.PUBLIC_APP_URL, highlightedListing?.coverImageUrl)
+)
 </script>
 
 <svelte:head>
-	<title>Hidden Gems</title>
-	<meta name="description" content={siteConfig.description} />
+	<title>{homepageTitle}</title>
+	<meta name="description" content={homepageDescription} />
+	<link rel="canonical" href={homepageCanonicalUrl} />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content={siteConfig.name} />
+	<meta property="og:title" content={homepageTitle} />
+	<meta property="og:description" content={homepageDescription} />
+	<meta property="og:url" content={homepageCanonicalUrl} />
+	<meta name="twitter:card" content={homepageImageUrl ? 'summary_large_image' : 'summary'} />
+	<meta name="twitter:title" content={homepageTitle} />
+	<meta name="twitter:description" content={homepageDescription} />
+	{#if homepageImageUrl}
+		<meta property="og:image" content={homepageImageUrl} />
+		<meta property="og:image:alt" content={highlightedListing?.coverImageAlt || highlightedListing?.title || siteConfig.name} />
+		<meta name="twitter:image" content={homepageImageUrl} />
+	{/if}
 </svelte:head>
 
 {#snippet searchPanel()}
@@ -239,15 +282,23 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 		</CardHeader>
 		<CardContent class="space-y-5 px-4 pb-5 sm:px-6">
 			<form method="GET" class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto]">
-				<input type="hidden" name="near" value={data.filters.near} />
 				<input type="hidden" name="date" value={data.filters.date} />
+				<input type="hidden" name="tag" value={data.filters.tag} />
 				<input type="hidden" name="type" value={data.filters.type} />
 				<input type="hidden" name="radius" value={data.filters.radiusMiles} />
 				<div class="relative">
 					<MapPinned class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-700/60" />
-					<Input
+					<LocationAutocomplete
+						nearName="near"
+						latitudeName="lat"
+						longitudeName="lng"
 						name="place"
 						value={data.filters.place}
+						latitude={data.filters.latitude}
+						longitude={data.filters.longitude}
+						presetNear={data.filters.near ?? ''}
+						proximityLatitude={data.center.latitude}
+						proximityLongitude={data.center.longitude}
 						placeholder="Search Austin, 78702, South Congress..."
 						class="h-11 rounded-full border-white/70 bg-white pl-10 shadow-sm"
 					/>
@@ -266,6 +317,10 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 					<ArrowRight />
 				</Button>
 			</form>
+
+			<p class="text-sm leading-6 text-ink-700/80">
+				Type a neighborhood or ZIP code for quick suggestions, or press search to look up the full place.
+			</p>
 
 			{#if data.locationError || locationFeedback}
 				<div class="rounded-2xl border border-coral-500/20 bg-coral-500/10 px-4 py-3 text-sm text-coral-600">
@@ -339,6 +394,22 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 						{option.label}
 					</Button>
 				{/each}
+			</div>
+
+			<div class="flex flex-wrap gap-2">
+				{#if data.tagOptions.length > 0}
+					{#each data.tagOptions as option (option.value)}
+						<Button
+							href={buildQuery({ tag: option.value === data.filters.tag ? null : option.value })}
+							variant={option.value === data.filters.tag ? 'outline' : 'ghost'}
+							size="sm"
+							class="rounded-full"
+						>
+							{option.label}
+							<span class="text-ink-700/60">{option.count}</span>
+						</Button>
+					{/each}
+				{/if}
 			</div>
 
 			<div class="flex flex-wrap gap-2">
@@ -492,6 +563,9 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 				{#if data.filters.q}
 					<Badge variant="outline">Searching for “{data.filters.q}”</Badge>
 				{/if}
+				{#if data.filters.tag}
+					<Badge variant="outline">Tagged “{data.filters.tag}”</Badge>
+				{/if}
 				{#if data.filters.date !== 'all'}
 					<Badge variant="outline">{getDateFilterLabel(data.filters.date)}</Badge>
 				{/if}
@@ -507,7 +581,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 						Try widening the radius, switching the date window, or clearing the search phrase.
 					</p>
 					<div class="mt-4 flex flex-wrap gap-2">
-						<Button href={buildQuery({ q: null, date: null, type: null, radius: 25 })} size="sm">
+						<Button href={buildQuery({ q: null, date: null, tag: null, type: null, radius: 25 })} size="sm">
 							Reset filters
 						</Button>
 					</div>
@@ -725,7 +799,7 @@ const highlightedListing = $derived(selectedListing ?? visibleListings[0] ?? nul
 		<Card class="border-white/80 bg-white/88 backdrop-blur">
 			<CardHeader>
 				<CardTitle class="text-xl text-ink-950">Coming next</CardTitle>
-				<CardDescription>Host onboarding and first-listing publish tools.</CardDescription>
+				<CardDescription>Favorites, saved searches, and alerts for the routes you want to revisit.</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
 				<Skeleton class="h-4 w-28" />

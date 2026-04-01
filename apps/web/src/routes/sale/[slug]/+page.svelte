@@ -1,8 +1,11 @@
 <script lang="ts">
+import { env as publicEnv } from '$env/dynamic/public'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
+import { siteConfig } from '$lib/config/site'
 import { getEventTypeLabel } from '$lib/content/discovery'
+import { buildAbsoluteUrl, resolveMetaImageUrl } from '$lib/seo'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
 import Compass from '@lucide/svelte/icons/compass'
 import MapPinned from '@lucide/svelte/icons/map-pinned'
@@ -10,7 +13,40 @@ import Sparkles from '@lucide/svelte/icons/sparkles'
 import Store from '@lucide/svelte/icons/store'
 import type { PageData } from './$types'
 
-const { data } = $props<{ data: PageData }>()
+const { data }: { data: PageData } = $props()
+
+const pageTitle = $derived(`${data.listing.title} | ${siteConfig.name}`)
+const pageDescription = $derived(
+	data.listing.description ?? `${data.listing.title} in ${data.listing.locationLabel}`
+)
+const canonicalUrl = $derived(buildAbsoluteUrl(publicEnv.PUBLIC_APP_URL, data.canonicalPath))
+const hostUrl = $derived(buildAbsoluteUrl(publicEnv.PUBLIC_APP_URL, `/hosts/${data.host.slug}`))
+const metaImageUrl = $derived(resolveMetaImageUrl(publicEnv.PUBLIC_APP_URL, data.media[0]?.url))
+const listingStructuredData = $derived.by(() =>
+	JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'Event',
+		name: data.listing.title,
+		description: pageDescription,
+		startDate: new Date(data.listing.startAt).toISOString(),
+		endDate: data.listing.endAt ? new Date(data.listing.endAt).toISOString() : undefined,
+		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+		eventStatus: 'https://schema.org/EventScheduled',
+		url: canonicalUrl,
+		image: data.media
+			.map((media) => resolveMetaImageUrl(publicEnv.PUBLIC_APP_URL, media.url))
+			.filter((imageUrl): imageUrl is string => Boolean(imageUrl)),
+		organizer: {
+			'@type': 'Organization',
+			name: data.host.displayName,
+			url: hostUrl,
+		},
+		location: {
+			'@type': 'Place',
+			name: data.listing.locationLabel,
+		},
+	})
+)
 
 function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 	const start = new Date(startAt)
@@ -37,8 +73,25 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 </script>
 
 <svelte:head>
-	<title>{data.listing.title} | Hidden Gems</title>
-	<meta name="description" content={data.listing.description ?? `${data.listing.title} in ${data.listing.locationLabel}`} />
+	<title>{pageTitle}</title>
+	<meta name="description" content={pageDescription} />
+	<link rel="canonical" href={canonicalUrl} />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content={siteConfig.name} />
+	<meta property="og:title" content={pageTitle} />
+	<meta property="og:description" content={pageDescription} />
+	<meta property="og:url" content={canonicalUrl} />
+	<meta name="twitter:card" content={metaImageUrl ? 'summary_large_image' : 'summary'} />
+	<meta name="twitter:title" content={pageTitle} />
+	<meta name="twitter:description" content={pageDescription} />
+	{#if metaImageUrl}
+		<meta property="og:image" content={metaImageUrl} />
+		<meta property="og:image:alt" content={data.media[0]?.altText || data.listing.title} />
+		<meta name="twitter:image" content={metaImageUrl} />
+	{/if}
+	<script type="application/ld+json">
+		{listingStructuredData}
+	</script>
 </svelte:head>
 
 <section class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -52,7 +105,7 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 						class="h-72 w-full rounded-[1.4rem] object-cover sm:h-80"
 					/>
 					<div class="grid grid-cols-3 gap-2 sm:grid-cols-1">
-						{#each data.media.slice(1, 4) as media}
+						{#each data.media.slice(1, 4) as media (media.id)}
 							<img src={media.url} alt={media.altText || data.listing.title} class="h-24 w-full rounded-2xl object-cover sm:h-full" />
 						{/each}
 					</div>
@@ -99,7 +152,7 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 
 				{#if data.tags.length > 0}
 					<div class="flex flex-wrap gap-2">
-						{#each data.tags as tag}
+						{#each data.tags as tag (`${data.listing.id}-${tag}`)}
 							<Badge variant="secondary">{tag}</Badge>
 						{/each}
 					</div>
@@ -147,7 +200,7 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 				<h2 class="mt-2 font-display text-3xl text-ink-950">More worth checking nearby</h2>
 			</div>
 			<div class="grid gap-4 lg:grid-cols-3">
-				{#each data.relatedListings as item}
+				{#each data.relatedListings as item (item.listing.id)}
 					<Card class="border-white/80 bg-white/88 backdrop-blur">
 						<CardHeader>
 							<div class="flex flex-wrap items-center gap-2">
@@ -168,7 +221,7 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 								{item.listing.description || 'Published with the essentials ready to explore.'}
 							</p>
 							<div class="flex flex-wrap gap-2">
-								{#each item.tags.slice(0, 3) as tag}
+								{#each item.tags.slice(0, 3) as tag (`${item.listing.id}-${tag}`)}
 									<Badge variant="secondary">{tag}</Badge>
 								{/each}
 							</div>

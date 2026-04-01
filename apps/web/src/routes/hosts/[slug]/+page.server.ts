@@ -27,6 +27,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	])
 
 	return {
+		canonicalPath: `/hosts/${host.slug}`,
 		host,
 		listings,
 		listingTags,

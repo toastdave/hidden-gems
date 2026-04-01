@@ -48,6 +48,7 @@ export type DiscoveryFilters = {
 	lng?: string | null
 	date?: string | null
 	q?: string | null
+	tag?: string | null
 	type?: string | null
 	radius?: string | null
 }
@@ -58,6 +59,12 @@ export type DiscoveryCenterOverride = Pick<
 	DiscoveryCenter,
 	'label' | 'latitude' | 'longitude' | 'zoom' | 'description'
 >
+
+export type DiscoveryTagOption = {
+	value: string
+	label: string
+	count: number
+}
 
 const DISCOVERY_TIME_ZONE = 'America/Chicago'
 
@@ -149,6 +156,61 @@ export function getEventTypeLabel(eventType: DiscoveryEventType) {
 
 export function getDateFilterLabel(dateFilter: DiscoveryDateFilter) {
 	return dateFilterOptions.find((option) => option.value === dateFilter)?.label ?? 'Any date'
+}
+
+function normalizeTag(tag: string) {
+	return tag.trim().toLowerCase()
+}
+
+function formatTagLabel(tag: string) {
+	return tag
+		.trim()
+		.split(/\s+/)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ')
+}
+
+function getTagOptions(listings: DiscoveryListing[], selectedTag: string): DiscoveryTagOption[] {
+	const counts = new Map<string, { label: string; count: number }>()
+
+	for (const listing of listings) {
+		for (const tag of listing.tags) {
+			const normalizedTag = normalizeTag(tag)
+
+			if (!normalizedTag) {
+				continue
+			}
+
+			const current = counts.get(normalizedTag)
+			counts.set(normalizedTag, {
+				label: current?.label ?? formatTagLabel(tag),
+				count: (current?.count ?? 0) + 1,
+			})
+		}
+	}
+
+	const options = [...counts.entries()]
+		.map(([value, entry]) => ({
+			value,
+			label: entry.label,
+			count: entry.count,
+		}))
+		.sort((left, right) => {
+			if (left.count !== right.count) {
+				return right.count - left.count
+			}
+
+			return left.label.localeCompare(right.label)
+		})
+
+	if (!selectedTag) {
+		return options.slice(0, 8)
+	}
+
+	const selectedOption = options.find((option) => option.value === selectedTag)
+	const visibleOptions = options.filter((option) => option.value !== selectedTag).slice(0, 7)
+
+	return selectedOption ? [selectedOption, ...visibleOptions] : visibleOptions
 }
 
 export function getDiscoveryMood(
@@ -479,18 +541,40 @@ export function buildDiscoveryResults(
 		: 'all'
 	const query = filters.q?.trim().toLowerCase() ?? ''
 	const place = filters.place?.trim() ?? ''
+	const activeTag = normalizeTag(filters.tag ?? '')
 	const activeType = eventTypeOptions.some((option) => option.value === filters.type)
 		? (filters.type as 'all' | DiscoveryEventType)
 		: 'all'
 	const radiusMiles = radiusOptions.includes(Number(filters.radius)) ? Number(filters.radius) : 15
 
-	const listings = sourceListings
+	const listingsInContext = sourceListings
 		.filter((listing) => {
 			if (!matchesDateFilter(listing.startsAt, activeDate, now)) {
 				return false
 			}
 
 			if (activeType !== 'all' && listing.eventType !== activeType) {
+				return false
+			}
+
+			return true
+		})
+		.map((listing) => ({
+			...listing,
+			distanceMiles: milesBetween(
+				center.latitude,
+				center.longitude,
+				listing.latitude,
+				listing.longitude
+			),
+		}))
+		.filter((listing) => listing.distanceMiles <= radiusMiles)
+
+	const tagOptions = getTagOptions(listingsInContext, activeTag)
+
+	const listings = listingsInContext
+		.filter((listing) => {
+			if (activeTag && !listing.tags.some((tag) => normalizeTag(tag) === activeTag)) {
 				return false
 			}
 
@@ -512,16 +596,6 @@ export function buildDiscoveryResults(
 
 			return haystack.includes(query)
 		})
-		.map((listing) => ({
-			...listing,
-			distanceMiles: milesBetween(
-				center.latitude,
-				center.longitude,
-				listing.latitude,
-				listing.longitude
-			),
-		}))
-		.filter((listing) => listing.distanceMiles <= radiusMiles)
 		.sort((left, right) => {
 			if (left.isFeatured !== right.isFeatured) {
 				return Number(right.isFeatured) - Number(left.isFeatured)
@@ -543,12 +617,14 @@ export function buildDiscoveryResults(
 			longitude: centerOverride ? String(center.longitude) : '',
 			date: activeDate,
 			q: filters.q?.trim() ?? '',
+			tag: activeTag,
 			type: activeType,
 			radiusMiles,
 		},
 		listings,
 		locationOptions: discoveryCenters,
 		dateOptions: dateFilterOptions,
+		tagOptions,
 		typeOptions: eventTypeOptions,
 		radiusOptions,
 		stats: {

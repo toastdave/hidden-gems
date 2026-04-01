@@ -101,4 +101,24 @@ describe('buildDiscoveryResults', () => {
 		)
 		expect(results.listings.some((listing) => listing.slug === 'cherrywood-porch-sale')).toBe(true)
 	})
+
+	test('supports sharable tag filters and exposes matching tag options', () => {
+		const now = new Date('2026-04-03T12:00:00.000Z')
+		const results = buildDiscoveryResults(
+			{
+				radius: '50',
+				tag: 'records',
+			},
+			getSampleListings(now),
+			now
+		)
+
+		expect(results.filters.tag).toBe('records')
+		expect(results.listings.every((listing) => listing.tags.includes('records'))).toBe(true)
+		expect(results.tagOptions[0]).toEqual({
+			value: 'records',
+			label: 'Records',
+			count: 3,
+		})
+	})
 })

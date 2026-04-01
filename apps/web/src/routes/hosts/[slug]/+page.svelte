@@ -1,14 +1,17 @@
 <script lang="ts">
+import { env as publicEnv } from '$env/dynamic/public'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
+import { siteConfig } from '$lib/config/site'
 import { getEventTypeLabel } from '$lib/content/discovery'
+import { buildAbsoluteUrl, resolveMetaImageUrl } from '$lib/seo'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
 import MapPinned from '@lucide/svelte/icons/map-pinned'
 import Sparkles from '@lucide/svelte/icons/sparkles'
 import type { PageData } from './$types'
 
-const { data } = $props<{ data: PageData }>()
+const { data }: { data: PageData } = $props()
 const tagsByListingId = $derived(
 	new Map<string, string[]>(
 		data.listingTags.map((entry: PageData['listingTags'][number]) => [entry.listingId, entry.tags])
@@ -21,6 +24,32 @@ const mediaByListingId = $derived(
 			entry.media,
 		])
 	)
+)
+
+const pageTitle = $derived(`${data.host.displayName} | ${siteConfig.name}`)
+const pageDescription = $derived(data.host.bio || `${data.host.displayName} on ${siteConfig.name}`)
+const canonicalUrl = $derived(buildAbsoluteUrl(publicEnv.PUBLIC_APP_URL, data.canonicalPath))
+const metaImageUrl = $derived(
+	resolveMetaImageUrl(
+		publicEnv.PUBLIC_APP_URL,
+		data.listingMedia.find((entry) => entry.media.length > 0)?.media[0]?.url
+	)
+)
+const hostStructuredData = $derived.by(() =>
+	JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'ProfilePage',
+		url: canonicalUrl,
+		name: data.host.displayName,
+		description: pageDescription,
+		mainEntity: {
+			'@type': 'Organization',
+			name: data.host.displayName,
+			description: pageDescription,
+			url: canonicalUrl,
+			areaServed: data.host.locationLabel || undefined,
+		},
+	})
 )
 
 function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
@@ -41,8 +70,25 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 </script>
 
 <svelte:head>
-	<title>{data.host.displayName} | Hidden Gems</title>
-	<meta name="description" content={data.host.bio || `${data.host.displayName} on Hidden Gems`} />
+	<title>{pageTitle}</title>
+	<meta name="description" content={pageDescription} />
+	<link rel="canonical" href={canonicalUrl} />
+	<meta property="og:type" content="profile" />
+	<meta property="og:site_name" content={siteConfig.name} />
+	<meta property="og:title" content={pageTitle} />
+	<meta property="og:description" content={pageDescription} />
+	<meta property="og:url" content={canonicalUrl} />
+	<meta name="twitter:card" content={metaImageUrl ? 'summary_large_image' : 'summary'} />
+	<meta name="twitter:title" content={pageTitle} />
+	<meta name="twitter:description" content={pageDescription} />
+	{#if metaImageUrl}
+		<meta property="og:image" content={metaImageUrl} />
+		<meta property="og:image:alt" content={data.host.displayName} />
+		<meta name="twitter:image" content={metaImageUrl} />
+	{/if}
+	<script type="application/ld+json">
+		{hostStructuredData}
+	</script>
 </svelte:head>
 
 <section class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -78,7 +124,7 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 				</CardContent>
 			</Card>
 		{:else}
-			{#each data.listings as listing}
+			{#each data.listings as listing (listing.id)}
 				<Card class="border-white/80 bg-white/88 backdrop-blur">
 					{#if (mediaByListingId.get(listing.id) ?? []).length > 0}
 						<img src={(mediaByListingId.get(listing.id) ?? [])[0].url} alt={(mediaByListingId.get(listing.id) ?? [])[0].altText || listing.title} class="h-48 w-full object-cover" />
@@ -103,14 +149,14 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 								{formatDateRange(listing.startAt, listing.endAt)}
 							</span>
 						</div>
-						<p class="text-sm leading-6 text-ink-700">
-							{listing.description || 'Published with the essentials ready for discovery.'}
-						</p>
-						<div class="flex flex-wrap gap-2">
-							{#each tagsByListingId.get(listing.id) ?? [] as tag}
-								<Badge variant="secondary">{tag}</Badge>
-							{/each}
-						</div>
+					<p class="text-sm leading-6 text-ink-700">
+						{listing.description || 'Published with the essentials ready for discovery.'}
+					</p>
+					<div class="flex flex-wrap gap-2">
+						{#each tagsByListingId.get(listing.id) ?? [] as tag (`${listing.id}-${tag}`)}
+							<Badge variant="secondary">{tag}</Badge>
+						{/each}
+					</div>
 						<Button href={`/sale/${listing.slug}`} variant="outline" class="w-full rounded-full">
 							Open listing
 						</Button>

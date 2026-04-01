@@ -32,16 +32,19 @@ Make it easy for buyers to find worthwhile local events fast, especially on Frid
 
 ## Current implementation status
 
-- Completed: discovery-first homepage, DB-backed published listings, map/list sync, sharable date/type/radius filtering, listing detail pages, host detail pages, homepage discovery media thumbnails, product-facing discovery copy, MapTiler-backed location geocoding, and browser geolocation fallback messaging.
-- In progress: broader SEO metadata, stronger performance/code-splitting polish, and richer location autocomplete UX.
-- Not started: deeper date-based discovery controls beyond today/this-weekend presets and saved search alerts tied to geocoded locations.
+- Completed: discovery-first homepage, DB-backed published listings, map/list sync, sharable date/type/radius/tag filtering, listing detail pages, host detail pages, homepage discovery media thumbnails, product-facing discovery copy, MapTiler-backed location geocoding, richer location autocomplete suggestions, public-page canonical/open graph metadata, and browser geolocation fallback messaging.
+- In progress: stronger performance/code-splitting polish and deeper date-based discovery controls beyond today/this-weekend presets.
+- Not started: saved search alerts tied to geocoded locations.
 
 ## Implementation notes
 
 - Discovery location search now supports typed place lookups via a server-side MapTiler geocoding adapter, keeping API keys off the client.
+- Discovery location search now also exposes lightweight server-backed autocomplete suggestions so people can lock in a neighborhood or ZIP code before submitting a full search.
 - Shared URL state now carries searched `place`, `lat`, and `lng` values so radius and type filters stay in sync after geocoding.
+- Shared URL state now carries a dedicated `tag` filter alongside date, type, radius, and location state so discovery routes stay linkable and bookmarkable.
 - Date filters now ship as sharable homepage state with pragmatic `today` and `this weekend` presets tuned to the launch market.
 - Homepage discovery cards and the selected map stop now surface listing cover media when hosts have uploaded photos, while keeping the existing branded fallback for image-light listings.
+- Homepage, listing, and host detail pages now ship canonical URLs plus richer open graph and Twitter metadata, with JSON-LD on public listing and host pages to strengthen organic discovery.
 - Browser geolocation still remains optional; when denied, the UI should steer people back toward manual place search without blocking discovery.
 - Host listing save flows geocode structured addresses automatically and still allow optional coordinate overrides when the pin needs manual correction.
 
