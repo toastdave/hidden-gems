@@ -72,8 +72,8 @@ async function signUpWithProvider(provider: 'github' | 'google') {
 			<div class="grid gap-3 text-sm text-ink-700 sm:grid-cols-2">
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Fast email signup</div>
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Google or GitHub login</div>
-				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Typed sessions in SvelteKit</div>
-				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Drizzle-backed auth tables</div>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Save listings and follows</div>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Start hosting later</div>
 			</div>
 		</div>
 

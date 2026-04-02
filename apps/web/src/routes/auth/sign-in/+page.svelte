@@ -70,7 +70,7 @@ async function signInWithProvider(provider: 'github' | 'google') {
 				<li class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Email and password</li>
 				<li class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Google OAuth</li>
 				<li class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">GitHub OAuth</li>
-				<li class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Server-rendered session state</li>
+				<li class="rounded-2xl border border-ink-950/8 bg-mist-100/80 px-4 py-3">Saved listings and alerts</li>
 			</ul>
 		</div>
 

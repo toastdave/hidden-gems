@@ -4,6 +4,7 @@ import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 
 export type HostListingRecord = typeof schema.listing.$inferSelect
 export type ListingMediaRecord = typeof schema.media.$inferSelect
+export type ListingLifecycleStatus = 'draft' | 'published' | 'cancelled' | 'archived'
 
 export type ListingEditorValues = {
 	title: string
@@ -211,6 +212,37 @@ export async function setCoverMedia(listingId: string, mediaId: string) {
 	return ordered
 }
 
+export async function reorderListingMedia(
+	listingId: string,
+	mediaId: string,
+	direction: 'forward' | 'backward'
+) {
+	const media = await getListingMedia(listingId)
+	const currentIndex = media.findIndex((item) => item.id === mediaId)
+
+	if (currentIndex === -1) {
+		return null
+	}
+
+	const nextIndex = direction === 'forward' ? currentIndex + 1 : currentIndex - 1
+
+	if (nextIndex < 0 || nextIndex >= media.length) {
+		return media
+	}
+
+	const ordered = [...media]
+	const [item] = ordered.splice(currentIndex, 1)
+	ordered.splice(nextIndex, 0, item)
+
+	await Promise.all(
+		ordered.map((entry, index) =>
+			db.update(schema.media).set({ sortOrder: index }).where(eq(schema.media.id, entry.id))
+		)
+	)
+
+	return ordered
+}
+
 export async function deleteMediaRecord(mediaId: string) {
 	const media = await getMediaById(mediaId)
 
@@ -229,6 +261,87 @@ export async function deleteMediaRecord(mediaId: string) {
 	)
 
 	return media
+}
+
+export async function updateListingStatus(listingId: string, status: ListingLifecycleStatus) {
+	const [listing] = await db
+		.update(schema.listing)
+		.set({
+			status,
+			publishedAt: status === 'published' ? new Date() : null,
+		})
+		.where(eq(schema.listing.id, listingId))
+		.returning()
+
+	return listing ?? null
+}
+
+export async function deleteListingRecord(listingId: string) {
+	const media = await getListingMedia(listingId)
+
+	const [listing] = await db
+		.delete(schema.listing)
+		.where(eq(schema.listing.id, listingId))
+		.returning()
+
+	return {
+		listing: listing ?? null,
+		media,
+	}
+}
+
+export async function duplicateListingRecord(options: {
+	hostId: string
+	listing: HostListingRecord
+	tags: string[]
+}) {
+	const copyTitle = `${options.listing.title} Copy`.slice(0, 140)
+	const baseSlug = slugifyListingTitle(copyTitle)
+	let copySlug = baseSlug
+	let copyIndex = 2
+
+	while (!(await ensureListingSlugAvailable(copySlug))) {
+		copySlug = slugifyListingTitle(`${copyTitle} ${copyIndex}`)
+		copyIndex += 1
+	}
+
+	const [listing] = await db
+		.insert(schema.listing)
+		.values({
+			hostId: options.hostId,
+			slug: copySlug,
+			title: copyTitle,
+			description: options.listing.description,
+			eventType: options.listing.eventType,
+			status: 'draft',
+			startAt: options.listing.startAt,
+			endAt: options.listing.endAt,
+			timezone: options.listing.timezone,
+			locationLabel: options.listing.locationLabel,
+			addressLine1: options.listing.addressLine1,
+			addressLine2: options.listing.addressLine2,
+			city: options.listing.city,
+			region: options.listing.region,
+			postalCode: options.listing.postalCode,
+			countryCode: options.listing.countryCode,
+			latitude: options.listing.latitude,
+			longitude: options.listing.longitude,
+			priceSummary: options.listing.priceSummary,
+			isFeatured: false,
+			publishedAt: null,
+		})
+		.returning()
+
+	if (options.tags.length > 0) {
+		await db.insert(schema.listingTag).values(
+			options.tags.map((tag) => ({
+				listingId: listing.id,
+				tag,
+			}))
+		)
+	}
+
+	return listing
 }
 
 export async function getListingBySlug(slug: string) {

@@ -6,11 +6,18 @@ import { getEventTypeLabel } from '$lib/content/discovery'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
 import Home from '@lucide/svelte/icons/house'
 import PenSquare from '@lucide/svelte/icons/pen-square'
-import Sparkles from '@lucide/svelte/icons/sparkles'
 import Store from '@lucide/svelte/icons/store'
 import type { PageData } from './$types'
 
 const { data } = $props<{ data: PageData }>()
+
+const statusTabs = $derived([
+	{ value: 'all', label: 'All', count: data.stats.total },
+	{ value: 'published', label: 'Published', count: data.stats.published },
+	{ value: 'draft', label: 'Drafts', count: data.stats.draft },
+	{ value: 'archived', label: 'Archived', count: data.stats.archived },
+	{ value: 'cancelled', label: 'Cancelled', count: data.stats.cancelled },
+])
 </script>
 
 <svelte:head>
@@ -54,7 +61,7 @@ const { data } = $props<{ data: PageData }>()
 			<CardHeader>
 				<CardTitle class="font-display text-2xl text-mist-100">What’s next</CardTitle>
 				<CardDescription class="text-mist-100/75">
-					Your listing editor is the next build. For now, your dashboard is ready for profile setup and content planning.
+					Keep your host page current, tighten draft listings, and archive finished events once the weekend passes.
 				</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
@@ -68,6 +75,9 @@ const { data } = $props<{ data: PageData }>()
 					<PenSquare class="mr-1 size-4" />
 					Create a listing
 				</Button>
+				<Button href="/host/profile" variant="outline" class="w-full rounded-full">
+					Edit host profile
+				</Button>
 				<Button href={`/hosts/${data.host.slug}`} variant="outline" class="w-full rounded-full">
 					View public host page
 				</Button>
@@ -78,6 +88,12 @@ const { data } = $props<{ data: PageData }>()
 		</Card>
 	</div>
 
+	{#if data.deleted}
+		<div class="rounded-[1.75rem] border border-leaf-400/20 bg-leaf-400/10 px-5 py-4 text-sm text-ink-950">
+			A listing was removed from your dashboard and public discovery.
+		</div>
+	{/if}
+
 	<div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_320px]">
 		<Card class="border-white/80 bg-white/88 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.35)] backdrop-blur">
 			<CardHeader>
@@ -86,19 +102,38 @@ const { data } = $props<{ data: PageData }>()
 					Your listings
 				</CardTitle>
 				<CardDescription>
-					A quick view of what is already live and what still needs polishing.
+					Filter by status, jump into edits, and keep older events out of your active lineup.
 				</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
+				<div class="flex flex-wrap gap-2">
+					{#each statusTabs as tab (tab.value)}
+						<Button
+							href={tab.value === 'all' ? '/host' : `/host?status=${tab.value}`}
+							variant={data.selectedStatus === tab.value ? 'default' : 'outline'}
+							size="sm"
+							class="rounded-full"
+						>
+							{tab.label} ({tab.count})
+						</Button>
+					{/each}
+				</div>
+
 				{#if data.listings.length === 0}
 					<div class="rounded-2xl border border-dashed border-ink-950/15 bg-mist-100/70 p-5 text-sm text-ink-700">
-						<p class="text-base font-semibold text-ink-950">No listings yet.</p>
+						<p class="text-base font-semibold text-ink-950">
+							{data.selectedStatus === 'all' ? 'No listings yet.' : `No ${data.selectedStatus} listings right now.`}
+						</p>
 						<p class="mt-2 leading-7">
-							Your host profile is ready. The next step is publishing your first sale, market, or neighborhood event.
+							{#if data.selectedStatus === 'all'}
+								Your host profile is ready. The next step is publishing your first sale, market, or neighborhood event.
+							{:else}
+								Switch filters or create a new listing when you have another local stop worth sharing.
+							{/if}
 						</p>
 					</div>
 				{:else}
-					{#each data.listings as listing}
+					{#each data.listings as listing (listing.id)}
 						<div class="rounded-2xl border border-ink-950/8 bg-white p-4 shadow-sm">
 							<div class="flex flex-wrap items-start justify-between gap-3">
 								<div>
@@ -120,9 +155,11 @@ const { data } = $props<{ data: PageData }>()
 								</span>
 							</div>
 							<div class="mt-4 flex flex-wrap gap-2">
-								<Button href={`/sale/${listing.slug}`} variant="secondary" size="sm" class="rounded-full">
-									View public page
-								</Button>
+								{#if listing.status === 'published'}
+									<Button href={`/sale/${listing.slug}`} variant="secondary" size="sm" class="rounded-full">
+										View public page
+									</Button>
+								{/if}
 								<Button href={`/host/listings/${listing.id}`} variant="outline" size="sm" class="rounded-full">
 									Edit listing
 								</Button>
@@ -150,6 +187,10 @@ const { data } = $props<{ data: PageData }>()
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm text-ink-700">
 					<p class="font-semibold text-ink-950">3. Standout details</p>
 					<p class="mt-2 leading-6">What shoppers can actually expect to find when they arrive.</p>
+				</div>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm text-ink-700">
+					<p class="font-semibold text-ink-950">4. Lifecycle cleanup</p>
+					<p class="mt-2 leading-6">Unpublish, archive, or duplicate old events so your dashboard stays useful.</p>
 				</div>
 				<Button href="/host/listings/new" variant="outline" class="w-full rounded-full">
 					<PenSquare class="mr-1 size-4" />

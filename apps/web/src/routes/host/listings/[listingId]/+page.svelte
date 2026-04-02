@@ -22,6 +22,12 @@ const { data, form } = $props<{ data: PageData; form: ActionData }>()
 				{#if data.saved}
 					<Badge variant="outline">Saved just now</Badge>
 				{/if}
+				{#if data.duplicated}
+					<Badge variant="outline">Duplicated from another listing</Badge>
+				{/if}
+				{#if data.statusUpdated}
+					<Badge variant="outline">Status updated to {data.statusUpdated}</Badge>
+				{/if}
 			</div>
 			<h1 class="mt-2 font-display text-4xl text-ink-950">Edit listing</h1>
 			<p class="mt-3 max-w-2xl text-base leading-7 text-ink-700">
@@ -30,7 +36,9 @@ const { data, form } = $props<{ data: PageData; form: ActionData }>()
 		</div>
 		<div class="flex flex-wrap gap-2">
 			<Button href="/host" variant="outline" class="rounded-full">Back to dashboard</Button>
-			<Button href={`/sale/${data.listing.slug}`} variant="outline" class="rounded-full">View public page</Button>
+			{#if data.listing.status === 'published'}
+				<Button href={`/sale/${data.listing.slug}`} variant="outline" class="rounded-full">View public page</Button>
+			{/if}
 			<Button href="/" class="rounded-full" variant="secondary">See discovery</Button>
 		</div>
 	</div>
@@ -46,6 +54,48 @@ const { data, form } = $props<{ data: PageData; form: ActionData }>()
 		/>
 
 		<div class="space-y-6">
+			<Card class="border-white/80 bg-white/88 backdrop-blur">
+				<CardHeader>
+					<CardTitle class="text-xl text-ink-950">Listing actions</CardTitle>
+					<CardDescription>
+						Manage the lifecycle of this event without losing your work.
+					</CardDescription>
+				</CardHeader>
+				<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
+					<form method="POST" action="?/duplicate">
+						<Button type="submit" variant="outline" class="w-full rounded-full">Duplicate as new draft</Button>
+					</form>
+
+					{#if data.listing.status !== 'draft'}
+						<form method="POST" action="?/moveToDraft">
+							<Button type="submit" variant="outline" class="w-full rounded-full">Move back to draft</Button>
+						</form>
+					{/if}
+
+					{#if data.listing.status !== 'cancelled'}
+						<form method="POST" action="?/cancel">
+							<Button type="submit" variant="outline" class="w-full rounded-full">Mark as cancelled</Button>
+						</form>
+					{/if}
+
+					{#if data.listing.status !== 'archived'}
+						<form method="POST" action="?/archive">
+							<Button type="submit" variant="outline" class="w-full rounded-full">Archive listing</Button>
+						</form>
+					{/if}
+
+					<form method="POST" action="?/deleteListing">
+						<Button type="submit" variant="ghost" class="w-full rounded-full text-coral-500 hover:text-coral-500">
+							Delete listing
+						</Button>
+					</form>
+
+					<p class="text-sm leading-6 text-ink-700">
+						Published listings leave discovery as soon as you move them back to draft, cancel them, or archive them.
+					</p>
+				</CardContent>
+			</Card>
+
 			<Card class="border-white/80 bg-white/88 backdrop-blur">
 				<CardHeader>
 					<div class="flex flex-wrap items-center gap-2">
@@ -77,7 +127,7 @@ const { data, form } = $props<{ data: PageData; form: ActionData }>()
 						</div>
 					{:else}
 						<div class="space-y-3">
-							{#each data.media as media, index}
+							{#each data.media as media, index (media.id)}
 								<div class="overflow-hidden rounded-2xl border border-ink-950/8 bg-white shadow-sm">
 									<img src={media.url} alt={media.altText || data.listing.title} class="h-40 w-full object-cover" />
 									<div class="space-y-3 p-4">
@@ -95,15 +145,29 @@ const { data, form } = $props<{ data: PageData; form: ActionData }>()
 										</div>
 										<div class="flex flex-wrap gap-2">
 											{#if index !== 0}
-												<form method="POST" action="?/setCover">
-													<input type="hidden" name="mediaId" value={media.id} />
-													<Button type="submit" size="sm" variant="outline" class="rounded-full">Make cover</Button>
-												</form>
-											{/if}
-											<form method="POST" action="?/deleteMedia">
+											<form method="POST" action="?/setCover">
 												<input type="hidden" name="mediaId" value={media.id} />
-												<Button type="submit" size="sm" variant="ghost" class="rounded-full text-coral-500 hover:text-coral-500">Remove</Button>
+												<Button type="submit" size="sm" variant="outline" class="rounded-full">Make cover</Button>
 											</form>
+										{/if}
+										{#if index > 0}
+											<form method="POST" action="?/reorderMedia">
+												<input type="hidden" name="mediaId" value={media.id} />
+												<input type="hidden" name="direction" value="backward" />
+												<Button type="submit" size="sm" variant="outline" class="rounded-full">Move earlier</Button>
+											</form>
+										{/if}
+										{#if index < data.media.length - 1}
+											<form method="POST" action="?/reorderMedia">
+												<input type="hidden" name="mediaId" value={media.id} />
+												<input type="hidden" name="direction" value="forward" />
+												<Button type="submit" size="sm" variant="outline" class="rounded-full">Move later</Button>
+											</form>
+										{/if}
+										<form method="POST" action="?/deleteMedia">
+											<input type="hidden" name="mediaId" value={media.id} />
+											<Button type="submit" size="sm" variant="ghost" class="rounded-full text-coral-500 hover:text-coral-500">Remove</Button>
+										</form>
 										</div>
 									</div>
 								</div>

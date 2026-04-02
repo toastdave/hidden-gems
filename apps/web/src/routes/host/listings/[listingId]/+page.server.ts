@@ -6,12 +6,16 @@ import {
 } from '$lib/server/listing-editor'
 import {
 	addListingMedia,
+	deleteListingRecord,
 	deleteMediaRecord,
+	duplicateListingRecord,
 	getListingForHost,
 	getListingMedia,
 	getListingTags,
 	listingToValues,
+	reorderListingMedia,
 	setCoverMedia,
+	updateListingStatus,
 } from '$lib/server/listings'
 import { deleteListingMediaObject, uploadListingMedia } from '$lib/server/storage'
 import { fail, redirect } from '@sveltejs/kit'
@@ -41,6 +45,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listing,
 		media,
 		defaults: listingToValues(listing, tags),
+		duplicated: url.searchParams.get('duplicated') === '1',
+		statusUpdated: url.searchParams.get('status'),
 		saved: url.searchParams.get('saved') === '1',
 		mediaUpdated: url.searchParams.get('media') === '1',
 	}
@@ -125,6 +131,34 @@ export const actions: Actions = {
 		await setCoverMedia(listing.id, mediaId)
 		throw redirect(303, `/host/listings/${listing.id}?media=1`)
 	},
+	reorderMedia: async ({ locals, params, request, url }) => {
+		if (!locals.user || !locals.session) {
+			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
+		}
+
+		const host = await getHostForUser(locals.user.id)
+
+		if (!host) {
+			throw redirect(303, '/host/onboarding')
+		}
+
+		const listing = await getListingForHost(host.id, params.listingId)
+
+		if (!listing) {
+			throw redirect(303, '/host')
+		}
+
+		const formData = await request.formData()
+		const mediaId = String(formData.get('mediaId') ?? '')
+		const direction = formData.get('direction') === 'forward' ? 'forward' : 'backward'
+
+		if (!mediaId) {
+			return fail(400, { mediaError: 'Pick an image to move first.' })
+		}
+
+		await reorderListingMedia(listing.id, mediaId, direction)
+		throw redirect(303, `/host/listings/${listing.id}?media=1`)
+	},
 	deleteMedia: async ({ locals, params, request, url }) => {
 		if (!locals.user || !locals.session) {
 			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
@@ -155,6 +189,113 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, `/host/listings/${listing.id}?media=1`)
+	},
+	duplicate: async ({ locals, params, url }) => {
+		if (!locals.user || !locals.session) {
+			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
+		}
+
+		const host = await getHostForUser(locals.user.id)
+
+		if (!host) {
+			throw redirect(303, '/host/onboarding')
+		}
+
+		const listing = await getListingForHost(host.id, params.listingId)
+
+		if (!listing) {
+			throw redirect(303, '/host')
+		}
+
+		const tags = await getListingTags(listing.id)
+		const duplicatedListing = await duplicateListingRecord({ hostId: host.id, listing, tags })
+
+		throw redirect(303, `/host/listings/${duplicatedListing.id}?duplicated=1`)
+	},
+	moveToDraft: async ({ locals, params, url }) => {
+		if (!locals.user || !locals.session) {
+			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
+		}
+
+		const host = await getHostForUser(locals.user.id)
+
+		if (!host) {
+			throw redirect(303, '/host/onboarding')
+		}
+
+		const listing = await getListingForHost(host.id, params.listingId)
+
+		if (!listing) {
+			throw redirect(303, '/host')
+		}
+
+		await updateListingStatus(listing.id, 'draft')
+		throw redirect(303, `/host/listings/${listing.id}?status=draft`)
+	},
+	archive: async ({ locals, params, url }) => {
+		if (!locals.user || !locals.session) {
+			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
+		}
+
+		const host = await getHostForUser(locals.user.id)
+
+		if (!host) {
+			throw redirect(303, '/host/onboarding')
+		}
+
+		const listing = await getListingForHost(host.id, params.listingId)
+
+		if (!listing) {
+			throw redirect(303, '/host')
+		}
+
+		await updateListingStatus(listing.id, 'archived')
+		throw redirect(303, `/host/listings/${listing.id}?status=archived`)
+	},
+	cancel: async ({ locals, params, url }) => {
+		if (!locals.user || !locals.session) {
+			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
+		}
+
+		const host = await getHostForUser(locals.user.id)
+
+		if (!host) {
+			throw redirect(303, '/host/onboarding')
+		}
+
+		const listing = await getListingForHost(host.id, params.listingId)
+
+		if (!listing) {
+			throw redirect(303, '/host')
+		}
+
+		await updateListingStatus(listing.id, 'cancelled')
+		throw redirect(303, `/host/listings/${listing.id}?status=cancelled`)
+	},
+	deleteListing: async ({ locals, params, url }) => {
+		if (!locals.user || !locals.session) {
+			throw redirect(303, `/auth/sign-in?redirectTo=${encodeURIComponent(url.pathname)}`)
+		}
+
+		const host = await getHostForUser(locals.user.id)
+
+		if (!host) {
+			throw redirect(303, '/host/onboarding')
+		}
+
+		const listing = await getListingForHost(host.id, params.listingId)
+
+		if (!listing) {
+			throw redirect(303, '/host')
+		}
+
+		const deleted = await deleteListingRecord(listing.id)
+
+		await Promise.all(
+			deleted.media.map((media) => deleteListingMediaObject(media.objectKey).catch(() => undefined))
+		)
+
+		throw redirect(303, '/host?deleted=1')
 	},
 	default: async ({ locals, params, request, url }) => {
 		if (!locals.user || !locals.session) {

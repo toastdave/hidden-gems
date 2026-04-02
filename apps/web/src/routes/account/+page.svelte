@@ -148,6 +148,11 @@ async function signOut() {
 				<Button href={data.host ? '/host' : '/host/onboarding'} class="w-full rounded-full">
 					{data.host ? 'Open host dashboard' : 'Create host profile'}
 				</Button>
+				{#if data.host}
+					<Button href="/host/profile" variant="outline" class="w-full rounded-full border-white/20 bg-transparent text-mist-100 hover:bg-white/8 hover:text-mist-100">
+						Edit host profile
+					</Button>
+				{/if}
 				<Button href="/" variant="secondary" class="w-full rounded-full">Back to discovery</Button>
 				<Button
 					variant="outline"
