@@ -2,6 +2,7 @@
 import { goto, invalidateAll } from '$app/navigation'
 import { resolve } from '$app/paths'
 import { authClient } from '$lib/auth-client'
+import SearchAlertCard from '$lib/components/alerts/search-alert-card.svelte'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
@@ -95,8 +96,8 @@ async function signOut() {
 					<p class="mt-2 text-2xl font-display text-ink-950">{data.favoriteListings.length}</p>
 				</div>
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4">
-					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Followed hosts</p>
-					<p class="mt-2 text-2xl font-display text-ink-950">{data.followedHosts.length}</p>
+					<p class="text-xs uppercase tracking-[0.24em] text-ink-700/70">Saved searches</p>
+					<p class="mt-2 text-2xl font-display text-ink-950">{data.searchAlerts.length}</p>
 				</div>
 			</CardContent>
 		</Card>
@@ -227,7 +228,34 @@ async function signOut() {
 			</CardContent>
 		</Card>
 
-		<Card class="border-white/80 bg-white/88 backdrop-blur">
+		<div class="space-y-6">
+			<Card class="border-white/80 bg-white/88 backdrop-blur">
+				<CardHeader>
+					<CardTitle class="flex items-center gap-2 text-2xl text-ink-950">
+						<CalendarDays class="size-5 text-ink-950" />
+						Saved searches
+					</CardTitle>
+					<CardDescription>
+						Keep the best discovery setups ready while email delivery and notification preferences come next.
+					</CardDescription>
+				</CardHeader>
+				<CardContent class="space-y-4 px-4 pb-5 sm:px-6">
+					{#if data.searchAlerts.length === 0}
+						<div class="rounded-2xl border border-dashed border-ink-950/12 bg-mist-100/70 p-5 text-sm leading-6 text-ink-700">
+							<p class="text-base font-semibold text-ink-950">No saved searches yet.</p>
+							<p class="mt-2">Save a search from discovery and it will show up here with pause and delete controls.</p>
+						</div>
+					{:else}
+						<div class="space-y-4">
+							{#each data.searchAlerts as alert (alert.id)}
+								<SearchAlertCard {alert} />
+							{/each}
+						</div>
+					{/if}
+				</CardContent>
+			</Card>
+
+			<Card class="border-white/80 bg-white/88 backdrop-blur">
 			<CardHeader>
 				<CardTitle class="flex items-center gap-2 text-2xl text-ink-950">
 					<Users class="size-5 text-leaf-400" />
@@ -288,6 +316,7 @@ async function signOut() {
 					</div>
 				{/if}
 			</CardContent>
-		</Card>
+			</Card>
+		</div>
 	</div>
 </section>

@@ -19,9 +19,9 @@ Help users come back when new events match their interests and geography.
 
 ## Current implementation status
 
-- Completed: discovery filters already carry structured location, radius, date, type, and tag state that can seed future alert rules, and the engagement MVP now provides saved-state patterns in account surfaces.
-- In progress: none yet inside the alerts epic itself.
-- Not started: saved alert creation, notification preferences, delivery jobs, and notification history.
+- Completed: discovery filters already carry structured location, radius, date, type, and tag state that can seed future alert rules, the engagement MVP now provides saved-state patterns in account surfaces, and users can save the current discovery search into account-managed saved searches.
+- In progress: saved search management in account with pause and delete controls, but without delivery.
+- Not started: notification preferences, delivery jobs, and notification history.
 
 ## Task breakdown
 
@@ -37,12 +37,19 @@ Help users come back when new events match their interests and geography.
 - Sequence this after the engagement MVP in `07-engagement.md` so account saved-state patterns and notification preference modeling have a cleaner foundation.
 - Reuse the current discovery filter contract so alerts mirror the same location, radius, type, and tag behavior users already understand.
 - Keep the initial delivery model simple with email-first sends and persisted records that can support retries or future in-app inbox views.
+- The first shipped slice saves searches into account and lets users pause or delete them, while explicitly deferring automated sends and preference tuning.
 
 ## Acceptance criteria
 
 - Users can create, edit, pause, and delete saved alerts.
 - Alert rules reflect current discovery filter logic.
 - Notification records are persisted even if sending retries later.
+
+## Shipped notes
+
+- Discovery now includes a save-search entrypoint that turns the current location, radius, type, and tag mix into a saved search.
+- Account now shows saved searches separately from saved listings and followed hosts.
+- Saved searches can currently be paused, resumed, and deleted before delivery automation is introduced.
 
 ## Non-goals
 

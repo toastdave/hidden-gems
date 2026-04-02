@@ -2,6 +2,7 @@
 import { browser } from '$app/environment'
 import { goto } from '$app/navigation'
 import { env as publicEnv } from '$env/dynamic/public'
+import SaveSearchAlertButton from '$lib/components/alerts/save-search-alert-button.svelte'
 import LocationAutocomplete from '$lib/components/discovery/location-autocomplete.svelte'
 import FavoriteToggleButton from '$lib/components/engagement/favorite-toggle-button.svelte'
 import { Badge } from '$lib/components/ui/badge'
@@ -795,25 +796,29 @@ const homepageImageUrl = $derived(
 
 		<Card class="border-white/80 bg-white/88 backdrop-blur">
 			<CardHeader>
-				<CardTitle class="text-xl text-ink-950">Saved now, alerts next</CardTitle>
+				<CardTitle class="text-xl text-ink-950">Save this search</CardTitle>
 				<CardDescription>
-					Favorite listings and follow hosts today, then come back for saved search alerts.
+					Keep this exact location, radius, type, and tag mix ready to revisit from your account.
 				</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm leading-6 text-ink-700">
-					Save the strongest stops from discovery cards and keep your followed hosts in one account view.
+					This saves your current location, radius, event type, and tag filters. Keyword and date filters stay out of the alert for now.
 				</div>
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm leading-6 text-ink-700">
-					Saved search alerts are the next layer, built on the same favorites and follows foundation.
+					Email delivery comes next. Right now, saved searches live in your account alongside saved listings and followed hosts.
 				</div>
-				<Button
-					href={data.user ? '/account' : '/auth/sign-in?redirectTo=/account'}
-					variant="outline"
-					class="w-full rounded-full"
-				>
-					{data.user ? 'Open your account' : 'Sign in to save finds'}
-				</Button>
+				<SaveSearchAlertButton
+					locationLabel={data.center.label}
+					latitude={data.center.latitude}
+					longitude={data.center.longitude}
+					radiusMiles={data.filters.radiusMiles}
+					eventType={data.filters.type}
+					tag={data.filters.tag}
+					signedIn={Boolean(data.user)}
+					initialSaved={data.hasSavedSearchAlert}
+					redirectTo={data.canonicalPath}
+				/>
 			</CardContent>
 		</Card>
 	</section>

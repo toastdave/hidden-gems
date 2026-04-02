@@ -164,7 +164,7 @@ function normalizeTag(tag: string) {
 	return tag.trim().toLowerCase()
 }
 
-function formatTagLabel(tag: string) {
+export function formatTagLabel(tag: string) {
 	return tag
 		.trim()
 		.split(/\s+/)

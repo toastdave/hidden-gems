@@ -31,7 +31,7 @@ Status: in progress. The homepage, listing detail pages, host pages, DB-backed d
 - Add notification preferences and saved search alerts after the engagement data model is live.
 - Add host and listing activity surfaces after the core buyer retention loop is working.
 
-Status: in progress. Favorites on discovery cards and listing detail pages, host follows on host and listing surfaces, and saved account views for listings and hosts are now live. Saved search alerts and notification preferences remain the next retention layer.
+Status: in progress. Favorites on discovery cards and listing detail pages, host follows on host and listing surfaces, saved account views for listings and hosts, and first-pass saved searches from discovery into account are now live. Automated delivery and notification preferences remain the next retention layer.
 
 ## Phase 5 - Monetization and trust
 
