@@ -162,7 +162,8 @@ body {
 	&:where([data-open]:not([data-open="false"])) {
 		@slot;
 	}
-	&:where([data-state="open"]), &:where([data-open]:not([data-open="false"])) {
+	&:where([data-state="open"]),
+	&:where([data-open]:not([data-open="false"])) {
 		@slot;
 	}
 }
@@ -172,7 +173,8 @@ body {
 	&:where([data-closed]:not([data-closed="false"])) {
 		@slot;
 	}
-	&:where([data-state="closed"]), &:where([data-closed]:not([data-closed="false"])) {
+	&:where([data-state="closed"]),
+	&:where([data-closed]:not([data-closed="false"])) {
 		@slot;
 	}
 }
@@ -182,7 +184,8 @@ body {
 	&:where([data-checked]:not([data-checked="false"])) {
 		@slot;
 	}
-	&:where([data-state="checked"]), &:where([data-checked]:not([data-checked="false"])) {
+	&:where([data-state="checked"]),
+	&:where([data-checked]:not([data-checked="false"])) {
 		@slot;
 	}
 }
@@ -192,7 +195,8 @@ body {
 	&:where([data-unchecked]:not([data-unchecked="false"])) {
 		@slot;
 	}
-	&:where([data-state="unchecked"]), &:where([data-unchecked]:not([data-unchecked="false"])) {
+	&:where([data-state="unchecked"]),
+	&:where([data-unchecked]:not([data-unchecked="false"])) {
 		@slot;
 	}
 }
@@ -208,7 +212,8 @@ body {
 	&:where([data-disabled]:not([data-disabled="false"])) {
 		@slot;
 	}
-	&:where([data-disabled="true"]), &:where([data-disabled]:not([data-disabled="false"])) {
+	&:where([data-disabled="true"]),
+	&:where([data-disabled]:not([data-disabled="false"])) {
 		@slot;
 	}
 }
@@ -218,7 +223,8 @@ body {
 	&:where([data-active]:not([data-active="false"])) {
 		@slot;
 	}
-	&:where([data-state="active"]), &:where([data-active]:not([data-active="false"])) {
+	&:where([data-state="active"]),
+	&:where([data-active]:not([data-active="false"])) {
 		@slot;
 	}
 }
