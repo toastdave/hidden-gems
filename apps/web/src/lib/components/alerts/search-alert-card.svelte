@@ -17,6 +17,19 @@ let requestError = $state('')
 
 const isActive = $derived(activeOverride ?? alert.isActive)
 
+function formatTimestamp(value: string | Date | null) {
+	if (!value) {
+		return 'Not delivered yet'
+	}
+
+	return new Intl.DateTimeFormat('en-US', {
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit',
+	}).format(new Date(value))
+}
+
 async function updateActiveState(nextValue: boolean) {
 	if (isPending || isRemoving) {
 		return
@@ -76,6 +89,7 @@ async function removeAlert() {
 			<div class="flex flex-wrap items-center gap-2">
 				<p class="text-lg font-semibold text-ink-950">{alert.label}</p>
 				<Badge variant={isActive ? 'secondary' : 'outline'}>{isActive ? 'Active' : 'Paused'}</Badge>
+				<Badge variant="outline">{alert.cadence === 'instant' ? 'Instant' : 'Daily digest'}</Badge>
 			</div>
 			<p class="mt-2 inline-flex items-center gap-1.5 text-sm text-ink-700">
 				<MapPinned class="size-4 text-ink-700/60" />
@@ -99,9 +113,10 @@ async function removeAlert() {
 		{/each}
 	</div>
 
-	<p class="mt-4 text-sm leading-6 text-ink-700">
-		Email delivery comes next. For now, this saved search stays in your account so you can revisit it quickly.
-	</p>
+	<div class="mt-4 rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm leading-6 text-ink-700">
+		<p>Last delivery: {formatTimestamp(alert.lastDeliveredAt)}</p>
+		<p class="mt-1">Last checked: {formatTimestamp(alert.lastCheckedAt)}</p>
+	</div>
 
 	<div class="mt-4 flex flex-wrap gap-2">
 		<Button type="button" variant="outline" class="rounded-full" disabled={isPending || isRemoving} onclick={() => updateActiveState(!isActive)}>

@@ -806,7 +806,7 @@ const homepageImageUrl = $derived(
 					This saves your current location, radius, event type, and tag filters. Keyword and date filters stay out of the alert for now.
 				</div>
 				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm leading-6 text-ink-700">
-					Email delivery comes next. Right now, saved searches live in your account alongside saved listings and followed hosts.
+					Saved-search matches now land in your account activity feed, and cadence preferences let you choose instant or daily checks.
 				</div>
 				<SaveSearchAlertButton
 					locationLabel={data.center.label}

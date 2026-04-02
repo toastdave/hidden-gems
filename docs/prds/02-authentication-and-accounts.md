@@ -29,8 +29,8 @@ Enable secure sign-up, sign-in, session handling, and account settings for hosts
 
 ## Current implementation status
 
-- Completed: Better Auth integration, protected routes, session persistence, sign-up/sign-in/sign-out flows, and a basic account area that links into host onboarding.
-- In progress: account settings remain lightweight and do not yet support profile editing or notification preferences.
+- Completed: Better Auth integration, protected routes, session persistence, sign-up/sign-in/sign-out flows, a basic account area that links into host onboarding, and account-level saved-search notification preferences.
+- In progress: account settings remain lightweight and do not yet support profile editing beyond alert preferences.
 - Not started: password reset, email verification delivery, and audit-friendly auth logging.
 
 ## Acceptance criteria

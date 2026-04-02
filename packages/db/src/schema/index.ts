@@ -39,6 +39,14 @@ export const entitlementStatusEnum = pgEnum('entitlement_status', [
 	'cancelled',
 ])
 
+export const notificationCadenceEnum = pgEnum('notification_cadence', ['instant', 'daily'])
+
+export const alertDeliveryStatusEnum = pgEnum('alert_delivery_status', [
+	'delivered',
+	'skipped',
+	'failed',
+])
+
 export const reportStatusEnum = pgEnum('report_status', [
 	'open',
 	'reviewing',
@@ -238,12 +246,26 @@ export const searchAlert = pgTable(
 		radiusMiles: integer('radius_miles').notNull().default(15),
 		eventTypes: text('event_types').array(),
 		tags: text('tags').array(),
+		cadence: notificationCadenceEnum('cadence').notNull().default('daily'),
 		isActive: boolean('is_active').notNull().default(true),
+		lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),
+		lastDeliveredAt: timestamp('last_delivered_at', { withTimezone: true }),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [index('search_alert_user_idx').on(table.userId)]
 )
+
+export const notificationPreference = pgTable('notification_preference', {
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' })
+		.primaryKey(),
+	searchAlertsEnabled: boolean('search_alerts_enabled').notNull().default(true),
+	searchAlertCadence: notificationCadenceEnum('search_alert_cadence').notNull().default('daily'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
 
 export const plan = pgTable('plan', {
 	id: text('id').primaryKey(),
@@ -319,4 +341,30 @@ export const notification = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [index('notification_user_idx').on(table.userId)]
+)
+
+export const searchAlertDelivery = pgTable(
+	'search_alert_delivery',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		searchAlertId: uuid('search_alert_id')
+			.notNull()
+			.references(() => searchAlert.id, { onDelete: 'cascade' }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		listingId: uuid('listing_id')
+			.notNull()
+			.references(() => listing.id, { onDelete: 'cascade' }),
+		notificationId: uuid('notification_id').references(() => notification.id, {
+			onDelete: 'set null',
+		}),
+		status: alertDeliveryStatusEnum('status').notNull().default('delivered'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		index('search_alert_delivery_alert_idx').on(table.searchAlertId),
+		index('search_alert_delivery_user_idx').on(table.userId),
+		uniqueIndex('search_alert_delivery_unique_idx').on(table.searchAlertId, table.listingId),
+	]
 )

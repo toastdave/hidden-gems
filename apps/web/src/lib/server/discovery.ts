@@ -9,7 +9,7 @@ import {
 } from '$lib/content/discovery'
 import { geocodeSearchQuery } from '$lib/server/geocoding'
 import * as schema from '@hidden-gems/db/schema'
-import { and, asc, desc, eq, gte, inArray, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 
 type ListingRow = typeof schema.listing.$inferSelect
 type HostRow = typeof schema.host.$inferSelect
@@ -67,7 +67,7 @@ function toDiscoveryListing(
 	return normalized
 }
 
-async function getPublishedListings() {
+export async function getPublishedDiscoveryListings() {
 	if (!env.DATABASE_URL) {
 		return null
 	}
@@ -76,6 +76,7 @@ async function getPublishedListings() {
 		const { db } = await import('$lib/server/db')
 
 		const now = new Date()
+		const nowIso = now.toISOString()
 		const publishedRows = await db
 			.select({
 				listing: schema.listing,
@@ -86,7 +87,7 @@ async function getPublishedListings() {
 			.where(
 				and(
 					eq(schema.listing.status, 'published'),
-					gte(sql`coalesce(${schema.listing.endAt}, ${schema.listing.startAt})`, now),
+					sql`coalesce(${schema.listing.endAt}, ${schema.listing.startAt}) >= ${nowIso}::timestamptz`,
 					sql`${schema.listing.latitude} is not null and ${schema.listing.longitude} is not null`
 				)
 			)
@@ -211,7 +212,7 @@ async function resolveDiscoveryCenterOverride(filters: DiscoveryFilters): Promis
 
 export async function getHomepageDiscoveryResults(filters: DiscoveryFilters) {
 	const { centerOverride, locationError } = await resolveDiscoveryCenterOverride(filters)
-	const listings = await getPublishedListings()
+	const listings = await getPublishedDiscoveryListings()
 
 	if (listings === null || listings.length === 0) {
 		return {

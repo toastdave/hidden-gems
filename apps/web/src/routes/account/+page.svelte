@@ -2,11 +2,13 @@
 import { goto, invalidateAll } from '$app/navigation'
 import { resolve } from '$app/paths'
 import { authClient } from '$lib/auth-client'
+import NotificationPreferencesCard from '$lib/components/alerts/notification-preferences-card.svelte'
 import SearchAlertCard from '$lib/components/alerts/search-alert-card.svelte'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
 import { getEventTypeLabel } from '$lib/content/discovery'
+import BellRing from '@lucide/svelte/icons/bell-ring'
 import CalendarDays from '@lucide/svelte/icons/calendar-days'
 import Heart from '@lucide/svelte/icons/heart'
 import MapPinned from '@lucide/svelte/icons/map-pinned'
@@ -44,6 +46,15 @@ function formatSavedAt(value: string | Date) {
 	return new Intl.DateTimeFormat('en-US', {
 		month: 'short',
 		day: 'numeric',
+	}).format(new Date(value))
+}
+
+function formatNotificationTime(value: string | Date) {
+	return new Intl.DateTimeFormat('en-US', {
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit',
 	}).format(new Date(value))
 }
 
@@ -229,6 +240,8 @@ async function signOut() {
 		</Card>
 
 		<div class="space-y-6">
+			<NotificationPreferencesCard preference={data.notificationPreference} />
+
 			<Card class="border-white/80 bg-white/88 backdrop-blur">
 				<CardHeader>
 					<CardTitle class="flex items-center gap-2 text-2xl text-ink-950">
@@ -236,7 +249,7 @@ async function signOut() {
 						Saved searches
 					</CardTitle>
 					<CardDescription>
-						Keep the best discovery setups ready while email delivery and notification preferences come next.
+						Keep the best discovery setups ready, with live account alerts and cadence controls for how often they run.
 					</CardDescription>
 				</CardHeader>
 				<CardContent class="space-y-4 px-4 pb-5 sm:px-6">
@@ -249,6 +262,55 @@ async function signOut() {
 						<div class="space-y-4">
 							{#each data.searchAlerts as alert (alert.id)}
 								<SearchAlertCard {alert} />
+							{/each}
+						</div>
+					{/if}
+				</CardContent>
+			</Card>
+
+			<Card class="border-white/80 bg-white/88 backdrop-blur">
+				<CardHeader>
+					<CardTitle class="flex items-center gap-2 text-2xl text-ink-950">
+						<BellRing class="size-5 text-coral-500" />
+						Recent alert activity
+					</CardTitle>
+					<CardDescription>
+						Saved-search matches land here when a delivery run finds new listings you have not seen before.
+					</CardDescription>
+				</CardHeader>
+				<CardContent class="space-y-4 px-4 pb-5 sm:px-6">
+					{#if data.recentAlertNotifications.length === 0}
+						<div class="rounded-2xl border border-dashed border-ink-950/12 bg-mist-100/70 p-5 text-sm leading-6 text-ink-700">
+							<p class="text-base font-semibold text-ink-950">No alert activity yet.</p>
+							<p class="mt-2">Once a delivery run finds new matches, the newest results will show up here.</p>
+						</div>
+					{:else}
+						<div class="space-y-4">
+							{#each data.recentAlertNotifications as notification (notification.id)}
+								<div class="rounded-[1.5rem] border border-ink-950/8 bg-white p-4 shadow-sm">
+									<div class="flex flex-wrap items-start justify-between gap-3">
+										<div>
+											<div class="flex flex-wrap items-center gap-2">
+												<p class="text-lg font-semibold text-ink-950">{notification.title}</p>
+												{#if !notification.readAt}
+													<Badge variant="secondary">New</Badge>
+												{/if}
+											</div>
+											<p class="mt-2 text-sm leading-6 text-ink-700">
+												{notification.body || 'Fresh saved-search matches are ready in your account.'}
+											</p>
+										</div>
+										<Badge variant="outline">{formatNotificationTime(notification.createdAt)}</Badge>
+									</div>
+
+									{#if Array.isArray(notification.data?.listingSlugs) && notification.data.listingSlugs.length > 0}
+										<div class="mt-4 flex flex-wrap gap-2">
+											{#each notification.data.listingSlugs as slug (`${notification.id}-${slug}`)}
+												<Button href={`/sale/${slug}`} variant="outline" class="rounded-full">Open match</Button>
+											{/each}
+										</div>
+									{/if}
+								</div>
 							{/each}
 						</div>
 					{/if}

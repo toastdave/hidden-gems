@@ -19,9 +19,9 @@ Help users come back when new events match their interests and geography.
 
 ## Current implementation status
 
-- Completed: discovery filters already carry structured location, radius, date, type, and tag state that can seed future alert rules, the engagement MVP now provides saved-state patterns in account surfaces, and users can save the current discovery search into account-managed saved searches.
-- In progress: saved search management in account with pause and delete controls, but without delivery.
-- Not started: notification preferences, delivery jobs, and notification history.
+- Completed: discovery filters already carry structured location, radius, date, type, and tag state that can seed future alert rules; the engagement MVP now provides saved-state patterns in account surfaces; users can save the current discovery search into account-managed saved searches; account-level alert preferences now control enabled state and cadence; and delivery runs can create in-app notification records plus per-listing delivery history.
+- In progress: delivery is working through a manual run boundary and in-app notifications, while email sending and preference expansion are still pending.
+- Not started: email delivery, notification history beyond in-app plus delivery-log records, and richer preference surfaces.
 
 ## Task breakdown
 
@@ -37,7 +37,7 @@ Help users come back when new events match their interests and geography.
 - Sequence this after the engagement MVP in `07-engagement.md` so account saved-state patterns and notification preference modeling have a cleaner foundation.
 - Reuse the current discovery filter contract so alerts mirror the same location, radius, type, and tag behavior users already understand.
 - Keep the initial delivery model simple with email-first sends and persisted records that can support retries or future in-app inbox views.
-- The first shipped slice saves searches into account and lets users pause or delete them, while explicitly deferring automated sends and preference tuning.
+- The current shipped slice saves searches into account, lets users pause or delete them, stores a simple cadence preference, and delivers fresh matches into account notifications through a manual run boundary while email remains a follow-up.
 
 ## Acceptance criteria
 
@@ -50,6 +50,8 @@ Help users come back when new events match their interests and geography.
 - Discovery now includes a save-search entrypoint that turns the current location, radius, type, and tag mix into a saved search.
 - Account now shows saved searches separately from saved listings and followed hosts.
 - Saved searches can currently be paused, resumed, and deleted before delivery automation is introduced.
+- Alert preferences now let users enable or pause saved-search delivery globally and choose between instant and daily cadence.
+- Delivery runs now create in-app alert notifications and per-listing delivery records so the same listing is not re-sent for the same saved search.
 
 ## Non-goals
 

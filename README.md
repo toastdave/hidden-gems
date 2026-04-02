@@ -70,6 +70,14 @@ docker compose down -v
 
 The app supports hot reload in this mode. Leave the Docker services running while you edit files locally.
 
+Run a saved-search delivery pass locally:
+
+```bash
+bun run alerts:deliver
+```
+
+This checks active saved searches, creates any new in-app alert notifications, and is useful while Mailpit/email delivery is still being phased in.
+
 ## Full Docker development
 
 Run the entire app stack inside Docker with hot reload.

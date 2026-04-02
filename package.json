@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "bun run --cwd apps/web dev",
 		"build": "bun run --cwd apps/web build",
+		"alerts:deliver": "bun run --cwd apps/web alerts:deliver",
 		"check": "bun run --cwd apps/web check && bun run --cwd packages/db check",
 		"lint": "biome check .",
 		"format": "biome format --write .",
