@@ -30,9 +30,14 @@ Give sellers and organizers a trustworthy public identity that ties listings tog
 
 ## Current implementation status
 
-- Completed: one-host-per-user onboarding, slug validation, public host pages, host dashboard access, host links from discovery and listing surfaces, and follow actions on public host and listing pages.
-- In progress: host profile editing, richer host trust states, and stronger host activity surfaces.
+- Completed: one-host-per-user onboarding, slug validation, public host pages, host dashboard access, host profile editing, host links from discovery and listing surfaces, and follow actions on public host and listing pages.
+- In progress: richer host trust states and stronger host activity surfaces.
 - Not started: richer buyer-facing host affinity surfaces beyond the base follow action.
+
+## Shipped notes
+
+- Hosts now have a dedicated profile edit route so they can update their public identity without touching listing content.
+- The dashboard now links directly into host profile management alongside listing creation and public profile review.
 
 ## Acceptance criteria
 

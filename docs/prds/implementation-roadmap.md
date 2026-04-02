@@ -15,7 +15,7 @@ Status: complete for the current MVP foundation.
 - Build listing draft, edit, publish, and lifecycle management flows with mobile-friendly shadcn-svelte surfaces.
 - Add media upload, ordering, and cover image handling.
 
-Status: mostly complete. Authentication, host onboarding, host dashboard, listing creation/edit/publish, public host pages, and image upload/remove/cover flows are live. Remaining work is listing lifecycle polish, host profile editing, and richer media management.
+Status: substantially complete. Authentication, host onboarding, host dashboard, host profile editing, listing creation/edit/publish, dashboard status filters, lifecycle controls (duplicate, unpublish-to-draft, cancel, archive, delete), public host pages, and image upload/remove/cover/reorder flows are live. Remaining work is richer media replacement/progress UX and any dedicated listing preview polish.
 
 ## Phase 3 - Discovery MVP
 

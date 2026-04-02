@@ -30,9 +30,15 @@ Let hosts create, update, publish, unpublish, and manage event listings with min
 
 ## Current implementation status
 
-- Completed: draft and publish flow, edit flow, dashboard entrypoints, location/tag validation, server-side ownership checks, and public listing detail pages.
-- In progress: richer dashboard states, listing lifecycle actions beyond save/publish, and closer preview/detail parity.
-- Not started: duplicate/archive/cancel actions and a dedicated preview surface.
+- Completed: draft and publish flow, edit flow, dashboard entrypoints, status-filtered dashboard views, location/tag validation, server-side ownership checks, public listing detail pages, and lifecycle actions for duplicate, move-to-draft, cancel, archive, and delete.
+- In progress: closer preview/detail parity and any dedicated preview surface work.
+- Not started: a dedicated preview surface.
+
+## Shipped notes
+
+- Hosts can now duplicate an existing listing into a new draft that carries over structured details and tags for faster repeat publishing.
+- Hosts can now move listings back to draft, mark them cancelled, archive older events, or delete them from the editor.
+- The host dashboard now supports status filters for all, published, draft, archived, and cancelled listings.
 
 ## Acceptance criteria
 

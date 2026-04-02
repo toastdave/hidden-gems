@@ -29,9 +29,14 @@ Give hosts an easy way to add appealing photos, because image quality strongly a
 
 ## Current implementation status
 
-- Completed: server-backed image uploads to object storage, file type/size validation, cover image management, deletion cleanup, and media rendering on listing and host pages.
+- Completed: server-backed image uploads to object storage, file type/size validation, cover image management, directional reordering controls, deletion cleanup, and media rendering on listing and host pages.
 - In progress: better upload UX polish and surfacing listing media throughout discovery results.
-- Not started: reorder via drag-and-drop, retry/progress states, replace flows, and plan-based media limits.
+- Not started: drag-and-drop reorder, retry/progress states, replace flows, and plan-based media limits.
+
+## Shipped notes
+
+- Hosts can now move listing images earlier or later in the gallery without reuploading them.
+- Public page ordering still follows the stored media sort order, so cover and gallery adjustments stay in sync.
 
 ## Acceptance criteria
 
