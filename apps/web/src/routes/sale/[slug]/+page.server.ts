@@ -1,3 +1,4 @@
+import { getFavoritedListingIds, getFollowedHostIds } from '$lib/server/engagement'
 import {
 	getListingBySlug,
 	getPublicListingMedia,
@@ -7,16 +8,22 @@ import {
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ locals, params }) => {
 	const record = await getListingBySlug(params.slug)
 
 	if (!record) {
 		throw error(404, 'Listing not found')
 	}
 
-	const [tags, media] = await Promise.all([
+	const [tags, media, favoriteListingIds, followedHostIds] = await Promise.all([
 		getPublicListingTags(record.listing.id),
 		getPublicListingMedia(record.listing.id),
+		locals.user
+			? getFavoritedListingIds(locals.user.id, [record.listing.id])
+			: Promise.resolve<string[]>([]),
+		locals.user
+			? getFollowedHostIds(locals.user.id, [record.host.id])
+			: Promise.resolve<string[]>([]),
 	])
 	const relatedListings = await getRelatedPublishedListings(
 		record.listing.id,
@@ -31,5 +38,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		media,
 		tags,
 		relatedListings,
+		isFavorited: favoriteListingIds.includes(record.listing.id),
+		isFollowingHost: followedHostIds.includes(record.host.id),
 	}
 }

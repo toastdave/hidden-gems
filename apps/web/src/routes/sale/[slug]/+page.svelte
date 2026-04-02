@@ -1,5 +1,7 @@
 <script lang="ts">
 import { env as publicEnv } from '$env/dynamic/public'
+import FavoriteToggleButton from '$lib/components/engagement/favorite-toggle-button.svelte'
+import FollowToggleButton from '$lib/components/engagement/follow-toggle-button.svelte'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
@@ -150,6 +152,19 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 					{data.listing.description || 'Details are coming soon, but the essentials are already live.'}
 				</p>
 
+				<div class="flex flex-wrap gap-2">
+					<FavoriteToggleButton
+						listingId={data.listing.id}
+						initialActive={data.isFavorited}
+						signedIn={Boolean(data.user)}
+						redirectTo={data.canonicalPath}
+						size="default"
+					/>
+					<Button href={`/hosts/${data.host.slug}`} variant="outline" class="rounded-full">
+						View host profile
+					</Button>
+				</div>
+
 				{#if data.tags.length > 0}
 					<div class="flex flex-wrap gap-2">
 						{#each data.tags as tag (`${data.listing.id}-${tag}`)}
@@ -175,6 +190,14 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 					{#if data.host.locationLabel}
 						<p class="text-sm text-ink-700">Usually active around {data.host.locationLabel}.</p>
 					{/if}
+					<FollowToggleButton
+						hostId={data.host.id}
+						initialActive={data.isFollowingHost}
+						signedIn={Boolean(data.user)}
+						redirectTo={data.canonicalPath}
+						class="w-full"
+						size="default"
+					/>
 					<Button href={`/hosts/${data.host.slug}`} class="w-full rounded-full">View host profile</Button>
 				</CardContent>
 			</Card>

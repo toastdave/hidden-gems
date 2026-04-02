@@ -1,3 +1,4 @@
+import { getFavoriteListingsForUser, getFollowedHostsForUser } from '$lib/server/engagement'
 import { getHostForUser } from '$lib/server/hosts'
 import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
@@ -7,9 +8,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(303, '/auth/sign-in?redirectTo=/account')
 	}
 
-	const host = await getHostForUser(locals.user.id)
+	const [host, favoriteListings, followedHosts] = await Promise.all([
+		getHostForUser(locals.user.id),
+		getFavoriteListingsForUser(locals.user.id),
+		getFollowedHostsForUser(locals.user.id),
+	])
 
 	return {
+		favoriteListings,
+		followedHosts,
 		host,
 		session: locals.session,
 		user: locals.user,

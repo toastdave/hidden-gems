@@ -1,9 +1,10 @@
+import { getFollowedHostIds } from '$lib/server/engagement'
 import { getHostBySlug, getPublishedHostListings } from '$lib/server/hosts'
 import { getListingMedia, getListingTags } from '$lib/server/listings'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ locals, params }) => {
 	const host = await getHostBySlug(params.slug)
 
 	if (!host) {
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	const listings = await getPublishedHostListings(host.id)
-	const [listingTags, listingMedia] = await Promise.all([
+	const [listingTags, listingMedia, followedHostIds] = await Promise.all([
 		Promise.all(
 			listings.map(async (listing) => ({
 				listingId: listing.id,
@@ -24,6 +25,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				media: await getListingMedia(listing.id),
 			}))
 		),
+		locals.user ? getFollowedHostIds(locals.user.id, [host.id]) : Promise.resolve<string[]>([]),
 	])
 
 	return {
@@ -32,5 +34,6 @@ export const load: PageServerLoad = async ({ params }) => {
 		listings,
 		listingTags,
 		listingMedia,
+		isFollowing: followedHostIds.includes(host.id),
 	}
 }

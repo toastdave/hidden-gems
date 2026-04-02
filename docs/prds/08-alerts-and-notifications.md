@@ -19,7 +19,7 @@ Help users come back when new events match their interests and geography.
 
 ## Current implementation status
 
-- Completed: discovery filters already carry structured location, radius, date, type, and tag state that can seed future alert rules.
+- Completed: discovery filters already carry structured location, radius, date, type, and tag state that can seed future alert rules, and the engagement MVP now provides saved-state patterns in account surfaces.
 - In progress: none yet inside the alerts epic itself.
 - Not started: saved alert creation, notification preferences, delivery jobs, and notification history.
 

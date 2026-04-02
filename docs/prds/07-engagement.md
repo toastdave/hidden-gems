@@ -29,16 +29,15 @@ Increase repeat visits by letting users save interesting listings and follow hos
 
 ## Current implementation status
 
-- Completed: auth, account entrypoints, public listing pages, public host pages, and discovery surfaces are live, so the main prerequisites for engagement exist.
-- In progress: none yet inside the engagement epic itself.
-- Not started: listing favorites, host follows, saved account views, and engagement analytics hooks.
+- Completed: auth, account entrypoints, public listing pages, public host pages, discovery surfaces, listing favorites on discovery cards and listing detail pages, host follows on host and listing pages, and saved listings/followed hosts account views.
+- In progress: engagement analytics hooks and any follow-on activity surfaces for hosts or listings.
+- Not started: host-facing counts, richer activity modules, and saved search alerts.
 
 ## Recommended implementation sequence
 
-1. Add favorite toggles to listing cards and listing detail pages.
-2. Add follow toggles to host pages and host entrypoints on listing detail pages.
-3. Build saved listings and followed hosts views in the account area.
-4. Add analytics and persistence patterns that can support alerts later.
+1. Add analytics and persistence patterns that can support alerts later.
+2. Layer in host and listing activity surfaces once engagement events are trustworthy.
+3. Reuse the same saved-state patterns for notification preferences and saved search alerts.
 
 ## Task breakdown
 
@@ -63,12 +62,18 @@ Increase repeat visits by letting users save interesting listings and follow hos
 - Saved listings and followed hosts appear in account views and survive new sessions.
 - Unauthenticated users who try to save or follow are routed through sign-in without losing their place.
 
+## Shipped notes
+
+- Discovery cards now expose a save action without interrupting the existing map/list browsing flow.
+- Listing detail pages now support both save-listing and follow-host entrypoints.
+- Host profiles now expose the follow action directly in the page header.
+- The account area now separates saved listings from followed hosts so the first retention loop has a dedicated home.
+
 ## Open questions
 
-- Is the immediate KPI repeat buyer visits or host listing quality?
-- Should saved content stay account-only for MVP, or also appear on the discovery homepage?
+- Should saved content stay account-only until alerts ship, or also surface on the discovery homepage?
 - Should engagement actions remain fully free in MVP, or leave room for later limits under billing?
-- Do host-visible counts belong in this phase, or only after notification and alerts work lands?
+- Do host-visible counts belong in the next slice, or only after notification and alerts work lands?
 
 ## Non-goals
 

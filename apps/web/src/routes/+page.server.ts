@@ -1,8 +1,9 @@
 import { getHomepageDiscoveryResults } from '$lib/server/discovery'
+import { getFavoritedListingIds } from '$lib/server/engagement'
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ url }) => ({
-	...(await getHomepageDiscoveryResults({
+export const load: PageServerLoad = async ({ locals, url }) => {
+	const results = await getHomepageDiscoveryResults({
 		near: url.searchParams.get('near'),
 		place: url.searchParams.get('place'),
 		lat: url.searchParams.get('lat'),
@@ -12,6 +13,18 @@ export const load: PageServerLoad = async ({ url }) => ({
 		tag: url.searchParams.get('tag'),
 		type: url.searchParams.get('type'),
 		radius: url.searchParams.get('radius'),
-	})),
-	canonicalPath: `${url.pathname}${url.search}`,
-})
+	})
+
+	const favoriteListingIds = locals.user
+		? await getFavoritedListingIds(
+				locals.user.id,
+				results.listings.map((listing) => listing.id)
+			)
+		: []
+
+	return {
+		...results,
+		canonicalPath: `${url.pathname}${url.search}`,
+		favoriteListingIds,
+	}
+}

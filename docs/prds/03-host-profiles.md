@@ -30,9 +30,9 @@ Give sellers and organizers a trustworthy public identity that ties listings tog
 
 ## Current implementation status
 
-- Completed: one-host-per-user onboarding, slug validation, public host pages, host dashboard access, and host links from discovery and listing surfaces.
+- Completed: one-host-per-user onboarding, slug validation, public host pages, host dashboard access, host links from discovery and listing surfaces, and follow actions on public host and listing pages.
 - In progress: host profile editing, richer host trust states, and stronger host activity surfaces.
-- Not started: follow actions and buyer-facing host affinity features.
+- Not started: richer buyer-facing host affinity surfaces beyond the base follow action.
 
 ## Acceptance criteria
 

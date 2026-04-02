@@ -3,6 +3,7 @@ import { browser } from '$app/environment'
 import { goto } from '$app/navigation'
 import { env as publicEnv } from '$env/dynamic/public'
 import LocationAutocomplete from '$lib/components/discovery/location-autocomplete.svelte'
+import FavoriteToggleButton from '$lib/components/engagement/favorite-toggle-button.svelte'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
@@ -238,6 +239,7 @@ function formatDistance(distanceMiles: number) {
 const highlightedListing = $derived(
 	visibleListings.find((listing) => listing.slug === selectedSlug) ?? visibleListings[0] ?? null
 )
+const favoriteListingIds = $derived(new Set(data.favoriteListingIds))
 const homepageTitle = $derived(
 	data.filters.place
 		? `${data.filters.place} yard sales, estate sales, and pop-up markets | ${siteConfig.name}`
@@ -656,6 +658,12 @@ const homepageImageUrl = $derived(
 									</CardContent>
 								</button>
 								<div class="flex flex-wrap gap-2 px-4 pb-4">
+									<FavoriteToggleButton
+										listingId={listing.id}
+										initialActive={favoriteListingIds.has(listing.id)}
+										signedIn={Boolean(data.user)}
+										redirectTo={data.canonicalPath}
+									/>
 									<Button href={`/sale/${listing.slug}`} variant="secondary" size="sm" class="rounded-full">
 										Open listing
 									</Button>
@@ -663,7 +671,7 @@ const homepageImageUrl = $derived(
 										View host
 									</Button>
 								</div>
-								<div class="flex flex-wrap gap-2">
+								<div class="flex flex-wrap gap-2 px-4 pb-4">
 									{#each listing.tags as tag (`${listing.slug}-${tag}`)}
 										<Badge variant="secondary">{tag}</Badge>
 									{/each}
@@ -787,14 +795,25 @@ const homepageImageUrl = $derived(
 
 		<Card class="border-white/80 bg-white/88 backdrop-blur">
 			<CardHeader>
-				<CardTitle class="text-xl text-ink-950">Coming next</CardTitle>
-				<CardDescription>Favorites, saved searches, and alerts for the routes you want to revisit.</CardDescription>
+				<CardTitle class="text-xl text-ink-950">Saved now, alerts next</CardTitle>
+				<CardDescription>
+					Favorite listings and follow hosts today, then come back for saved search alerts.
+				</CardDescription>
 			</CardHeader>
 			<CardContent class="space-y-3 px-4 pb-5 sm:px-6">
-				<Skeleton class="h-4 w-28" />
-				<Skeleton class="h-16 w-full rounded-2xl" />
-				<Skeleton class="h-16 w-full rounded-2xl" />
-				<Skeleton class="h-10 w-full rounded-full" />
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm leading-6 text-ink-700">
+					Save the strongest stops from discovery cards and keep your followed hosts in one account view.
+				</div>
+				<div class="rounded-2xl border border-ink-950/8 bg-mist-100/70 p-4 text-sm leading-6 text-ink-700">
+					Saved search alerts are the next layer, built on the same favorites and follows foundation.
+				</div>
+				<Button
+					href={data.user ? '/account' : '/auth/sign-in?redirectTo=/account'}
+					variant="outline"
+					class="w-full rounded-full"
+				>
+					{data.user ? 'Open your account' : 'Sign in to save finds'}
+				</Button>
 			</CardContent>
 		</Card>
 	</section>

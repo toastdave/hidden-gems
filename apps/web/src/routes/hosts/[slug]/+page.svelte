@@ -1,5 +1,6 @@
 <script lang="ts">
 import { env as publicEnv } from '$env/dynamic/public'
+import FollowToggleButton from '$lib/components/engagement/follow-toggle-button.svelte'
 import { Badge } from '$lib/components/ui/badge'
 import { Button } from '$lib/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card'
@@ -105,14 +106,23 @@ function formatDateRange(startAt: string | Date, endAt?: string | Date | null) {
 				{data.host.bio || 'Local host with upcoming events worth tracking.'}
 			</CardDescription>
 		</CardHeader>
-		<CardContent class="flex flex-wrap gap-3 px-4 pb-5 text-sm text-ink-700 sm:px-6">
-			{#if data.host.locationLabel}
-				<span class="inline-flex items-center gap-1.5">
-					<MapPinned class="size-4 text-ink-700/60" />
-					Usually active around {data.host.locationLabel}
-				</span>
-			{/if}
-			<span>{data.listings.length} published listing{data.listings.length === 1 ? '' : 's'}</span>
+		<CardContent class="flex flex-wrap items-center justify-between gap-3 px-4 pb-5 text-sm text-ink-700 sm:px-6">
+			<div class="flex flex-wrap gap-3">
+				{#if data.host.locationLabel}
+					<span class="inline-flex items-center gap-1.5">
+						<MapPinned class="size-4 text-ink-700/60" />
+						Usually active around {data.host.locationLabel}
+					</span>
+				{/if}
+				<span>{data.listings.length} published listing{data.listings.length === 1 ? '' : 's'}</span>
+			</div>
+			<FollowToggleButton
+				hostId={data.host.id}
+				initialActive={data.isFollowing}
+				signedIn={Boolean(data.user)}
+				redirectTo={data.canonicalPath}
+				size="default"
+			/>
 		</CardContent>
 	</Card>
 
